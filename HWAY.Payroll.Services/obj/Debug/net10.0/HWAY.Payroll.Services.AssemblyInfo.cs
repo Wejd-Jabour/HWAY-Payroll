@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HWAY.Payroll.Services")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+31f05a48fbf19064b35a7e159cc1ee6abe426da5")]
 [assembly: System.Reflection.AssemblyProductAttribute("HWAY.Payroll.Services")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HWAY.Payroll.Services")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
