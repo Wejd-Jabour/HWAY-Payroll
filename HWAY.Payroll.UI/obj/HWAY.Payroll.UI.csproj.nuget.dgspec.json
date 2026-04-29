@@ -1,40 +1,34 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.UI\\HWAY.Payroll.UI.csproj": {}
+    "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.UI/HWAY.Payroll.UI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Data\\HWAY.Payroll.Data.csproj": {
+    "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Data/HWAY.Payroll.Data.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Data\\HWAY.Payroll.Data.csproj",
+        "projectUniqueName": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Data/HWAY.Payroll.Data.csproj",
         "projectName": "HWAY.Payroll.Data",
-        "projectPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Data\\HWAY.Payroll.Data.csproj",
-        "packagesPath": "C:\\Users\\jabou\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Data\\obj\\",
+        "projectPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Data/HWAY.Payroll.Data.csproj",
+        "packagesPath": "/Users/nartmachfj/.nuget/packages/",
+        "outputPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Data/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\jabou\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/nartmachfj/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net10.0"
+          "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
+          "/usr/local/share/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net10.0": {
-            "targetAlias": "net10.0",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Domain\\HWAY.Payroll.Domain.csproj": {
-                "projectPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Domain\\HWAY.Payroll.Domain.csproj"
+              "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Domain/HWAY.Payroll.Domain.csproj": {
+                "projectPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Domain/HWAY.Payroll.Domain.csproj"
               }
             }
           }
@@ -47,23 +41,26 @@
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
-          "auditMode": "all"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+          "auditMode": "direct"
+        }
       },
       "frameworks": {
-        "net10.0": {
-          "targetAlias": "net10.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "dependencies": {
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[8.0.*, )"
+            },
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.7, )"
+              "version": "[8.0.*, )"
             },
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
-              "version": "[10.0.7, )"
+              "version": "[8.0.*, )"
             }
           },
           "imports": [
@@ -82,38 +79,32 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.420/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Domain\\HWAY.Payroll.Domain.csproj": {
+    "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Domain/HWAY.Payroll.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Domain\\HWAY.Payroll.Domain.csproj",
+        "projectUniqueName": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Domain/HWAY.Payroll.Domain.csproj",
         "projectName": "HWAY.Payroll.Domain",
-        "projectPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Domain\\HWAY.Payroll.Domain.csproj",
-        "packagesPath": "C:\\Users\\jabou\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Domain\\obj\\",
+        "projectPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Domain/HWAY.Payroll.Domain.csproj",
+        "packagesPath": "/Users/nartmachfj/.nuget/packages/",
+        "outputPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Domain/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\jabou\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/nartmachfj/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net10.0"
+          "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
+          "/usr/local/share/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net10.0": {
-            "targetAlias": "net10.0",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {}
           }
         },
@@ -125,13 +116,12 @@
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
-          "auditMode": "all"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+          "auditMode": "direct"
+        }
       },
       "frameworks": {
-        "net10.0": {
-          "targetAlias": "net10.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "imports": [
             "net461",
             "net462",
@@ -148,44 +138,38 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.420/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Services\\HWAY.Payroll.Services.csproj": {
+    "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Services/HWAY.Payroll.Services.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Services\\HWAY.Payroll.Services.csproj",
+        "projectUniqueName": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Services/HWAY.Payroll.Services.csproj",
         "projectName": "HWAY.Payroll.Services",
-        "projectPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Services\\HWAY.Payroll.Services.csproj",
-        "packagesPath": "C:\\Users\\jabou\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Services\\obj\\",
+        "projectPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Services/HWAY.Payroll.Services.csproj",
+        "packagesPath": "/Users/nartmachfj/.nuget/packages/",
+        "outputPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Services/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\jabou\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/nartmachfj/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net10.0"
+          "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
+          "/usr/local/share/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net10.0": {
-            "targetAlias": "net10.0",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Data\\HWAY.Payroll.Data.csproj": {
-                "projectPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Data\\HWAY.Payroll.Data.csproj"
+              "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Data/HWAY.Payroll.Data.csproj": {
+                "projectPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Data/HWAY.Payroll.Data.csproj"
               },
-              "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Domain\\HWAY.Payroll.Domain.csproj": {
-                "projectPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Domain\\HWAY.Payroll.Domain.csproj"
+              "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Domain/HWAY.Payroll.Domain.csproj": {
+                "projectPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Domain/HWAY.Payroll.Domain.csproj"
               }
             }
           }
@@ -198,13 +182,12 @@
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
-          "auditMode": "all"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+          "auditMode": "direct"
+        }
       },
       "frameworks": {
-        "net10.0": {
-          "targetAlias": "net10.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "imports": [
             "net461",
             "net462",
@@ -221,81 +204,63 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.420/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.UI\\HWAY.Payroll.UI.csproj": {
+    "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.UI/HWAY.Payroll.UI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.UI\\HWAY.Payroll.UI.csproj",
+        "projectUniqueName": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.UI/HWAY.Payroll.UI.csproj",
         "projectName": "HWAY.Payroll.UI",
-        "projectPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.UI\\HWAY.Payroll.UI.csproj",
-        "packagesPath": "C:\\Users\\jabou\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.UI\\obj\\",
+        "projectPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.UI/HWAY.Payroll.UI.csproj",
+        "packagesPath": "/Users/nartmachfj/.nuget/packages/",
+        "outputPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.UI/obj/",
         "projectStyle": "PackageReference",
         "crossTargeting": true,
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\jabou\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/nartmachfj/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net10.0-android",
-          "net10.0-ios",
-          "net10.0-maccatalyst",
-          "net10.0-windows10.0.19041.0"
+          "net8.0-android",
+          "net8.0-ios",
+          "net8.0-maccatalyst"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
+          "/usr/local/share/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net10.0-android36.0": {
-            "targetAlias": "net10.0-android",
+          "net8.0-android34.0": {
+            "targetAlias": "net8.0-android",
             "projectReferences": {
-              "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Domain\\HWAY.Payroll.Domain.csproj": {
-                "projectPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Domain\\HWAY.Payroll.Domain.csproj"
+              "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Domain/HWAY.Payroll.Domain.csproj": {
+                "projectPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Domain/HWAY.Payroll.Domain.csproj"
               },
-              "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Services\\HWAY.Payroll.Services.csproj": {
-                "projectPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Services\\HWAY.Payroll.Services.csproj"
+              "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Services/HWAY.Payroll.Services.csproj": {
+                "projectPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Services/HWAY.Payroll.Services.csproj"
               }
             }
           },
-          "net10.0-ios26.1": {
-            "targetAlias": "net10.0-ios",
+          "net8.0-ios18.0": {
+            "targetAlias": "net8.0-ios",
             "projectReferences": {
-              "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Domain\\HWAY.Payroll.Domain.csproj": {
-                "projectPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Domain\\HWAY.Payroll.Domain.csproj"
+              "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Domain/HWAY.Payroll.Domain.csproj": {
+                "projectPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Domain/HWAY.Payroll.Domain.csproj"
               },
-              "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Services\\HWAY.Payroll.Services.csproj": {
-                "projectPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Services\\HWAY.Payroll.Services.csproj"
+              "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Services/HWAY.Payroll.Services.csproj": {
+                "projectPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Services/HWAY.Payroll.Services.csproj"
               }
             }
           },
-          "net10.0-maccatalyst26.1": {
-            "targetAlias": "net10.0-maccatalyst",
+          "net8.0-maccatalyst18.0": {
+            "targetAlias": "net8.0-maccatalyst",
             "projectReferences": {
-              "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Domain\\HWAY.Payroll.Domain.csproj": {
-                "projectPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Domain\\HWAY.Payroll.Domain.csproj"
+              "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Domain/HWAY.Payroll.Domain.csproj": {
+                "projectPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Domain/HWAY.Payroll.Domain.csproj"
               },
-              "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Services\\HWAY.Payroll.Services.csproj": {
-                "projectPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Services\\HWAY.Payroll.Services.csproj"
-              }
-            }
-          },
-          "net10.0-windows10.0.19041": {
-            "targetAlias": "net10.0-windows10.0.19041.0",
-            "projectReferences": {
-              "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Domain\\HWAY.Payroll.Domain.csproj": {
-                "projectPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Domain\\HWAY.Payroll.Domain.csproj"
-              },
-              "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Services\\HWAY.Payroll.Services.csproj": {
-                "projectPath": "C:\\Users\\jabou\\OneDrive\\Desktop\\DreamNaWay\\HWAY-Payroll\\HWAY.Payroll.Services\\HWAY.Payroll.Services.csproj"
+              "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Services/HWAY.Payroll.Services.csproj": {
+                "projectPath": "/Users/nartmachfj/HWAY-Payroll/HWAY.Payroll.Services/HWAY.Payroll.Services.csproj"
               }
             }
           }
@@ -308,13 +273,12 @@
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
-          "auditMode": "all"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+          "auditMode": "direct"
+        }
       },
       "frameworks": {
-        "net10.0-android36.0": {
-          "targetAlias": "net10.0-android",
+        "net8.0-android34.0": {
+          "targetAlias": "net8.0-android",
           "dependencies": {
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
@@ -322,16 +286,20 @@
             },
             "Microsoft.Maui.Controls": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[8.0.100, )"
+            },
+            "Microsoft.Maui.Controls.Compatibility": {
+              "target": "Package",
+              "version": "[8.0.100, )"
             },
             "Microsoft.Maui.Essentials": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[8.0.100, )"
             },
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.0, )",
+              "version": "[8.0.26, )",
               "autoReferenced": true
             }
           },
@@ -350,17 +318,14 @@
             "Microsoft.Android": {
               "privateAssets": "all"
             },
-            "Microsoft.Android.Runtimes": {
-              "privateAssets": "all"
-            },
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.420/PortableRuntimeIdentifierGraph.json"
         },
-        "net10.0-ios26.1": {
-          "targetAlias": "net10.0-ios",
+        "net8.0-ios18.0": {
+          "targetAlias": "net8.0-ios",
           "dependencies": {
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
@@ -368,16 +333,20 @@
             },
             "Microsoft.Maui.Controls": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[8.0.100, )"
+            },
+            "Microsoft.Maui.Controls.Compatibility": {
+              "target": "Package",
+              "version": "[8.0.100, )"
             },
             "Microsoft.Maui.Essentials": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[8.0.100, )"
             },
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.0, )",
+              "version": "[8.0.26, )",
               "autoReferenced": true
             }
           },
@@ -396,17 +365,14 @@
             "Microsoft.iOS": {
               "privateAssets": "all"
             },
-            "Microsoft.iOS.Runtimes": {
-              "privateAssets": "all"
-            },
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.420/PortableRuntimeIdentifierGraph.json"
         },
-        "net10.0-maccatalyst26.1": {
-          "targetAlias": "net10.0-maccatalyst",
+        "net8.0-maccatalyst18.0": {
+          "targetAlias": "net8.0-maccatalyst",
           "dependencies": {
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
@@ -414,16 +380,20 @@
             },
             "Microsoft.Maui.Controls": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[8.0.100, )"
+            },
+            "Microsoft.Maui.Controls.Compatibility": {
+              "target": "Package",
+              "version": "[8.0.100, )"
             },
             "Microsoft.Maui.Essentials": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[8.0.100, )"
             },
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.0, )",
+              "version": "[8.0.26, )",
               "autoReferenced": true
             }
           },
@@ -443,73 +413,30 @@
             "Microsoft.MacCatalyst": {
               "privateAssets": "all"
             },
-            "Microsoft.MacCatalyst.Runtimes": {
-              "privateAssets": "all"
-            },
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json"
-        },
-        "net10.0-windows10.0.19041": {
-          "targetAlias": "net10.0-windows10.0.19041.0",
-          "dependencies": {
-            "Microsoft.Extensions.Logging.Debug": {
-              "target": "Package",
-              "version": "[10.0.0, )"
-            },
-            "Microsoft.Maui.Controls": {
-              "target": "Package",
-              "version": "[10.0.0, )"
-            },
-            "Microsoft.Maui.Essentials": {
-              "target": "Package",
-              "version": "[10.0.0, )"
-            }
-          },
-          "imports": [
-            "net461",
-            "net462",
-            "net47",
-            "net471",
-            "net472",
-            "net48",
-            "net481"
-          ],
-          "assetTargetFallback": true,
-          "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.Windows.SDK.NET.Ref",
-              "version": "[10.0.19041.57, 10.0.19041.57]"
-            }
-          ],
-          "frameworkReferences": {
-            "Microsoft.NETCore.App": {
-              "privateAssets": "all"
-            },
-            "Microsoft.Windows.SDK.NET.Ref.Windows": {
-              "privateAssets": "all"
-            }
-          },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.420/PortableRuntimeIdentifierGraph.json"
         }
       },
       "runtimes": {
+        "android-arm": {
+          "#import": []
+        },
         "android-arm64": {
           "#import": []
         },
         "android-x64": {
           "#import": []
         },
-        "iossimulator-x64": {
+        "android-x86": {
           "#import": []
         },
-        "maccatalyst-x64": {
+        "iossimulator-arm64": {
           "#import": []
         },
-        "win-x64": {
+        "maccatalyst-arm64": {
           "#import": []
         }
       }
