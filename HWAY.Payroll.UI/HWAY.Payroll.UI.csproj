@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">
@@ -69,6 +69,11 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\HWAY.Payroll.Domain\HWAY.Payroll.Domain.csproj" />
 	  <ProjectReference Include="..\HWAY.Payroll.Services\HWAY.Payroll.Services.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <MauiXaml Update="Views\EmployerLookupPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	</ItemGroup>
 
 </Project>
