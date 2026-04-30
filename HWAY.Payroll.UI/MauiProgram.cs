@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using HWAY.Payroll.Data.Context;
 using Microsoft.EntityFrameworkCore;
-
+using HWAY.Payroll.Services.Employers;
+using HWAY.Payroll.UI.ViewModels;
+using HWAY.Payroll.UI.Views;
 namespace HWAY.Payroll.UI;
 
 public static class MauiProgram
@@ -18,8 +20,15 @@ public static class MauiProgram
 			});
 
         builder.Services.AddDbContext<AppDbContext>(options =>
-		options.UseSqlServer(
-        @"Server=(localdb)\MSSQLLocalDB;Database=HWAYPayrollLocalDb;Trusted_Connection=True;TrustServerCertificate=True;"));
+        {
+            options.UseSqlServer(
+                @"Server=(localdb)\MSSQLLocalDB;Database=HWAYPayrollLocalDb;Trusted_Connection=True;TrustServerCertificate=True;");
+        });
+
+        builder.Services.AddScoped<IEmployerLookupService, EmployerLookupService>();
+
+        builder.Services.AddTransient<EmployerLookupViewModel>();
+        builder.Services.AddTransient<EmployerLookupPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();

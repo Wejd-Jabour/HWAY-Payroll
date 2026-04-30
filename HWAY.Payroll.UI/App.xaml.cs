@@ -1,16 +1,13 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using HWAY.Payroll.UI.Views;
 
 namespace HWAY.Payroll.UI;
 
 public partial class App : Application
 {
-	public App()
-	{
-		InitializeComponent();
-	}
+    public App(EmployerLookupPage employerLookupPage)
+    {
+        InitializeComponent();
 
-	protected override Window CreateWindow(IActivationState? activationState)
-	{
-		return new Window(new AppShell());
-	}
+        MainPage = new NavigationPage(employerLookupPage);
+    }
 }
