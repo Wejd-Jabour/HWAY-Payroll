@@ -30,6 +30,9 @@ public static class MauiProgram
         builder.Services.AddTransient<EmployerLookupViewModel>();
         builder.Services.AddTransient<EmployerLookupPage>();
 
+        // Temporary paystub preview page
+        builder.Services.AddTransient<PaystubPreviewPage>();
+
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
