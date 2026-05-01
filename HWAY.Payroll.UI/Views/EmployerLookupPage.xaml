@@ -97,6 +97,10 @@
                 </VerticalStackLayout>
             </Border>
 
+            <Button
+	            Text="Open Website"
+	            Clicked="OpenWebsiteButton_Clicked" />  
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
