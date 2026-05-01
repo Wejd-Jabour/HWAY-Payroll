@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="HWAY.Payroll.UI.Views.EmployerLookupPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Employer Lookup">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <Label
+                Text="Employer RP Lookup"
+                FontSize="24"
+                FontAttributes="Bold" />
+
+            <Label
+                Text="Search by RP number or employer name"
+                FontSize="14" />
+
+            <Entry
+                Placeholder="Enter RP number or employer name"
+                Text="{Binding SearchText}"
+                ReturnCommand="{Binding SearchCommand}" />
+
+            <Border
+                IsVisible="{Binding IsDropdownVisible}"
+                StrokeThickness="1"
+                Padding="0"
+                HeightRequest="220">
+
+                <CollectionView
+                    ItemsSource="{Binding Employers}"
+                    SelectionMode="None">
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="12">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectEmployerCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Grid.GestureRecognizers>
+
+                                <VerticalStackLayout Spacing="2">
+                                    <Label
+                                        Text="{Binding RpNumber}"
+                                        FontAttributes="Bold"
+                                        FontSize="16" />
+
+                                    <Label
+                                        Text="{Binding EmployerName}"
+                                        FontSize="14" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Border>
+
+            <ActivityIndicator
+                IsVisible="{Binding IsBusy}"
+                IsRunning="{Binding IsBusy}" />
+
+            <Border
+                StrokeThickness="1"
+                Padding="16"
+                Margin="0,12,0,0">
+
+                <VerticalStackLayout Spacing="10">
+
+                    <Label
+                        Text="Selected Employer"
+                        FontSize="20"
+                        FontAttributes="Bold" />
+
+                    <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+
+                        <Label Grid.Row="0" Grid.Column="0" Text="RP Number:" FontAttributes="Bold" />
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding SelectedEmployer.RpNumber}" />
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="Employer Name:" FontAttributes="Bold" />
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEmployer.EmployerName}" />
+
+                        <Label Grid.Row="2" Grid.Column="0" Text="Address:" FontAttributes="Bold" />
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding SelectedEmployer.Address}" />
+
+                        <Label Grid.Row="3" Grid.Column="0" Text="City:" FontAttributes="Bold" />
+                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding SelectedEmployer.City}" />
+
+                        <Label Grid.Row="4" Grid.Column="0" Text="Postal Code:" FontAttributes="Bold" />
+                        <Label Grid.Row="4" Grid.Column="1" Text="{Binding SelectedEmployer.PostalCode}" />
+
+                        <Label Grid.Row="5" Grid.Column="0" Text="Group:" FontAttributes="Bold" />
+                        <Label Grid.Row="5" Grid.Column="1" Text="{Binding SelectedEmployer.EmployerGroup}" />
+
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Button
+	            Text="Open Website"
+	            Clicked="OpenWebsiteButton_Clicked" />  
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
