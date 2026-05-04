@@ -93,6 +93,18 @@
                         TextColor="White"
                         CornerRadius="10" />
 
+                <!-- Gross -->
+                <Label Text="Gross" />
+                <Entry Text="{Binding Gross}"
+                       Keyboard="Numeric"
+                       IsReadOnly="True" />
+
+                <!-- Vacation -->
+                <Label Text="Vacation" />
+                <Entry Text="{Binding Vacation}"
+                       Keyboard="Numeric"
+                       IsReadOnly="True" />
+
                 <!-- Tax / Deductions -->
                 <Label Text="Tax1" />
                 <Entry Text="{Binding Tax1}"
@@ -120,18 +132,6 @@
                         BackgroundColor="Green"
                         TextColor="White"
                         CornerRadius="10" />
-
-                <!-- Gross -->
-                <Label Text="Gross" />
-                <Entry Text="{Binding Gross}"
-                       Keyboard="Numeric"
-                       IsReadOnly="True" />
-
-                <!-- Vacation -->
-                <Label Text="Vacation" />
-                <Entry Text="{Binding Vacation}"
-                       Keyboard="Numeric"
-                       IsReadOnly="True" />
 
             </VerticalStackLayout>
 
