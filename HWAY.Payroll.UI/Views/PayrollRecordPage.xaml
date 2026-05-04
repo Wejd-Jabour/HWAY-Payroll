@@ -12,28 +12,55 @@
                    FontAttributes="Bold"
                    HorizontalOptions="Center" />
 
-            <!-- Employee Search Section -->
+            <!-- Employer Search Section -->
             <Frame BorderColor="LightGray"
                    CornerRadius="12"
                    Padding="15">
 
                 <VerticalStackLayout Spacing="12">
 
-                    <Label Text="Enter Employee ID"
+                    <Label Text="Enter RP Number"
                            FontAttributes="Bold" />
 
-                    <Entry Placeholder="Employee ID"
-                           Keyboard="Numeric"
-                           Text="{Binding EmployeeID}" />
+                    <Entry Placeholder="RP Number"
+                           Keyboard="Text"
+                           Text="{Binding RpNumber}" />
 
-                    <Button Text="Search Employee"
-                            Command="{Binding SearchEmployeeCommand}"
+                    <Button Text="Search Employees"
+                            Command="{Binding SearchByRpNumberCommand}"
                             BackgroundColor="#512BD4"
                             TextColor="White"
                             CornerRadius="10" />
 
                 </VerticalStackLayout>
             </Frame>
+
+            <CollectionView ItemsSource="{Binding SearchResults}"
+                            SelectionMode="Single"
+                            SelectedItem="{Binding SelectedPayrollRecord}"
+                            IsVisible="{Binding SearchResultsFound}"
+                            Margin="0,10,0,0">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame BorderColor="LightGray"
+                               CornerRadius="10"
+                               Padding="12"
+                               Margin="0,0,0,10">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{Binding EmployeeName}"
+                                       FontAttributes="Bold" />
+                                <Label Text="{Binding EmployeeNumber}" />
+                                <Label Text="{Binding RpNumber}" />
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Label Text="No employees found for that RP number."
+                   TextColor="Red"
+                   HorizontalOptions="Center"
+                   IsVisible="{Binding EmployeeNotFound}" />
 
             <!-- Employee Details Section -->
             <VerticalStackLayout IsVisible="{Binding EmployeeFound}"
@@ -43,6 +70,28 @@
                        FontSize="22"
                        FontAttributes="Bold"
                        HorizontalOptions="Center" />
+
+                <!-- Salary -->
+                <Label Text="Salary" />
+                <Entry Text="{Binding Salary}"
+                       Keyboard="Numeric" />
+
+                <!-- Rate -->
+                <Label Text="Rate" />
+                <Entry Text="{Binding Rate}"
+                       Keyboard="Numeric" />
+
+                <!-- RegularHours -->
+                <Label Text="Regular Hours" />
+                <Entry Text="{Binding RegularHours}"
+                       Keyboard="Numeric" />
+
+                <!-- Calculate Button -->
+                <Button Text="Calculate Payroll &amp; Open CRA"
+                        Command="{Binding CalculateAndOpenCraCommand}"
+                        BackgroundColor="Orange"
+                        TextColor="White"
+                        CornerRadius="10" />
 
                 <!-- Gross -->
                 <Label Text="Gross" />
@@ -56,27 +105,30 @@
                        Keyboard="Numeric"
                        IsReadOnly="True" />
 
-                <!-- Salary -->
-                <Label Text="Salary" />
-                <Entry Text="{Binding Salary}"
-                       Keyboard="Numeric"
-                       IsReadOnly="True" />
+                <!-- Tax / Deductions -->
+                <Label Text="Tax1" />
+                <Entry Text="{Binding Tax1}"
+                       Keyboard="Numeric" />
 
-                <!-- Rate -->
-                <Label Text="Rate" />
-                <Entry Text="{Binding Rate}"
-                       Keyboard="Numeric"
-                       IsReadOnly="True" />
+                <Label Text="CPP1" />
+                <Entry Text="{Binding Cpp1}"
+                       Keyboard="Numeric" />
 
-                <!-- Rhours -->
-                <Label Text="RegularHours" />
-                <Entry Text="{Binding RegularHours}"
-                       Keyboard="Numeric"
-                       IsReadOnly="True" />
+                <Label Text="CPP2" />
+                <Entry Text="{Binding Cpp2}"
+                       Keyboard="Numeric" />
 
-                <!-- CRA Link Button -->
-                <Button Text="Open CRA Payroll Deductions Calculator"
-                        Command="{Binding OpenCraWebsiteCommand}"
+                <Label Text="EI" />
+                <Entry Text="{Binding Ei}"
+                       Keyboard="Numeric" />
+
+                <Label Text="Other Deduction" />
+                <Entry Text="{Binding OtherDeduction}"
+                       Keyboard="Numeric" />
+
+                <!-- Save Button -->
+                <Button Text="Save Changes"
+                        Command="{Binding SaveCommand}"
                         BackgroundColor="Green"
                         TextColor="White"
                         CornerRadius="10" />
