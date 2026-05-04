@@ -14,6 +14,8 @@ public class EmployerLookupViewModel : INotifyPropertyChanged
     private EmployerLookupDto? _selectedEmployer;
     private bool _isDropdownVisible;
     private bool _isBusy;
+    private bool _isPaystubVisible;
+    private bool _canShowPaystub;
 
     public EmployerLookupViewModel(IEmployerLookupService employerLookupService)
     {
@@ -23,6 +25,7 @@ public class EmployerLookupViewModel : INotifyPropertyChanged
 
         SearchCommand = new Command(async () => await SearchEmployersAsync());
         SelectEmployerCommand = new Command<EmployerLookupDto>(async employer => await SelectEmployerAsync(employer));
+        ShowPaystubCommand = new Command(ShowPaystub);
 
         _ = LoadInitialEmployersAsync();
     }
@@ -31,6 +34,7 @@ public class EmployerLookupViewModel : INotifyPropertyChanged
 
     public ICommand SearchCommand { get; }
     public ICommand SelectEmployerCommand { get; }
+    public ICommand ShowPaystubCommand { get; }
 
     public string SearchText
     {
@@ -60,6 +64,18 @@ public class EmployerLookupViewModel : INotifyPropertyChanged
     {
         get => _isBusy;
         set => SetProperty(ref _isBusy, value);
+    }
+
+    public bool IsPaystubVisible
+    {
+        get => _isPaystubVisible;
+        set => SetProperty(ref _isPaystubVisible, value);
+    }
+
+    public bool CanShowPaystub
+    {
+        get => _canShowPaystub;
+        set => SetProperty(ref _canShowPaystub, value);
     }
 
     private async Task LoadInitialEmployersAsync()
@@ -103,6 +119,20 @@ public class EmployerLookupViewModel : INotifyPropertyChanged
         SearchText = employer.RpNumber;
 
         IsDropdownVisible = false;
+
+        CanShowPaystub = SelectedEmployer is not null;
+
+        // Hide the paystub when a new employer is selected.
+        // The user can click the button again to preview it.
+        IsPaystubVisible = false;
+    }
+
+    private void ShowPaystub()
+    {
+        if (SelectedEmployer is null)
+            return;
+
+        IsPaystubVisible = true;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

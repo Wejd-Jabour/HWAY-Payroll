@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
+    xmlns:views="clr-namespace:HWAY.Payroll.UI.Views"
     x:Class="HWAY.Payroll.UI.Views.EmployerLookupPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -99,7 +100,24 @@
 
             <Button
 	            Text="Open Website"
-	            Clicked="OpenWebsiteButton_Clicked" />  
+	            Clicked="OpenWebsiteButton_Clicked" />
+
+
+            <Button
+                Text="Show Paystub"
+                Command="{Binding ShowPaystubCommand}"
+                IsEnabled="{Binding CanShowPaystub}"
+                Margin="0,15,0,10" />
+
+            <ScrollView
+                Orientation="Both"
+                IsVisible="{Binding IsPaystubVisible}"
+                BackgroundColor="White">
+
+                            <views:PaystubTemplate
+                    BindingContext="{Binding SelectedEmployer}" />
+
+            </ScrollView>
 
         </VerticalStackLayout>
     </ScrollView>
