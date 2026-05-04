@@ -240,6 +240,12 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
 
         await _service.UpdatePayrollRecordAsync(_currentPayrollRecordId, dto);
 
+        // Clear selection and hide details to allow selecting next employee
+        SelectedPayrollRecord = null;
+        ClearFields();
+        EmployeeFound = false;
+        _currentPayrollRecordId = 0;
+
         // Optionally, show a success message or something
     }
 
@@ -270,6 +276,20 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
     // PROPERTY CHANGED HELPER
     // -------------------------
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void ClearFields()
+    {
+        Salary = 0;
+        Rate = 0;
+        RegularHours = 0;
+        Gross = 0;
+        Vacation = 0;
+        Tax1 = 0;
+        Cpp1 = 0;
+        Cpp2 = 0;
+        Ei = 0;
+        OtherDeduction = 0;
+    }
 
     private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string name = "")
     {
