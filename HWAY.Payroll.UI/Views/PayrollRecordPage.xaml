@@ -1,0 +1,94 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="HWAY.Payroll.UI.Views.PayrollRecordPage"
+             Title="Employee Payroll Lookup">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="25" Spacing="18">
+
+            <!-- Page Header -->
+            <Label Text="Employee Payroll Lookup"
+                   FontSize="26"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center" />
+
+            <!-- Employee Search Section -->
+            <Frame BorderColor="LightGray"
+                   CornerRadius="12"
+                   Padding="15">
+
+                <VerticalStackLayout Spacing="12">
+
+                    <Label Text="Enter Employee ID"
+                           FontAttributes="Bold" />
+
+                    <Entry Placeholder="Employee ID"
+                           Keyboard="Numeric"
+                           Text="{Binding EmployeeID}" />
+
+                    <Button Text="Search Employee"
+                            Command="{Binding SearchEmployeeCommand}"
+                            BackgroundColor="#512BD4"
+                            TextColor="White"
+                            CornerRadius="10" />
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Employee Details Section -->
+            <VerticalStackLayout IsVisible="{Binding EmployeeFound}"
+                                 Spacing="15">
+
+                <Label Text="Payroll Details"
+                       FontSize="22"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center" />
+
+                <!-- Gross -->
+                <Label Text="Gross" />
+                <Entry Text="{Binding Gross}"
+                       Keyboard="Numeric"
+                       IsReadOnly="True" />
+
+                <!-- Vacation -->
+                <Label Text="Vacation" />
+                <Entry Text="{Binding Vacation}"
+                       Keyboard="Numeric"
+                       IsReadOnly="True" />
+
+                <!-- Salary -->
+                <Label Text="Salary" />
+                <Entry Text="{Binding Salary}"
+                       Keyboard="Numeric"
+                       IsReadOnly="True" />
+
+                <!-- Rate -->
+                <Label Text="Rate" />
+                <Entry Text="{Binding Rate}"
+                       Keyboard="Numeric"
+                       IsReadOnly="True" />
+
+                <!-- Rhours -->
+                <Label Text="RegularHours" />
+                <Entry Text="{Binding RegularHours}"
+                       Keyboard="Numeric"
+                       IsReadOnly="True" />
+
+                <!-- CRA Link Button -->
+                <Button Text="Open CRA Payroll Deductions Calculator"
+                        Command="{Binding OpenCraWebsiteCommand}"
+                        BackgroundColor="Green"
+                        TextColor="White"
+                        CornerRadius="10" />
+
+            </VerticalStackLayout>
+
+            <!-- Employee Not Found -->
+            <Label Text="Employee not found."
+                   TextColor="Red"
+                   HorizontalOptions="Center"
+                   IsVisible="{Binding EmployeeNotFound}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
