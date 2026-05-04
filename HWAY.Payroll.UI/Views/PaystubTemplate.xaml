@@ -52,7 +52,7 @@
         <Image
             Source="hway_logo.png"
             Aspect="AspectFit"
-            AbsoluteLayout.LayoutBounds="70,82,65,65" />
+            AbsoluteLayout.LayoutBounds="100,112,95,95" />
 
         <Label
             Text="EARNING STATEMENT"
@@ -70,11 +70,11 @@
             AbsoluteLayout.LayoutBounds="742,192,50,16" />
 
         <!-- Employer / employee header section -->
-        <Label Text="EMPLOYER" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="65,241,140,14" />
-        <Label Text="{Binding EmployerName}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,253,250,14" />
-        <Label Text="{Binding EmployerAddress}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,264,270,14" />
-        <Label Text="{Binding EmployerCity}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,275,220,14" />
-        <Label Text="{Binding EmployerPostalCode}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,286,120,14" />
+		<Label Text="EMPLOYER" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="65,241,140,14" />
+		<Label Text="{Binding EmployerName}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,253,250,14" />
+		<Label Text="{Binding Address}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,264,270,14" />
+		<Label Text="{Binding City}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,275,220,14" />
+		<Label Text="{Binding PostalCode}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,286,120,14" />
 
         <Label Text="EMPLOYEE NO" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="440,241,100,14" />
         <Label Text="{Binding EmployeeNumber}" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="627,241,100,14" />

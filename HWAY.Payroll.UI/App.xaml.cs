@@ -4,10 +4,10 @@ namespace HWAY.Payroll.UI;
 
 public partial class App : Application
 {
-    public App(PaystubPreviewPage paystubPreviewPage)
+    public App(EmployerLookupPage employerLookupPage)
     {
         InitializeComponent();
 
-        MainPage = new NavigationPage(paystubPreviewPage);
+        MainPage = new NavigationPage(employerLookupPage);
     }
 }
