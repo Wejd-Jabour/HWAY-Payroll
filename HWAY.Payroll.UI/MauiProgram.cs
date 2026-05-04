@@ -2,6 +2,7 @@
 using HWAY.Payroll.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using HWAY.Payroll.Services.Employers;
+using HWAY.Payroll.Services.PayrollRecord;
 using HWAY.Payroll.UI.ViewModels;
 using HWAY.Payroll.UI.Views;
 namespace HWAY.Payroll.UI;
@@ -26,9 +27,12 @@ public static class MauiProgram
         });
 
         builder.Services.AddScoped<IEmployerLookupService, EmployerLookupService>();
+        builder.Services.AddScoped<IPayrollRecordLookupService, PayrollRecordLookupService>();
 
         builder.Services.AddTransient<EmployerLookupViewModel>();
         builder.Services.AddTransient<EmployerLookupPage>();
+        builder.Services.AddTransient<PayrollRecordViewModel>();
+        builder.Services.AddTransient<PayrollRecordPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();
