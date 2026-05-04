@@ -121,7 +121,7 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
     // -------------------------
     private void OpenCraWebsite()
     {
-        Launcher.OpenAsync("https://www.canada.ca/en/revenue-agency.html");
+        Launcher.OpenAsync("https://apps.cra-arc.gc.ca/ebci/rhpd/beta/entry");
     }
 
     // -------------------------
