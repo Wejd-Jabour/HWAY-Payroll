@@ -491,9 +491,10 @@ public class PaystubTemplateBindingModel
         OtherDeductionCurrent = FormatMoney(otherDeduction);
         OtherDeductionYtd = FormatMoney(record.OtherDeductionYtd);
 
-        var totalDeductions = tax1 + cpp1 + cpp2 + ei + otherDeduction;
-        var totalPay = gross + vacation;
-        var netPay = totalPay - totalDeductions;
+        var payrollDeductions = tax1 + cpp1 + cpp2 + ei;
+        var totalDeductions = payrollDeductions + otherDeduction;
+        var totalPay = salary > 0 ? salary : gross + vacation;
+        var netPay = CalculateNetPay(salary, gross, vacation, tax1, cpp1, cpp2, ei);
 
         HeaderNetPay = FormatMoney(netPay);
         BenefitNetPay = FormatMoney(netPay);
@@ -587,6 +588,22 @@ public class PaystubTemplateBindingModel
     public string SummaryDeductionsYtd { get; }
     public string SummaryNetPayCurrent { get; }
     public string SummaryNetPayYtd { get; }
+
+    private static decimal CalculateNetPay(
+        decimal salary,
+        decimal gross,
+        decimal vacation,
+        decimal tax1,
+        decimal cpp1,
+        decimal cpp2,
+        decimal ei)
+    {
+        var payrollDeductions = tax1 + cpp1 + cpp2 + ei;
+
+        return salary > 0
+            ? salary - payrollDeductions
+            : gross + vacation - payrollDeductions;
+    }
 
     private static string FormatMoney(decimal value) => value == 0 ? "" : value.ToString("0.00");
     private static string FormatNumber(decimal value) => value == 0 ? "" : value.ToString("0.##");
