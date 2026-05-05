@@ -34,6 +34,9 @@ public static class MauiProgram
         builder.Services.AddTransient<PayrollRecordViewModel>();
         builder.Services.AddTransient<PayrollRecordPage>();
 
+        builder.Services.AddTransient<PayrollWorkspaceViewModel>();
+        builder.Services.AddTransient<PayrollWorkspacePage>();
+
         // Temporary paystub preview page
         builder.Services.AddTransient<PaystubPreviewPage>();
 
