@@ -109,13 +109,20 @@
                 IsEnabled="{Binding CanShowPaystub}"
                 Margin="0,15,0,10" />
 
+            <Button
+                Text="Export Paystub as PDF"
+                Clicked="ExportPaystubButton_Clicked"
+                IsEnabled="{Binding CanShowPaystub}"
+                Margin="0,0,0,10" />
+
             <ScrollView
                 Orientation="Both"
                 IsVisible="{Binding IsPaystubVisible}"
                 BackgroundColor="White">
 
                             <views:PaystubTemplate
-                    BindingContext="{Binding SelectedEmployer}" />
+                                x:Name="PaystubView"
+                                BindingContext="{Binding SelectedEmployer}" />
 
             </ScrollView>
 
