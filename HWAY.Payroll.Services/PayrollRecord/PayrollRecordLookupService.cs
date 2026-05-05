@@ -1,5 +1,4 @@
 using HWAY.Payroll.Data.Context;
-using HWAY.Payroll.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace HWAY.Payroll.Services.PayrollRecord;
@@ -46,12 +45,25 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 StatHolidayHours = record.StatHolidayHours,
                 Vacation = record.Vacation,
                 Gross = record.Gross,
+
                 Tax1 = record.Tax1,
                 Cpp1 = record.Cpp1,
                 Cpp2 = record.Cpp2,
                 Ei = record.Ei,
                 OtherDeduction = record.OtherDeduction,
-                NetPay = record.NetPay
+                NetPay = record.NetPay,
+
+                GrossYtd = record.GrossYtd,
+                NetYtd = record.NetYtd,
+                TaxYtd = record.TaxYtd,
+                Cpp1Ytd = record.Cpp1Ytd,
+                Cpp2Ytd = record.Cpp2Ytd,
+                EiYtd = record.EiYtd,
+                OtherDeductionYtd = record.OtherDeductionYtd,
+                VacationYtd = record.VacationYtd,
+                VacationYtdUsed = record.VacationYtdUsed,
+                VacationYtdBalance = record.VacationYtdBalance,
+                TotalPd7 = record.TotalPd7
             })
             .ToListAsync();
     }
@@ -79,12 +91,25 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 StatHolidayHours = record.StatHolidayHours,
                 Vacation = record.Vacation,
                 Gross = record.Gross,
+
                 Tax1 = record.Tax1,
                 Cpp1 = record.Cpp1,
                 Cpp2 = record.Cpp2,
                 Ei = record.Ei,
                 OtherDeduction = record.OtherDeduction,
-                NetPay = record.NetPay
+                NetPay = record.NetPay,
+
+                GrossYtd = record.GrossYtd,
+                NetYtd = record.NetYtd,
+                TaxYtd = record.TaxYtd,
+                Cpp1Ytd = record.Cpp1Ytd,
+                Cpp2Ytd = record.Cpp2Ytd,
+                EiYtd = record.EiYtd,
+                OtherDeductionYtd = record.OtherDeductionYtd,
+                VacationYtd = record.VacationYtd,
+                VacationYtdUsed = record.VacationYtdUsed,
+                VacationYtdBalance = record.VacationYtdBalance,
+                TotalPd7 = record.TotalPd7
             })
             .ToListAsync();
     }
@@ -111,12 +136,25 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 StatHolidayHours = record.StatHolidayHours,
                 Vacation = record.Vacation,
                 Gross = record.Gross,
+
                 Tax1 = record.Tax1,
                 Cpp1 = record.Cpp1,
                 Cpp2 = record.Cpp2,
                 Ei = record.Ei,
                 OtherDeduction = record.OtherDeduction,
-                NetPay = record.NetPay
+                NetPay = record.NetPay,
+
+                GrossYtd = record.GrossYtd,
+                NetYtd = record.NetYtd,
+                TaxYtd = record.TaxYtd,
+                Cpp1Ytd = record.Cpp1Ytd,
+                Cpp2Ytd = record.Cpp2Ytd,
+                EiYtd = record.EiYtd,
+                OtherDeductionYtd = record.OtherDeductionYtd,
+                VacationYtd = record.VacationYtd,
+                VacationYtdUsed = record.VacationYtdUsed,
+                VacationYtdBalance = record.VacationYtdBalance,
+                TotalPd7 = record.TotalPd7
             })
             .FirstOrDefaultAsync();
     }
@@ -130,6 +168,15 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         if (record == null)
             throw new InvalidOperationException($"Payroll record with Id {payrollRecordId} not found.");
 
+        var netPay = CalculateNetPay(
+            dto.Salary,
+            dto.Gross,
+            dto.Vacation,
+            dto.Tax1,
+            dto.Cpp1,
+            dto.Cpp2,
+            dto.Ei);
+
         record.Salary = dto.Salary;
         record.Rate = dto.Rate;
         record.RegularHours = dto.RegularHours;
@@ -140,7 +187,33 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         record.Cpp2 = dto.Cpp2;
         record.Ei = dto.Ei;
         record.OtherDeduction = dto.OtherDeduction;
+        record.NetPay = netPay;
+
+        record.GrossYtd += dto.Gross;
+        record.NetYtd += netPay;
+        record.TaxYtd += dto.Tax1;
+        record.Cpp1Ytd += dto.Cpp1;
+        record.Cpp2Ytd += dto.Cpp2;
+        record.EiYtd += dto.Ei;
+        record.OtherDeductionYtd += dto.OtherDeduction;
+        record.VacationYtd += dto.Vacation;
 
         await _dbContext.SaveChangesAsync();
+    }
+
+    private static decimal CalculateNetPay(
+        decimal salary,
+        decimal gross,
+        decimal vacation,
+        decimal tax1,
+        decimal cpp1,
+        decimal cpp2,
+        decimal ei)
+    {
+        var totalDeductions = tax1 + cpp1 + cpp2 + ei;
+
+        return salary > 0
+            ? salary - totalDeductions
+            : gross + vacation - totalDeductions;
     }
 }
