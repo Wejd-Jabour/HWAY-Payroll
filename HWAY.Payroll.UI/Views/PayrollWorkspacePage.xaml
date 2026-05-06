@@ -208,12 +208,25 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Button
-                Text="Preview Paystub"
-                Command="{Binding PreviewPaystubCommand}"
+            <Grid
                 IsVisible="{Binding EmployeeFound}"
-                HorizontalOptions="Center"
-                WidthRequest="340" />
+                ColumnDefinitions="*,*"
+                ColumnSpacing="12"
+                HorizontalOptions="Center">
+
+                            <Button
+                    Grid.Column="0"
+                    Text="Preview Paystub"
+                    Command="{Binding PreviewPaystubCommand}"
+                    WidthRequest="220" />
+
+                            <Button
+                    Grid.Column="1"
+                    Text="Print PDF"
+                    Clicked="PrintPaystubButton_Clicked"
+                    WidthRequest="220" />
+
+            </Grid>
 
             <!-- Paystub Preview Below -->
             <ScrollView
@@ -222,6 +235,7 @@
                 BackgroundColor="White">
 
                 <views:PaystubTemplate
+                    x:Name="PaystubPreviewView"
                     BindingContext="{Binding PreviewPaystub}" />
 
             </ScrollView>
