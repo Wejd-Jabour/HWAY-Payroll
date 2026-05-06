@@ -9,8 +9,16 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
-        optionsBuilder.UseSqlServer(
-            @"Server=(localdb)\MSSQLLocalDB;Database=HWAYPayrollLocalDb;Trusted_Connection=True;TrustServerCertificate=True;");
+    optionsBuilder.UseSqlServer(
+        @"Server=tcp:hway.database.windows.net,1433;
+        Initial Catalog=HWay_Payroll;
+        Persist Security Info=False;
+        User ID=jabourw;
+        Password=HwayPayroll1;
+        MultipleActiveResultSets=False;
+        Encrypt=True;
+        TrustServerCertificate=False;
+        Connection Timeout=30;");
 
         return new AppDbContext(optionsBuilder.Options);
     }

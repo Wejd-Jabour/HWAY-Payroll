@@ -23,8 +23,16 @@ public static class MauiProgram
 
         builder.Services.AddDbContext<AppDbContext>(options =>
         {
-            options.UseSqlServer(
-                @"Server=(localdb)\MSSQLLocalDB;Database=HWAYPayrollLocalDb;Trusted_Connection=True;TrustServerCertificate=True;");
+                options.UseSqlServer(
+                @"Server=tcp:hway.database.windows.net,1433;
+                Initial Catalog=HWay_Payroll;
+                Persist Security Info=False;
+                User ID=jabourw;
+                Password=HwayPayroll1;
+                MultipleActiveResultSets=False;
+                Encrypt=True;
+                TrustServerCertificate=False;
+                Connection Timeout=30;");
         });
 
         builder.Services.AddScoped<IEmployerLookupService, EmployerLookupService>();
