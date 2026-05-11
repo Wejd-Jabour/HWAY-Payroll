@@ -3,7 +3,6 @@
     x:Class="HWAY.Payroll.UI.Views.PayrollWorkspacePage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:views="clr-namespace:HWAY.Payroll.UI.Views"
     Title="Payroll Workspace">
 
     <ScrollView>
@@ -113,128 +112,115 @@
                             Padding="16"
                             Margin="0,10,0,0">
 
-                            <Grid
-                                ColumnDefinitions="*,520"
-                                ColumnSpacing="20">
+                            <VerticalStackLayout Spacing="14">
 
-                                <VerticalStackLayout Grid.Column="0" Spacing="14">
+                                <Label
+                                    Text="{Binding EmployeeName}"
+                                    FontSize="18"
+                                    FontAttributes="Bold" />
 
-                                    <Label
-                                        Text="{Binding EmployeeName}"
-                                        FontSize="18"
-                                        FontAttributes="Bold" />
+                                <Label
+                                    Text="{Binding EmployeeNumber, StringFormat='Employee #: {0}'}"
+                                    FontSize="13" />
 
-                                    <Label
-                                        Text="{Binding EmployeeNumber, StringFormat='Employee #: {0}'}"
-                                        FontSize="13" />
+                                <Grid
+                                    ColumnDefinitions="Auto,160,40,Auto,160"
+                                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                                    ColumnSpacing="12"
+                                    RowSpacing="8">
 
-                                    <Grid
-                                        ColumnDefinitions="Auto,160,40,Auto,160"
-                                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
-                                        ColumnSpacing="12"
-                                        RowSpacing="8">
+                                    <Label Grid.Row="0" Grid.Column="0" Text="Salary" VerticalOptions="Center" />
+                                    <Entry Grid.Row="0" Grid.Column="1" Text="{Binding Salary}" Keyboard="Numeric" />
 
-                                        <Label Grid.Row="0" Grid.Column="0" Text="Salary" VerticalOptions="Center" />
-                                        <Entry Grid.Row="0" Grid.Column="1" Text="{Binding Salary}" Keyboard="Numeric" />
+                                    <Label Grid.Row="1" Grid.Column="0" Text="Rate" VerticalOptions="Center" />
+                                    <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Rate}" Keyboard="Numeric" />
 
-                                        <Label Grid.Row="1" Grid.Column="0" Text="Rate" VerticalOptions="Center" />
-                                        <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Rate}" Keyboard="Numeric" />
+                                    <Label Grid.Row="2" Grid.Column="0" Text="R. Hours" VerticalOptions="Center" />
+                                    <Entry Grid.Row="2" Grid.Column="1" Text="{Binding RegularHours}" Keyboard="Numeric" />
 
-                                        <Label Grid.Row="2" Grid.Column="0" Text="R. Hours" VerticalOptions="Center" />
-                                        <Entry Grid.Row="2" Grid.Column="1" Text="{Binding RegularHours}" Keyboard="Numeric" />
+                                    <Label Grid.Row="3" Grid.Column="0" Text="OT Hours" VerticalOptions="Center" />
+                                    <Entry Grid.Row="3" Grid.Column="1" Text="{Binding OvertimeHours}" Keyboard="Numeric" />
 
-                                        <Label Grid.Row="3" Grid.Column="0" Text="OT Hours" VerticalOptions="Center" />
-                                        <Entry Grid.Row="3" Grid.Column="1" Text="{Binding OvertimeHours}" Keyboard="Numeric" />
+                                    <Label Grid.Row="4" Grid.Column="0" Text="Public H." VerticalOptions="Center" />
+                                    <Entry Grid.Row="4" Grid.Column="1" Text="{Binding PublicHolidayHours}" Keyboard="Numeric" />
 
-                                        <Label Grid.Row="4" Grid.Column="0" Text="Public H." VerticalOptions="Center" />
-                                        <Entry Grid.Row="4" Grid.Column="1" Text="{Binding PublicHolidayHours}" Keyboard="Numeric" />
+                                    <Label Grid.Row="5" Grid.Column="0" Text="Stat H." VerticalOptions="Center" />
+                                    <Entry Grid.Row="5" Grid.Column="1" Text="{Binding StatHolidayHours}" Keyboard="Numeric" />
 
-                                        <Label Grid.Row="5" Grid.Column="0" Text="Stat H." VerticalOptions="Center" />
-                                        <Entry Grid.Row="5" Grid.Column="1" Text="{Binding StatHolidayHours}" Keyboard="Numeric" />
+                                    <Border
+                                        Grid.Row="0"
+                                        Grid.RowSpan="6"
+                                        Grid.Column="3"
+                                        Grid.ColumnSpan="2"
+                                        StrokeThickness="2"
+                                        Padding="15">
 
-                                        <Border
-                                            Grid.Row="0"
-                                            Grid.RowSpan="6"
-                                            Grid.Column="3"
-                                            Grid.ColumnSpan="2"
-                                            StrokeThickness="2"
-                                            Padding="15">
+                                        <Grid
+                                            ColumnDefinitions="Auto,120"
+                                            RowDefinitions="Auto,Auto"
+                                            RowSpacing="12"
+                                            ColumnSpacing="12">
 
-                                            <Grid
-                                                ColumnDefinitions="Auto,120"
-                                                RowDefinitions="Auto,Auto"
-                                                RowSpacing="12"
-                                                ColumnSpacing="12">
+                                            <Label Grid.Row="0" Grid.Column="0" Text="Gross:" FontAttributes="Italic" VerticalOptions="Center" />
+                                            <Entry Grid.Row="0" Grid.Column="1" Text="{Binding Gross}" IsReadOnly="True" Keyboard="Numeric" />
 
-                                                <Label Grid.Row="0" Grid.Column="0" Text="Gross:" FontAttributes="Italic" VerticalOptions="Center" />
-                                                <Entry Grid.Row="0" Grid.Column="1" Text="{Binding Gross}" IsReadOnly="True" Keyboard="Numeric" />
+                                            <Label Grid.Row="1" Grid.Column="0" Text="Vacation:" FontAttributes="Italic" VerticalOptions="Center" />
+                                            <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Vacation}" IsReadOnly="True" Keyboard="Numeric" />
+                                        </Grid>
+                                    </Border>
+                                </Grid>
 
-                                                <Label Grid.Row="1" Grid.Column="0" Text="Vacation:" FontAttributes="Italic" VerticalOptions="Center" />
-                                                <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Vacation}" IsReadOnly="True" Keyboard="Numeric" />
-                                            </Grid>
-                                        </Border>
-                                    </Grid>
+                                <Button
+                                    Text="Calculate Payroll &amp; Open CRA Tax Calculator"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.CalculateRowCommand}"
+                                    CommandParameter="{Binding .}"
+                                    HorizontalOptions="Start"
+                                    WidthRequest="330" />
 
-                                    <Button
-                                        Text="Calculate Payroll &amp; Open CRA Tax Calculator"
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.CalculateRowCommand}"
-                                        CommandParameter="{Binding .}"
-                                        HorizontalOptions="Start"
-                                        WidthRequest="330" />
+                                <Grid
+                                    ColumnDefinitions="Auto,160,80,160"
+                                    RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                                    ColumnSpacing="12"
+                                    RowSpacing="8">
 
-                                    <Grid
-                                        ColumnDefinitions="Auto,160,80,160"
-                                        RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-                                        ColumnSpacing="12"
-                                        RowSpacing="8">
+                                    <Label Grid.Row="0" Grid.Column="0" Text="Tax" VerticalOptions="Center" />
+                                    <Entry Grid.Row="0" Grid.Column="1" Text="{Binding Tax1}" Keyboard="Numeric" />
 
-                                        <Label Grid.Row="0" Grid.Column="0" Text="Tax" VerticalOptions="Center" />
-                                        <Entry Grid.Row="0" Grid.Column="1" Text="{Binding Tax1}" Keyboard="Numeric" />
+                                    <Label Grid.Row="1" Grid.Column="0" Text="CPP1" VerticalOptions="Center" />
+                                    <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Cpp1}" Keyboard="Numeric" />
 
-                                        <Label Grid.Row="1" Grid.Column="0" Text="CPP1" VerticalOptions="Center" />
-                                        <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Cpp1}" Keyboard="Numeric" />
+                                    <Label Grid.Row="2" Grid.Column="0" Text="CPP2" VerticalOptions="Center" />
+                                    <Entry Grid.Row="2" Grid.Column="1" Text="{Binding Cpp2}" Keyboard="Numeric" />
 
-                                        <Label Grid.Row="2" Grid.Column="0" Text="CPP2" VerticalOptions="Center" />
-                                        <Entry Grid.Row="2" Grid.Column="1" Text="{Binding Cpp2}" Keyboard="Numeric" />
+                                    <Label Grid.Row="3" Grid.Column="0" Text="EI" VerticalOptions="Center" />
+                                    <Entry Grid.Row="3" Grid.Column="1" Text="{Binding Ei}" Keyboard="Numeric" />
 
-                                        <Label Grid.Row="3" Grid.Column="0" Text="EI" VerticalOptions="Center" />
-                                        <Entry Grid.Row="3" Grid.Column="1" Text="{Binding Ei}" Keyboard="Numeric" />
+                                    <Label Grid.Row="4" Grid.Column="0" Text="Other Deductions" VerticalOptions="Center" />
+                                    <Entry Grid.Row="4" Grid.Column="1" Text="{Binding OtherDeduction}" Keyboard="Numeric" />
 
-                                        <Label Grid.Row="4" Grid.Column="0" Text="Other Deductions" VerticalOptions="Center" />
-                                        <Entry Grid.Row="4" Grid.Column="1" Text="{Binding OtherDeduction}" Keyboard="Numeric" />
-
-                                        <Button
-                                            Grid.Row="0"
-                                            Grid.Column="3"
-                                            Text="Preview Paystub"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PreviewRowPaystubCommand}"
-                                            CommandParameter="{Binding .}" />
+                                    <VerticalStackLayout
+                                        Grid.Row="0"
+                                        Grid.RowSpan="5"
+                                        Grid.Column="3"
+                                        Spacing="8"
+                                        VerticalOptions="Start">
 
                                         <Button
-                                            Grid.Row="1"
-                                            Grid.Column="3"
                                             Text="Save"
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SaveRowCommand}"
                                             CommandParameter="{Binding .}" />
-                                    </Grid>
-                                </VerticalStackLayout>
 
-                                <Border
-                                    Grid.Column="1"
-                                    StrokeThickness="1"
-                                    Padding="8"
-                                    BackgroundColor="White"
-                                    IsVisible="{Binding IsPaystubVisible}">
+                                        <Button
+                                            Text="Preview Paystub"
+                                            Clicked="PreviewPaystubButton_Clicked" />
 
-                                    <ScrollView Orientation="Both">
-                                        <views:PaystubTemplate
-                                            BindingContext="{Binding PreviewPaystub}"
-                                            Scale="0.58"
-                                            HorizontalOptions="Start"
-                                            VerticalOptions="Start" />
-                                    </ScrollView>
-                                </Border>
-                            </Grid>
+                                        <Button
+                                            Text="Print Paystub"
+                                            Clicked="PrintPaystubButton_Clicked" />
+
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </VerticalStackLayout>
                         </Border>
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
