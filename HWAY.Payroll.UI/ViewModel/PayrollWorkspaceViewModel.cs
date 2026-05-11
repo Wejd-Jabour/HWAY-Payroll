@@ -488,7 +488,14 @@ public class PaystubTemplateBindingModel
 
         EmployeeNumber = record.EmployeeNumber;
         EmployeeName = record.EmployeeName;
-        EmployeeAddressLine = "";
+
+        EmployeeAddressLine = record.EmployeeAddress;
+        EmployeeCityProvinceLine = BuildCityProvinceLine(
+            record.EmployeeCity,
+            record.EmployeeProvince,
+            record.EmployeePostalCode);
+
+        EmployeeEmailLine = record.EmployeeEmailAddress;
 
         PayDate = DateTime.Today.ToString("yyyy-MM-dd");
         PayPeriod = "";
@@ -572,6 +579,7 @@ public class PaystubTemplateBindingModel
 
         VacationYtdBalance = FormatMoney(record.VacationYtdBalance);
         Memo = "";
+
     }
 
     public string EmployerGroup { get; }
@@ -583,6 +591,8 @@ public class PaystubTemplateBindingModel
     public string EmployeeNumber { get; }
     public string EmployeeName { get; }
     public string EmployeeAddressLine { get; }
+    public string EmployeeCityProvinceLine { get; }
+    public string EmployeeEmailLine { get; }
 
     public string PayDate { get; }
     public string PayPeriod { get; }
@@ -659,4 +669,13 @@ public class PaystubTemplateBindingModel
 
     private static string FormatMoney(decimal value) => value == 0 ? "" : value.ToString("0.00");
     private static string FormatNumber(decimal value) => value == 0 ? "" : value.ToString("0.##");
+
+    private static string BuildCityProvinceLine(string city, string province, string postalCode)
+    {
+        var cityProvince = string.Join(", ",
+            new[] { city, province }.Where(value => !string.IsNullOrWhiteSpace(value)));
+
+        return string.Join(" ",
+            new[] { cityProvince, postalCode }.Where(value => !string.IsNullOrWhiteSpace(value)));
+    }
 }

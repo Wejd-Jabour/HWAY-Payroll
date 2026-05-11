@@ -37,6 +37,12 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
 
+                EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
+                EmployeeCity = record.Employee != null ? record.Employee.City ?? "" : "",
+                EmployeeProvince = record.Employee != null ? record.Employee.Province ?? "" : "",
+                EmployeePostalCode = record.Employee != null ? record.Employee.PostalCode ?? "" : "",
+                EmployeeEmailAddress = record.Employee != null ? record.Employee.EmailAddress ?? "" : "",
+
                 Salary = record.Salary,
                 Rate = record.Rate,
                 RegularHours = record.RegularHours,
@@ -83,6 +89,12 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
 
+                EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
+                EmployeeCity = record.Employee != null ? record.Employee.City ?? "" : "",
+                EmployeeProvince = record.Employee != null ? record.Employee.Province ?? "" : "",
+                EmployeePostalCode = record.Employee != null ? record.Employee.PostalCode ?? "" : "",
+                EmployeeEmailAddress = record.Employee != null ? record.Employee.EmailAddress ?? "" : "",
+
                 Salary = record.Salary,
                 Rate = record.Rate,
                 RegularHours = record.RegularHours,
@@ -127,6 +139,12 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 EmployeeNumber = record.EmployeeNumber,
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
+
+                EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
+                EmployeeCity = record.Employee != null ? record.Employee.City ?? "" : "",
+                EmployeeProvince = record.Employee != null ? record.Employee.Province ?? "" : "",
+                EmployeePostalCode = record.Employee != null ? record.Employee.PostalCode ?? "" : "",
+                EmployeeEmailAddress = record.Employee != null ? record.Employee.EmailAddress ?? "" : "",
 
                 Salary = record.Salary,
                 Rate = record.Rate,
