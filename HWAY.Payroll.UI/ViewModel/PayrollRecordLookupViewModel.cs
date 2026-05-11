@@ -81,6 +81,27 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         set => SetProperty(ref _regularHours, value);
     }
 
+    private decimal _overtimeHours;
+    public decimal OvertimeHours
+    {
+        get => _overtimeHours;
+        set => SetProperty(ref _overtimeHours, value);
+    }
+
+    private decimal _publicHolidayHours;
+    public decimal PublicHolidayHours
+    {
+        get => _publicHolidayHours;
+        set => SetProperty(ref _publicHolidayHours, value);
+    }
+
+    private decimal _statHolidayHours;
+    public decimal StatHolidayHours
+    {
+        get => _statHolidayHours;
+        set => SetProperty(ref _statHolidayHours, value);
+    }
+
     private decimal _tax1;
     public decimal Tax1
     {
@@ -203,6 +224,9 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         Salary = selectedRecord.Salary;
         Rate = selectedRecord.Rate;
         RegularHours = selectedRecord.RegularHours;
+        OvertimeHours = selectedRecord.OvertimeHours;
+        PublicHolidayHours = selectedRecord.PublicHolidayHours;
+        StatHolidayHours = selectedRecord.StatHolidayHours;
         Gross = selectedRecord.Gross;
         Vacation = selectedRecord.Vacation;
 
@@ -229,6 +253,9 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
             Salary = Salary,
             Rate = Rate,
             RegularHours = RegularHours,
+            OvertimeHours = OvertimeHours,
+            PublicHolidayHours = PublicHolidayHours,
+            StatHolidayHours = StatHolidayHours,
             Gross = Gross,
             Vacation = Vacation,
             Tax1 = Tax1,
@@ -254,8 +281,7 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
     // -------------------------
     private void CalculateAndOpenCra()
     {
-        // Calculate Gross: Salary + (Rate * RegularHours)
-        Gross = Salary + (Rate * RegularHours);
+        Gross = CalculateGross(Salary, Rate, RegularHours, OvertimeHours, PublicHolidayHours, StatHolidayHours);
 
         // Calculate Vacation: 4% of Gross (adjust as needed)
         Vacation = Gross * 0.04m;
@@ -282,6 +308,9 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         Salary = 0;
         Rate = 0;
         RegularHours = 0;
+        OvertimeHours = 0;
+        PublicHolidayHours = 0;
+        StatHolidayHours = 0;
         Gross = 0;
         Vacation = 0;
         Tax1 = 0;
@@ -299,5 +328,21 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         return true;
+    }
+
+    private static decimal CalculateGross(
+        decimal salary,
+        decimal rate,
+        decimal regularHours,
+        decimal overtimeHours,
+        decimal publicHolidayHours,
+        decimal statHolidayHours)
+    {
+        var regularPay = rate * regularHours;
+        var overtimePay = rate * 1.5m * overtimeHours;
+        var publicHolidayPay = rate * publicHolidayHours;
+        var statHolidayPay = rate * 1.5m * statHolidayHours;
+
+        return salary + regularPay + overtimePay + publicHolidayPay + statHolidayPay;
     }
 }
