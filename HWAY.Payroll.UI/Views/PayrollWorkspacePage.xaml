@@ -136,7 +136,7 @@
 
                     <Grid
                         ColumnDefinitions="Auto,160,40,Auto,160"
-                        RowDefinitions="Auto,Auto,Auto"
+                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
                         ColumnSpacing="12"
                         RowSpacing="8">
 
@@ -149,8 +149,17 @@
                         <Label Grid.Row="2" Grid.Column="0" Text="R. Hours" />
                         <Entry Grid.Row="2" Grid.Column="1" Text="{Binding RegularHours}" Keyboard="Numeric" />
 
+                        <Label Grid.Row="3" Grid.Column="0" Text="OT Hours" />
+                        <Entry Grid.Row="3" Grid.Column="1" Text="{Binding OvertimeHours}" Keyboard="Numeric" />
+
+                        <Label Grid.Row="4" Grid.Column="0" Text="Public H." />
+                        <Entry Grid.Row="4" Grid.Column="1" Text="{Binding PublicHolidayHours}" Keyboard="Numeric" />
+
+                        <Label Grid.Row="5" Grid.Column="0" Text="Stat H." />
+                        <Entry Grid.Row="5" Grid.Column="1" Text="{Binding StatHolidayHours}" Keyboard="Numeric" />
+
                         <Border Grid.Row="0"
-                                Grid.RowSpan="3"
+                                Grid.RowSpan="6"
                                 Grid.Column="3"
                                 Grid.ColumnSpan="2"
                                 StrokeThickness="2"

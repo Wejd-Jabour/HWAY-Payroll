@@ -169,17 +169,20 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
             throw new InvalidOperationException($"Payroll record with Id {payrollRecordId} not found.");
 
         var netPay = CalculateNetPay(
-            dto.Salary,
             dto.Gross,
             dto.Vacation,
             dto.Tax1,
             dto.Cpp1,
             dto.Cpp2,
-            dto.Ei);
+            dto.Ei,
+            dto.OtherDeduction);
 
         record.Salary = dto.Salary;
         record.Rate = dto.Rate;
         record.RegularHours = dto.RegularHours;
+        record.OvertimeHours = dto.OvertimeHours;
+        record.PublicHolidayHours = dto.PublicHolidayHours;
+        record.StatHolidayHours = dto.StatHolidayHours;
         record.Gross = dto.Gross;
         record.Vacation = dto.Vacation;
         record.Tax1 = dto.Tax1;
@@ -202,18 +205,16 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
     }
 
     private static decimal CalculateNetPay(
-        decimal salary,
         decimal gross,
         decimal vacation,
         decimal tax1,
         decimal cpp1,
         decimal cpp2,
-        decimal ei)
+        decimal ei,
+        decimal otherDeduction)
     {
-        var totalDeductions = tax1 + cpp1 + cpp2 + ei;
+        var totalDeductions = tax1 + cpp1 + cpp2 + ei + otherDeduction;
 
-        return salary > 0
-            ? salary - totalDeductions
-            : gross + vacation - totalDeductions;
+        return gross + vacation - totalDeductions;
     }
 }

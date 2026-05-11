@@ -173,6 +173,27 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         set => SetProperty(ref _regularHours, value);
     }
 
+    private decimal _overtimeHours;
+    public decimal OvertimeHours
+    {
+        get => _overtimeHours;
+        set => SetProperty(ref _overtimeHours, value);
+    }
+
+    private decimal _publicHolidayHours;
+    public decimal PublicHolidayHours
+    {
+        get => _publicHolidayHours;
+        set => SetProperty(ref _publicHolidayHours, value);
+    }
+
+    private decimal _statHolidayHours;
+    public decimal StatHolidayHours
+    {
+        get => _statHolidayHours;
+        set => SetProperty(ref _statHolidayHours, value);
+    }
+
     private decimal _tax1;
     public decimal Tax1
     {
@@ -293,6 +314,9 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         Salary = selectedRecord.Salary;
         Rate = selectedRecord.Rate;
         RegularHours = selectedRecord.RegularHours;
+        OvertimeHours = selectedRecord.OvertimeHours;
+        PublicHolidayHours = selectedRecord.PublicHolidayHours;
+        StatHolidayHours = selectedRecord.StatHolidayHours;
         Gross = selectedRecord.Gross;
         Vacation = selectedRecord.Vacation;
 
@@ -320,6 +344,9 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
             Salary = Salary,
             Rate = Rate,
             RegularHours = RegularHours,
+            OvertimeHours = OvertimeHours,
+            PublicHolidayHours = PublicHolidayHours,
+            StatHolidayHours = StatHolidayHours,
             Gross = Gross,
             Vacation = Vacation,
             Tax1 = Tax1,
@@ -369,7 +396,7 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
 
     private void CalculateAndOpenCra()
     {
-        Gross = Salary + (Rate * RegularHours);
+        Gross = CalculateGross(Salary, Rate, RegularHours, OvertimeHours, PublicHolidayHours, StatHolidayHours);
         Vacation = Gross * 0.04m;
 
         OpenCraWebsite();
@@ -391,6 +418,9 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
             Salary,
             Rate,
             RegularHours,
+            OvertimeHours,
+            PublicHolidayHours,
+            StatHolidayHours,
             Gross,
             Vacation,
             Tax1,
@@ -413,6 +443,22 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         return true;
     }
+
+    private static decimal CalculateGross(
+        decimal salary,
+        decimal rate,
+        decimal regularHours,
+        decimal overtimeHours,
+        decimal publicHolidayHours,
+        decimal statHolidayHours)
+    {
+        var regularPay = rate * regularHours;
+        var overtimePay = rate * 1.5m * overtimeHours;
+        var publicHolidayPay = rate * publicHolidayHours;
+        var statHolidayPay = rate * 1.5m * statHolidayHours;
+
+        return salary + regularPay + overtimePay + publicHolidayPay + statHolidayPay;
+    }
 }
 
 public class PaystubTemplateBindingModel
@@ -423,6 +469,9 @@ public class PaystubTemplateBindingModel
         decimal salary,
         decimal rate,
         decimal regularHours,
+        decimal overtimeHours,
+        decimal publicHolidayHours,
+        decimal statHolidayHours,
         decimal gross,
         decimal vacation,
         decimal tax1,
@@ -446,28 +495,33 @@ public class PaystubTemplateBindingModel
         PeriodBeginning = "";
         PeriodEnding = "";
 
+        var regularPay = salary + rate * regularHours;
+        var overtimePay = rate * 1.5m * overtimeHours;
+        var publicHolidayPay = rate * publicHolidayHours;
+        var statHolidayPay = rate * 1.5m * statHolidayHours;
+
         RegularPaySalary = FormatMoney(salary);
         RegularPayHours = FormatNumber(regularHours);
         RegularPayRate = FormatMoney(rate);
-        RegularPayCurrent = FormatMoney(gross);
+        RegularPayCurrent = FormatMoney(regularPay);
         RegularPayYtd = FormatMoney(record.GrossYtd);
 
         OvertimePaySalary = "";
-        OvertimePayHours = FormatNumber(record.OvertimeHours);
-        OvertimePayRate = "";
-        OvertimePayCurrent = "";
+        OvertimePayHours = FormatNumber(overtimeHours);
+        OvertimePayRate = FormatMoney(rate * 1.5m);
+        OvertimePayCurrent = FormatMoney(overtimePay);
         OvertimePayYtd = "";
 
         PublicHolidaySalary = "";
-        PublicHolidayHours = FormatNumber(record.PublicHolidayHours);
-        PublicHolidayRate = "";
-        PublicHolidayCurrent = "";
+        PublicHolidayHours = FormatNumber(publicHolidayHours);
+        PublicHolidayRate = FormatMoney(rate);
+        PublicHolidayCurrent = FormatMoney(publicHolidayPay);
         PublicHolidayYtd = "";
 
         StatHolidaySalary = "";
-        StatHolidayHours = FormatNumber(record.StatHolidayHours);
-        StatHolidayRate = "";
-        StatHolidayCurrent = "";
+        StatHolidayHours = FormatNumber(statHolidayHours);
+        StatHolidayRate = FormatMoney(rate * 1.5m);
+        StatHolidayCurrent = FormatMoney(statHolidayPay);
         StatHolidayYtd = "";
 
         VacationPayCurrent = FormatMoney(vacation);
@@ -493,8 +547,8 @@ public class PaystubTemplateBindingModel
 
         var payrollDeductions = tax1 + cpp1 + cpp2 + ei;
         var totalDeductions = payrollDeductions + otherDeduction;
-        var totalPay = salary > 0 ? salary : gross + vacation;
-        var netPay = CalculateNetPay(salary, gross, vacation, tax1, cpp1, cpp2, ei);
+        var totalPay = gross + vacation;
+        var netPay = CalculateNetPay(gross, vacation, tax1, cpp1, cpp2, ei, otherDeduction);
 
         HeaderNetPay = FormatMoney(netPay);
         BenefitNetPay = FormatMoney(netPay);
@@ -590,19 +644,17 @@ public class PaystubTemplateBindingModel
     public string SummaryNetPayYtd { get; }
 
     private static decimal CalculateNetPay(
-        decimal salary,
         decimal gross,
         decimal vacation,
         decimal tax1,
         decimal cpp1,
         decimal cpp2,
-        decimal ei)
+        decimal ei,
+        decimal otherDeduction)
     {
-        var payrollDeductions = tax1 + cpp1 + cpp2 + ei;
+        var totalDeductions = tax1 + cpp1 + cpp2 + ei + otherDeduction;
 
-        return salary > 0
-            ? salary - payrollDeductions
-            : gross + vacation - payrollDeductions;
+        return gross + vacation - totalDeductions;
     }
 
     private static string FormatMoney(decimal value) => value == 0 ? "" : value.ToString("0.00");
