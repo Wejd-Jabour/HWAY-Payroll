@@ -13,17 +13,12 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
     private readonly IEmployerLookupService _employerLookupService;
     private readonly IPayrollRecordLookupService _payrollRecordService;
 
-    private int _currentPayrollRecordId;
     private string _searchText = string.Empty;
     private EmployerLookupDto? _selectedEmployer;
-    private PayrollRecordLookupDto? _selectedPayrollRecord;
     private bool _isDropdownVisible;
     private bool _isBusy;
     private bool _searchResultsFound;
-    private bool _employeeFound;
     private bool _employeeNotFound;
-    private bool _isPaystubVisible;
-    private object? _previewPaystub;
     private bool _suppressSearchTextChanged;
 
     public PayrollWorkspaceViewModel(
@@ -34,26 +29,29 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         _payrollRecordService = payrollRecordService;
 
         Employers = new ObservableCollection<EmployerLookupDto>();
-        SearchResults = new ObservableCollection<PayrollRecordLookupDto>();
+        EmployeePayrollRows = new ObservableCollection<EmployeePayrollRowViewModel>();
 
         SearchCommand = new Command(async () => await SearchEmployersAsync());
         SelectEmployerCommand = new Command<EmployerLookupDto>(async employer => await SelectEmployerAsync(employer));
-        CalculateAndOpenCraCommand = new Command(CalculateAndOpenCra);
-        SaveCommand = new Command(async () => await SaveChanges());
-        PreviewPaystubCommand = new Command(ShowPreviewPaystub);
+
+        CalculateRowCommand = new Command<EmployeePayrollRowViewModel>(CalculateRow);
+        SaveRowCommand = new Command<EmployeePayrollRowViewModel>(async row => await SaveRowAsync(row));
+        PreviewRowPaystubCommand = new Command<EmployeePayrollRowViewModel>(PreviewRowPaystub);
         OpenCraWebsiteCommand = new Command(OpenCraWebsite);
 
         _ = LoadInitialEmployersAsync();
     }
 
     public ObservableCollection<EmployerLookupDto> Employers { get; }
-    public ObservableCollection<PayrollRecordLookupDto> SearchResults { get; }
+
+    public ObservableCollection<EmployeePayrollRowViewModel> EmployeePayrollRows { get; }
 
     public ICommand SearchCommand { get; }
     public ICommand SelectEmployerCommand { get; }
-    public ICommand CalculateAndOpenCraCommand { get; }
-    public ICommand SaveCommand { get; }
-    public ICommand PreviewPaystubCommand { get; }
+
+    public ICommand CalculateRowCommand { get; }
+    public ICommand SaveRowCommand { get; }
+    public ICommand PreviewRowPaystubCommand { get; }
     public ICommand OpenCraWebsiteCommand { get; }
 
     public string SearchText
@@ -77,18 +75,6 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         set => SetProperty(ref _selectedEmployer, value);
     }
 
-    public PayrollRecordLookupDto? SelectedPayrollRecord
-    {
-        get => _selectedPayrollRecord;
-        set
-        {
-            if (SetProperty(ref _selectedPayrollRecord, value))
-            {
-                LoadSelectedPayrollRecord(value);
-            }
-        }
-    }
-
     public bool IsDropdownVisible
     {
         get => _isDropdownVisible;
@@ -107,126 +93,10 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         set => SetProperty(ref _searchResultsFound, value);
     }
 
-    public bool EmployeeFound
-    {
-        get => _employeeFound;
-        set => SetProperty(ref _employeeFound, value);
-    }
-
     public bool EmployeeNotFound
     {
         get => _employeeNotFound;
         set => SetProperty(ref _employeeNotFound, value);
-    }
-
-    public bool IsPaystubVisible
-    {
-        get => _isPaystubVisible;
-        set => SetProperty(ref _isPaystubVisible, value);
-    }
-
-    public object? PreviewPaystub
-    {
-        get => _previewPaystub;
-        set => SetProperty(ref _previewPaystub, value);
-    }
-
-    private string _employeeID = "";
-    public string EmployeeID
-    {
-        get => _employeeID;
-        set => SetProperty(ref _employeeID, value);
-    }
-
-    private decimal _gross;
-    public decimal Gross
-    {
-        get => _gross;
-        set => SetProperty(ref _gross, value);
-    }
-
-    private decimal _vacation;
-    public decimal Vacation
-    {
-        get => _vacation;
-        set => SetProperty(ref _vacation, value);
-    }
-
-    private decimal _salary;
-    public decimal Salary
-    {
-        get => _salary;
-        set => SetProperty(ref _salary, value);
-    }
-
-    private decimal _rate;
-    public decimal Rate
-    {
-        get => _rate;
-        set => SetProperty(ref _rate, value);
-    }
-
-    private decimal _regularHours;
-    public decimal RegularHours
-    {
-        get => _regularHours;
-        set => SetProperty(ref _regularHours, value);
-    }
-
-    private decimal _overtimeHours;
-    public decimal OvertimeHours
-    {
-        get => _overtimeHours;
-        set => SetProperty(ref _overtimeHours, value);
-    }
-
-    private decimal _publicHolidayHours;
-    public decimal PublicHolidayHours
-    {
-        get => _publicHolidayHours;
-        set => SetProperty(ref _publicHolidayHours, value);
-    }
-
-    private decimal _statHolidayHours;
-    public decimal StatHolidayHours
-    {
-        get => _statHolidayHours;
-        set => SetProperty(ref _statHolidayHours, value);
-    }
-
-    private decimal _tax1;
-    public decimal Tax1
-    {
-        get => _tax1;
-        set => SetProperty(ref _tax1, value);
-    }
-
-    private decimal _cpp1;
-    public decimal Cpp1
-    {
-        get => _cpp1;
-        set => SetProperty(ref _cpp1, value);
-    }
-
-    private decimal _cpp2;
-    public decimal Cpp2
-    {
-        get => _cpp2;
-        set => SetProperty(ref _cpp2, value);
-    }
-
-    private decimal _ei;
-    public decimal Ei
-    {
-        get => _ei;
-        set => SetProperty(ref _ei, value);
-    }
-
-    private decimal _otherDeduction;
-    public decimal OtherDeduction
-    {
-        get => _otherDeduction;
-        set => SetProperty(ref _otherDeduction, value);
     }
 
     private async Task LoadInitialEmployersAsync()
@@ -275,10 +145,6 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
             _suppressSearchTextChanged = false;
 
             await LoadEmployeesForSelectedEmployerAsync();
-
-            EmployeeFound = false;
-            IsPaystubVisible = false;
-            PreviewPaystub = null;
         }
         finally
         {
@@ -289,57 +155,219 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
 
     private async Task LoadEmployeesForSelectedEmployerAsync()
     {
-        SearchResults.Clear();
+        EmployeePayrollRows.Clear();
 
         if (SelectedEmployer is null)
+        {
+            SearchResultsFound = false;
+            EmployeeNotFound = true;
             return;
+        }
 
         var results = await _payrollRecordService.SearchPayrollRecordsByRpNumberAsync(SelectedEmployer.RpNumber);
 
-        foreach (var item in results)
-            SearchResults.Add(item);
+        foreach (var record in results)
+        {
+            EmployeePayrollRows.Add(new EmployeePayrollRowViewModel(SelectedEmployer, record));
+        }
 
-        SearchResultsFound = SearchResults.Count > 0;
+        SearchResultsFound = EmployeePayrollRows.Count > 0;
         EmployeeNotFound = !SearchResultsFound;
     }
 
-    private void LoadSelectedPayrollRecord(PayrollRecordLookupDto? selectedRecord)
+    private void CalculateRow(EmployeePayrollRowViewModel? row)
     {
-        if (selectedRecord == null)
+        if (row is null)
             return;
 
-        _currentPayrollRecordId = selectedRecord.Id;
-        EmployeeID = selectedRecord.EmployeeNumber;
-
-        Salary = selectedRecord.Salary;
-        Rate = selectedRecord.Rate;
-        RegularHours = selectedRecord.RegularHours;
-        OvertimeHours = selectedRecord.OvertimeHours;
-        PublicHolidayHours = selectedRecord.PublicHolidayHours;
-        StatHolidayHours = selectedRecord.StatHolidayHours;
-        Gross = selectedRecord.Gross;
-        Vacation = selectedRecord.Vacation;
-
-        Tax1 = selectedRecord.Tax1;
-        Cpp1 = selectedRecord.Cpp1;
-        Cpp2 = selectedRecord.Cpp2;
-        Ei = selectedRecord.Ei;
-        OtherDeduction = selectedRecord.OtherDeduction;
-
-        EmployeeFound = true;
-        EmployeeNotFound = false;
-        IsPaystubVisible = false;
-        PreviewPaystub = null;
+        row.CalculatePayroll();
+        OpenCraWebsite();
     }
 
-    private async Task SaveChanges()
+    private async Task SaveRowAsync(EmployeePayrollRowViewModel? row)
     {
-        if (_currentPayrollRecordId <= 0 || SelectedPayrollRecord is null)
+        if (row is null)
             return;
 
-        var selectedPayrollRecordId = _currentPayrollRecordId;
+        await _payrollRecordService.UpdatePayrollRecordAsync(row.Id, row.ToUpdateDto());
 
-        var dto = new PayrollRecordUpdateDto
+        row.ShowPreviewPaystub();
+    }
+
+    private void PreviewRowPaystub(EmployeePayrollRowViewModel? row)
+    {
+        if (row is null)
+            return;
+
+        row.ShowPreviewPaystub();
+    }
+
+    private void OpenCraWebsite()
+    {
+        Launcher.OpenAsync("https://apps.cra-arc.gc.ca/ebci/rhpd/beta/entry");
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string name = "")
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value))
+            return false;
+
+        field = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        return true;
+    }
+}
+
+public class EmployeePayrollRowViewModel : INotifyPropertyChanged
+{
+    private readonly EmployerLookupDto _employer;
+    private readonly PayrollRecordLookupDto _record;
+
+    public EmployeePayrollRowViewModel(EmployerLookupDto employer, PayrollRecordLookupDto record)
+    {
+        _employer = employer;
+        _record = record;
+
+        Id = record.Id;
+        EmployeeNumber = record.EmployeeNumber;
+        EmployeeName = record.EmployeeName;
+
+        Salary = record.Salary;
+        Rate = record.Rate;
+        RegularHours = record.RegularHours;
+        OvertimeHours = record.OvertimeHours;
+        PublicHolidayHours = record.PublicHolidayHours;
+        StatHolidayHours = record.StatHolidayHours;
+        Gross = record.Gross;
+        Vacation = record.Vacation;
+
+        Tax1 = record.Tax1;
+        Cpp1 = record.Cpp1;
+        Cpp2 = record.Cpp2;
+        Ei = record.Ei;
+        OtherDeduction = record.OtherDeduction;
+    }
+
+    public int Id { get; }
+    public string EmployeeNumber { get; }
+    public string EmployeeName { get; }
+
+    private decimal _salary;
+    public decimal Salary
+    {
+        get => _salary;
+        set => SetProperty(ref _salary, value);
+    }
+
+    private decimal _rate;
+    public decimal Rate
+    {
+        get => _rate;
+        set => SetProperty(ref _rate, value);
+    }
+
+    private decimal _regularHours;
+    public decimal RegularHours
+    {
+        get => _regularHours;
+        set => SetProperty(ref _regularHours, value);
+    }
+
+    private decimal _overtimeHours;
+    public decimal OvertimeHours
+    {
+        get => _overtimeHours;
+        set => SetProperty(ref _overtimeHours, value);
+    }
+
+    private decimal _publicHolidayHours;
+    public decimal PublicHolidayHours
+    {
+        get => _publicHolidayHours;
+        set => SetProperty(ref _publicHolidayHours, value);
+    }
+
+    private decimal _statHolidayHours;
+    public decimal StatHolidayHours
+    {
+        get => _statHolidayHours;
+        set => SetProperty(ref _statHolidayHours, value);
+    }
+
+    private decimal _gross;
+    public decimal Gross
+    {
+        get => _gross;
+        set => SetProperty(ref _gross, value);
+    }
+
+    private decimal _vacation;
+    public decimal Vacation
+    {
+        get => _vacation;
+        set => SetProperty(ref _vacation, value);
+    }
+
+    private decimal _tax1;
+    public decimal Tax1
+    {
+        get => _tax1;
+        set => SetProperty(ref _tax1, value);
+    }
+
+    private decimal _cpp1;
+    public decimal Cpp1
+    {
+        get => _cpp1;
+        set => SetProperty(ref _cpp1, value);
+    }
+
+    private decimal _cpp2;
+    public decimal Cpp2
+    {
+        get => _cpp2;
+        set => SetProperty(ref _cpp2, value);
+    }
+
+    private decimal _ei;
+    public decimal Ei
+    {
+        get => _ei;
+        set => SetProperty(ref _ei, value);
+    }
+
+    private decimal _otherDeduction;
+    public decimal OtherDeduction
+    {
+        get => _otherDeduction;
+        set => SetProperty(ref _otherDeduction, value);
+    }
+
+    private bool _isPaystubVisible;
+    public bool IsPaystubVisible
+    {
+        get => _isPaystubVisible;
+        set => SetProperty(ref _isPaystubVisible, value);
+    }
+
+    private object? _previewPaystub;
+    public object? PreviewPaystub
+    {
+        get => _previewPaystub;
+        set => SetProperty(ref _previewPaystub, value);
+    }
+
+    public void CalculatePayroll()
+    {
+        Gross = CalculateGross(Salary, Rate, RegularHours, OvertimeHours, PublicHolidayHours, StatHolidayHours);
+        Vacation = Gross * 0.04m;
+    }
+
+    public PayrollRecordUpdateDto ToUpdateDto()
+    {
+        return new PayrollRecordUpdateDto
         {
             Salary = Salary,
             Rate = Rate,
@@ -355,66 +383,13 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
             Ei = Ei,
             OtherDeduction = OtherDeduction
         };
-
-        await _payrollRecordService.UpdatePayrollRecordAsync(_currentPayrollRecordId, dto);
-
-        await RefreshEmployeesAndKeepSelectionAsync(selectedPayrollRecordId);
-
-        ShowPreviewPaystub();
     }
 
-    private async Task RefreshEmployeesAndKeepSelectionAsync(int payrollRecordId)
+    public void ShowPreviewPaystub()
     {
-        if (SelectedEmployer is null)
-            return;
-
-        SearchResults.Clear();
-
-        var results = await _payrollRecordService.SearchPayrollRecordsByRpNumberAsync(SelectedEmployer.RpNumber);
-
-        PayrollRecordLookupDto? refreshedSelectedRecord = null;
-
-        foreach (var item in results)
-        {
-            SearchResults.Add(item);
-
-            if (item.Id == payrollRecordId)
-            {
-                refreshedSelectedRecord = item;
-            }
-        }
-
-        SearchResultsFound = SearchResults.Count > 0;
-        EmployeeNotFound = !SearchResultsFound;
-
-        if (refreshedSelectedRecord is not null)
-        {
-            SelectedPayrollRecord = refreshedSelectedRecord;
-            LoadSelectedPayrollRecord(refreshedSelectedRecord);
-        }
-    }
-
-    private void CalculateAndOpenCra()
-    {
-        Gross = CalculateGross(Salary, Rate, RegularHours, OvertimeHours, PublicHolidayHours, StatHolidayHours);
-        Vacation = Gross * 0.04m;
-
-        OpenCraWebsite();
-    }
-
-    private void OpenCraWebsite()
-    {
-        Launcher.OpenAsync("https://apps.cra-arc.gc.ca/ebci/rhpd/beta/entry");
-    }
-
-    private void ShowPreviewPaystub()
-    {
-        if (SelectedEmployer is null || SelectedPayrollRecord is null)
-            return;
-
         PreviewPaystub = new PaystubTemplateBindingModel(
-            SelectedEmployer,
-            SelectedPayrollRecord,
+            _employer,
+            _record,
             Salary,
             Rate,
             RegularHours,
@@ -579,7 +554,6 @@ public class PaystubTemplateBindingModel
 
         VacationYtdBalance = FormatMoney(record.VacationYtdBalance);
         Memo = "";
-
     }
 
     public string EmployerGroup { get; }
@@ -668,6 +642,7 @@ public class PaystubTemplateBindingModel
     }
 
     private static string FormatMoney(decimal value) => value == 0 ? "" : value.ToString("0.00");
+
     private static string FormatNumber(decimal value) => value == 0 ? "" : value.ToString("0.##");
 
     private static string BuildCityProvinceLine(string city, string province, string postalCode)
