@@ -217,7 +217,14 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         record.Cpp2Ytd += dto.Cpp2;
         record.EiYtd += dto.Ei;
         record.OtherDeductionYtd += dto.OtherDeduction;
-        record.VacationYtd += dto.Vacation;
+
+
+        var updatedVacationYtd = record.VacationYtd + dto.Vacation;
+        var updatedVacationYtdUsed = record.VacationYtdUsed + dto.VacationUsed;
+
+        record.VacationYtd = updatedVacationYtd;
+        record.VacationYtdUsed = updatedVacationYtdUsed;
+        record.VacationYtdBalance = updatedVacationYtd - updatedVacationYtdUsed;
 
         await _dbContext.SaveChangesAsync();
     }
