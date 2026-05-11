@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="HWAY.Payroll.UI.Views.PayrollWorkspacePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:HWAY.Payroll.UI.Views"
+    Title="Payroll Workspace">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <!-- Employer RP Lookup - same top flow -->
+            <Label
+                Text="Search by RP number or employer name"
+                FontSize="14" />
+
+            <Entry
+                Placeholder="Enter RP number or employer name"
+                Text="{Binding SearchText}"
+                ReturnCommand="{Binding SearchCommand}" />
+
+            <Border
+                IsVisible="{Binding IsDropdownVisible}"
+                StrokeThickness="1"
+                Padding="0"
+                HeightRequest="220">
+
+                <CollectionView
+                    ItemsSource="{Binding Employers}"
+                    SelectionMode="None">
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="12">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectEmployerCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Grid.GestureRecognizers>
+
+                                <VerticalStackLayout Spacing="2">
+                                    <Label
+                                        Text="{Binding RpNumber}"
+                                        FontAttributes="Bold"
+                                        FontSize="16" />
+
+                                    <Label
+                                        Text="{Binding EmployerName}"
+                                        FontSize="14" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Border>
+
+            <ActivityIndicator
+                IsVisible="{Binding IsBusy}"
+                IsRunning="{Binding IsBusy}" />
+
+            <!-- Selected Employer -->
+            <Border
+                StrokeThickness="1"
+                Padding="16"
+                Margin="0,12,0,0">
+
+                <VerticalStackLayout Spacing="10">
+
+                    <Label
+                        Text="Selected Employer"
+                        FontSize="20"
+                        FontAttributes="Bold" />
+
+                    <Grid ColumnDefinitions="140,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                          RowSpacing="8">
+
+                        <Label Grid.Row="0" Grid.Column="0" Text="RP Number:" FontAttributes="Bold" />
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding SelectedEmployer.RpNumber}" />
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="Employer Name:" FontAttributes="Bold" />
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEmployer.EmployerName}" />
+
+                        <Label Grid.Row="2" Grid.Column="0" Text="Address:" FontAttributes="Bold" />
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding SelectedEmployer.Address}" />
+
+                        <Label Grid.Row="3" Grid.Column="0" Text="City:" FontAttributes="Bold" />
+                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding SelectedEmployer.City}" />
+
+                        <Label Grid.Row="4" Grid.Column="0" Text="Postal Code:" FontAttributes="Bold" />
+                        <Label Grid.Row="4" Grid.Column="1" Text="{Binding SelectedEmployer.PostalCode}" />
+
+                        <Label Grid.Row="5" Grid.Column="0" Text="Group:" FontAttributes="Bold" />
+                        <Label Grid.Row="5" Grid.Column="1" Text="{Binding SelectedEmployer.EmployerGroup}" />
+
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Employees -->
+            <CollectionView
+                ItemsSource="{Binding SearchResults}"
+                SelectionMode="Single"
+                SelectedItem="{Binding SelectedPayrollRecord, Mode=TwoWay}"
+                IsVisible="{Binding SearchResultsFound}"
+                Margin="0,10,0,0">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <VerticalStackLayout Padding="8,3">
+                            <Label Text="{Binding EmployeeName}" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Label
+                Text="No employees found for this employer."
+                TextColor="Red"
+                HorizontalOptions="Center"
+                IsVisible="{Binding EmployeeNotFound}" />
+
+            <!-- Payroll Details -->
+            <Border
+                IsVisible="{Binding EmployeeFound}"
+                Stroke="Red"
+                StrokeThickness="1"
+                Padding="16"
+                Margin="0,15,0,0">
+
+                <VerticalStackLayout Spacing="15">
+
+                    <Label
+                        Text="{Binding SelectedPayrollRecord.EmployeeName}"
+                        FontAttributes="Bold" />
+
+                    <Grid
+                        ColumnDefinitions="Auto,160,40,Auto,160"
+                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                        ColumnSpacing="12"
+                        RowSpacing="8">
+
+                        <Label Grid.Row="0" Grid.Column="0" Text="Salary" />
+                        <Entry Grid.Row="0" Grid.Column="1" Text="{Binding Salary}" Keyboard="Numeric" />
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="Rate" />
+                        <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Rate}" Keyboard="Numeric" />
+
+                        <Label Grid.Row="2" Grid.Column="0" Text="R. Hours" />
+                        <Entry Grid.Row="2" Grid.Column="1" Text="{Binding RegularHours}" Keyboard="Numeric" />
+
+                        <Label Grid.Row="3" Grid.Column="0" Text="OT Hours" />
+                        <Entry Grid.Row="3" Grid.Column="1" Text="{Binding OvertimeHours}" Keyboard="Numeric" />
+
+                        <Label Grid.Row="4" Grid.Column="0" Text="Public H." />
+                        <Entry Grid.Row="4" Grid.Column="1" Text="{Binding PublicHolidayHours}" Keyboard="Numeric" />
+
+                        <Label Grid.Row="5" Grid.Column="0" Text="Stat H." />
+                        <Entry Grid.Row="5" Grid.Column="1" Text="{Binding StatHolidayHours}" Keyboard="Numeric" />
+
+                        <Border Grid.Row="0"
+                                Grid.RowSpan="6"
+                                Grid.Column="3"
+                                Grid.ColumnSpan="2"
+                                StrokeThickness="2"
+                                Padding="15">
+
+                            <Grid ColumnDefinitions="Auto,120"
+                                  RowDefinitions="Auto,Auto"
+                                  RowSpacing="12"
+                                  ColumnSpacing="12">
+
+                                <Label Grid.Row="0" Grid.Column="0" Text="Gross:" FontAttributes="Italic" />
+                                <Entry Grid.Row="0" Grid.Column="1" Text="{Binding Gross}" IsReadOnly="True" Keyboard="Numeric" />
+
+                                <Label Grid.Row="1" Grid.Column="0" Text="Vacation:" FontAttributes="Italic" />
+                                <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Vacation}" IsReadOnly="True" Keyboard="Numeric" />
+
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <Button
+                        Text="Calculate Payroll &amp; Open CRA Tax Calculator"
+                        Command="{Binding CalculateAndOpenCraCommand}"
+                        HorizontalOptions="Start"
+                        WidthRequest="330" />
+
+                    <Grid
+                        ColumnDefinitions="Auto,160,80,160"
+                        RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                        ColumnSpacing="12"
+                        RowSpacing="8">
+
+                        <Label Grid.Row="0" Grid.Column="0" Text="Tax" />
+                        <Entry Grid.Row="0" Grid.Column="1" Text="{Binding Tax1}" Keyboard="Numeric" />
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="CPP1" />
+                        <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Cpp1}" Keyboard="Numeric" />
+
+                        <Label Grid.Row="2" Grid.Column="0" Text="CPP2" />
+                        <Entry Grid.Row="2" Grid.Column="1" Text="{Binding Cpp2}" Keyboard="Numeric" />
+
+                        <Label Grid.Row="3" Grid.Column="0" Text="EI" />
+                        <Entry Grid.Row="3" Grid.Column="1" Text="{Binding Ei}" Keyboard="Numeric" />
+
+                        <Label Grid.Row="4" Grid.Column="0" Text="Other Deductions" />
+                        <Entry Grid.Row="4" Grid.Column="1" Text="{Binding OtherDeduction}" Keyboard="Numeric" />
+
+                        <Button
+                            Grid.Row="1"
+                            Grid.Column="3"
+                            Text="Save"
+                            Command="{Binding SaveCommand}" />
+                    </Grid>
+
+                </VerticalStackLayout>
+            </Border>
+
+            <Grid
+                IsVisible="{Binding EmployeeFound}"
+                ColumnDefinitions="*,*"
+                ColumnSpacing="12"
+                HorizontalOptions="Center">
+
+                            <Button
+                    Grid.Column="0"
+                    Text="Preview Paystub"
+                    Command="{Binding PreviewPaystubCommand}"
+                    WidthRequest="220" />
+
+                            <Button
+                    Grid.Column="1"
+                    Text="Print PDF"
+                    Clicked="PrintPaystubButton_Clicked"
+                    WidthRequest="220" />
+
+            </Grid>
+
+            <!-- Paystub Preview Below -->
+            <ScrollView
+                Orientation="Both"
+                IsVisible="{Binding IsPaystubVisible}"
+                BackgroundColor="White">
+
+                <views:PaystubTemplate
+                    x:Name="PaystubPreviewView"
+                    BindingContext="{Binding PreviewPaystub}" />
+
+            </ScrollView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

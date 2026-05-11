@@ -1,0 +1,158 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="HWAY.Payroll.UI.Views.PayrollRecordPage"
+             Title="Employee Payroll Lookup">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="25" Spacing="18">
+
+            <!-- Page Header -->
+            <Label Text="Employee Payroll Lookup"
+                   FontSize="26"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center" />
+
+            <!-- Employer Search Section -->
+            <Frame BorderColor="LightGray"
+                   CornerRadius="12"
+                   Padding="15">
+
+                <VerticalStackLayout Spacing="12">
+
+                    <Label Text="Enter RP Number"
+                           FontAttributes="Bold" />
+
+                    <Entry Placeholder="RP Number"
+                           Keyboard="Text"
+                           Text="{Binding RpNumber}" />
+
+                    <Button Text="Search Employees"
+                            Command="{Binding SearchByRpNumberCommand}"
+                            BackgroundColor="#512BD4"
+                            TextColor="White"
+                            CornerRadius="10" />
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <CollectionView ItemsSource="{Binding SearchResults}"
+                            SelectionMode="Single"
+                            SelectedItem="{Binding SelectedPayrollRecord}"
+                            IsVisible="{Binding SearchResultsFound}"
+                            Margin="0,10,0,0">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame BorderColor="LightGray"
+                               CornerRadius="10"
+                               Padding="12"
+                               Margin="0,0,0,10">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{Binding EmployeeName}"
+                                       FontAttributes="Bold" />
+                                <Label Text="{Binding EmployeeNumber}" />
+                                <Label Text="{Binding RpNumber}" />
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Label Text="No employees found for that RP number."
+                   TextColor="Red"
+                   HorizontalOptions="Center"
+                   IsVisible="{Binding EmployeeNotFound}" />
+
+            <!-- Employee Details Section -->
+            <VerticalStackLayout IsVisible="{Binding EmployeeFound}"
+                                 Spacing="15">
+
+                <Label Text="Payroll Details"
+                       FontSize="22"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center" />
+
+                <!-- Salary -->
+                <Label Text="Salary" />
+                <Entry Text="{Binding Salary}"
+                       Keyboard="Numeric" />
+
+                <!-- Rate -->
+                <Label Text="Rate" />
+                <Entry Text="{Binding Rate}"
+                       Keyboard="Numeric" />
+
+                <!-- RegularHours -->
+                <Label Text="Regular Hours" />
+                <Entry Text="{Binding RegularHours}"
+                       Keyboard="Numeric" />
+
+                <Label Text="Overtime Hours" />
+                <Entry Text="{Binding OvertimeHours}"
+                       Keyboard="Numeric" />
+
+                <Label Text="Public Holiday Hours" />
+                <Entry Text="{Binding PublicHolidayHours}"
+                       Keyboard="Numeric" />
+
+                <Label Text="Statutory Holiday Hours" />
+                <Entry Text="{Binding StatHolidayHours}"
+                       Keyboard="Numeric" />
+
+                <!-- Calculate Button -->
+                <Button Text="Calculate Payroll &amp; Open CRA"
+                        Command="{Binding CalculateAndOpenCraCommand}"
+                        BackgroundColor="Orange"
+                        TextColor="White"
+                        CornerRadius="10" />
+
+                <!-- Gross -->
+                <Label Text="Gross" />
+                <Entry Text="{Binding Gross}"
+                       Keyboard="Numeric"
+                       IsReadOnly="True" />
+
+                <!-- Vacation -->
+                <Label Text="Vacation" />
+                <Entry Text="{Binding Vacation}"
+                       Keyboard="Numeric"
+                       IsReadOnly="True" />
+
+                <!-- Tax / Deductions -->
+                <Label Text="Tax1" />
+                <Entry Text="{Binding Tax1}"
+                       Keyboard="Numeric" />
+
+                <Label Text="CPP1" />
+                <Entry Text="{Binding Cpp1}"
+                       Keyboard="Numeric" />
+
+                <Label Text="CPP2" />
+                <Entry Text="{Binding Cpp2}"
+                       Keyboard="Numeric" />
+
+                <Label Text="EI" />
+                <Entry Text="{Binding Ei}"
+                       Keyboard="Numeric" />
+
+                <Label Text="Other Deduction" />
+                <Entry Text="{Binding OtherDeduction}"
+                       Keyboard="Numeric" />
+
+                <!-- Save Button -->
+                <Button Text="Save Changes"
+                        Command="{Binding SaveCommand}"
+                        BackgroundColor="Green"
+                        TextColor="White"
+                        CornerRadius="10" />
+
+            </VerticalStackLayout>
+
+            <!-- Employee Not Found -->
+            <Label Text="Employee not found."
+                   TextColor="Red"
+                   HorizontalOptions="Center"
+                   IsVisible="{Binding EmployeeNotFound}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

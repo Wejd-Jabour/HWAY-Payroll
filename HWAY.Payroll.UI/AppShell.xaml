@@ -4,11 +4,24 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:HWAY.Payroll.UI"
+    xmlns:views="clr-namespace:HWAY.Payroll.UI.Views"
     Title="HWAY.Payroll.UI">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <TabBar>
+        <ShellContent
+        Title="Payroll Workspace"
+        ContentTemplate="{DataTemplate views:PayrollWorkspacePage}"
+        Route="PayrollWorkspacePage" />
+
+        <ShellContent
+        Title="Employer Lookup"
+        ContentTemplate="{DataTemplate views:EmployerLookupPage}"
+        Route="EmployerLookupPage" />
+
+        <ShellContent
+        Title="Payroll Record"
+        ContentTemplate="{DataTemplate views:PayrollRecordPage}"
+        Route="PayrollRecordPage" />
+    </TabBar>
 
 </Shell>

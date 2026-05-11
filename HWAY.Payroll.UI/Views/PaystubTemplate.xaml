@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="HWAY.Payroll.UI.Views.PaystubTemplate"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <ContentView.Resources>
+        <Color x:Key="HeaderTeal">#348C9B</Color>
+        <Color x:Key="Black">#000000</Color>
+
+        <Style x:Key="Text" TargetType="Label">
+            <Setter Property="FontFamily" Value="Arial" />
+            <Setter Property="FontSize" Value="8" />
+            <Setter Property="TextColor" Value="Black" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="LineBreakMode" Value="NoWrap" />
+            <Setter Property="VerticalTextAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="BoldText" TargetType="Label" BasedOn="{StaticResource Text}">
+            <Setter Property="FontAttributes" Value="Bold" />
+        </Style>
+
+        <Style x:Key="TitleText" TargetType="Label" BasedOn="{StaticResource Text}">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="HorizontalTextAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="RightText" TargetType="Label" BasedOn="{StaticResource Text}">
+            <Setter Property="HorizontalTextAlignment" Value="End" />
+        </Style>
+
+        <Style x:Key="RightBoldText" TargetType="Label" BasedOn="{StaticResource BoldText}">
+            <Setter Property="HorizontalTextAlignment" Value="End" />
+        </Style>
+
+        <Style x:Key="CenterText" TargetType="Label" BasedOn="{StaticResource Text}">
+            <Setter Property="HorizontalTextAlignment" Value="Center" />
+            <Setter Property="VerticalTextAlignment" Value="Center" />
+        </Style>
+    </ContentView.Resources>
+
+    <AbsoluteLayout
+        BackgroundColor="White"
+        HeightRequest="1100"
+        WidthRequest="850">
+
+        <!-- Logo and title -->
+        <Image
+            Source="hway_logo.png"
+            Aspect="AspectFit"
+            AbsoluteLayout.LayoutBounds="100,112,95,95" />
+
+        <Label
+            Text="EARNING STATEMENT"
+            Style="{StaticResource TitleText}"
+            AbsoluteLayout.LayoutBounds="500,116,200,22" />
+
+        <!-- Top teal bar and employer group -->
+        <BoxView
+            Color="{StaticResource HeaderTeal}"
+            AbsoluteLayout.LayoutBounds="35,201,780,27" />
+
+        <Label
+            Text="{Binding EmployerGroup}"
+            Style="{StaticResource CenterText}"
+            AbsoluteLayout.LayoutBounds="732,201,70,27" />
+
+        <!-- Employer / employee header section -->
+        <Label Text="EMPLOYER" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="65,241,140,14" />
+        <Label Text="{Binding EmployerName}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,253,250,14" />
+        <Label Text="{Binding Address}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,264,270,14" />
+        <Label Text="{Binding City}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,275,220,14" />
+        <Label Text="{Binding PostalCode}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,286,120,14" />
+
+        <Label Text="EMPLOYEE NO" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="440,241,100,14" />
+        <Label Text="{Binding EmployeeNumber}" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="627,241,100,14" />
+        <Label Text="{Binding EmployeeName}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,319,250,14" />
+        <Label Text="{Binding EmployeeAddressLine}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,330,330,14" />
+
+        <Label Text="EMPLOYEE" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="65,307,140,14" />
+        <Label Text="{Binding EmployeeName}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,319,250,14" />
+        <Label Text="{Binding EmployeeAddressLine}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,330,330,14" />
+
+        <Label Text="PAY DATE:" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="635,307,70,14" />
+        <Label Text="{Binding PayDate}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="698,307,100,14" />
+
+        <Label Text="NET PAY  :" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="635,318,70,14" />
+        <Label
+            Text="{Binding HeaderNetPay, StringFormat='${0}'}"
+            Style="{StaticResource BoldText}"
+            HorizontalTextAlignment="Start"
+            AbsoluteLayout.LayoutBounds="700,318,90,14" />
+
+        <!-- Second teal bar -->
+        <BoxView
+            Color="{StaticResource HeaderTeal}"
+            AbsoluteLayout.LayoutBounds="35,374,780,27" />
+
+        <!-- Pay period section -->
+        <Label Text="PAY PERIOD" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="610,425,90,14" />
+        <Label Text="{Binding PayPeriod}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="706,425,70,14" />
+
+        <Label Text="Period Beginning" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="610,436,100,14" />
+        <Label Text="{Binding PeriodBeginning}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="698,436,100,14" />
+
+        <Label Text="Period Ending" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="610,447,100,14" />
+        <Label Text="{Binding PeriodEnding}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="698,447,100,14" />
+
+        <!-- Benefits box -->
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="62,559,754,1" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="62,559,1,43" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="815,559,1,43" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="62,602,754,1" />
+
+        <Label Text="BENEFITS" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="65,562,100,14" />
+        <Label Text="Balance" Style="{StaticResource RightBoldText}" AbsoluteLayout.LayoutBounds="438,562,60,14" />
+        <Label Text="NET PAY:" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="618,562,80,14" />
+
+        <Label
+            Text="{Binding BenefitNetPay, StringFormat='${0}'}"
+            Style="{StaticResource RightText}"
+            AbsoluteLayout.LayoutBounds="732,562,79,14" />
+
+        <Label Text="Vacation" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,583,100,14" />
+        <Label Text="{Binding VacationYtdBalance}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="438,583,60,14" />
+
+        <!-- Memo -->
+        <Label Text="MEMO:" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="65,631,80,14" />
+        <Label Text="{Binding Memo}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="115,631,650,14" />
+
+        <!-- Separator -->
+        <BoxView Color="#2A5EA8" AbsoluteLayout.LayoutBounds="35,680,750,1" />
+
+        <!-- Pay table outer border -->
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="62,702,437,1" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="62,702,1,104" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="499,702,1,104" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="62,806,438,1" />
+
+        <!-- Pay table internal lines -->
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="62,714,437,1" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="152,714,1,77" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="357,791,1,15" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="62,791,437,1" />
+
+        <!-- Pay table headers -->
+        <Label Text="PAY" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="65,703,80,12" />
+        <Label Text="Salary" Style="{StaticResource RightBoldText}" AbsoluteLayout.LayoutBounds="178,703,70,12" />
+        <Label Text="Hours" Style="{StaticResource RightBoldText}" AbsoluteLayout.LayoutBounds="250,703,64,12" />
+        <Label Text="Rate" Style="{StaticResource RightBoldText}" AbsoluteLayout.LayoutBounds="316,703,67,12" />
+        <Label Text="Current" Style="{StaticResource RightBoldText}" AbsoluteLayout.LayoutBounds="385,703,62,12" />
+        <Label Text="YTD" Style="{StaticResource RightBoldText}" AbsoluteLayout.LayoutBounds="449,703,48,12" />
+
+        <!-- Pay table rows -->
+        <Label Text="Regular Pay" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,718,100,12" />
+        <Label Text="{Binding RegularPaySalary}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="178,718,70,12" />
+        <Label Text="{Binding RegularPayHours}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="250,718,64,12" />
+        <Label Text="{Binding RegularPayRate}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="316,718,67,12" />
+        <Label Text="{Binding RegularPayCurrent}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="385,718,62,12" />
+        <Label Text="{Binding RegularPayYtd}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="449,718,48,12" />
+
+        <Label Text="OV.T Pay" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,733,100,12" />
+        <Label Text="{Binding OvertimePaySalary}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="178,733,70,12" />
+        <Label Text="{Binding OvertimePayHours}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="250,733,64,12" />
+        <Label Text="{Binding OvertimePayRate}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="316,733,67,12" />
+        <Label Text="{Binding OvertimePayCurrent}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="385,733,62,12" />
+        <Label Text="{Binding OvertimePayYtd}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="449,733,48,12" />
+
+        <Label Text="Public" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,748,100,12" />
+        <Label Text="{Binding PublicHolidaySalary}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="178,748,70,12" />
+        <Label Text="{Binding PublicHolidayHours}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="250,748,64,12" />
+        <Label Text="{Binding PublicHolidayRate}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="316,748,67,12" />
+        <Label Text="{Binding PublicHolidayCurrent}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="385,748,62,12" />
+        <Label Text="{Binding PublicHolidayYtd}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="449,748,48,12" />
+
+        <Label Text="Statutory Holiday" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,763,100,12" />
+        <Label Text="{Binding StatHolidaySalary}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="178,763,70,12" />
+        <Label Text="{Binding StatHolidayHours}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="250,763,64,12" />
+        <Label Text="{Binding StatHolidayRate}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="316,763,67,12" />
+        <Label Text="{Binding StatHolidayCurrent}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="385,763,62,12" />
+        <Label Text="{Binding StatHolidayYtd}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="449,763,48,12" />
+
+        <Label Text="Vacation Pay" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,778,100,12" />
+        <Label Text="{Binding VacationPayCurrent}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="385,778,62,12" />
+        <Label Text="{Binding VacationPayYtd}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="449,778,48,12" />
+
+        <Label Text="Total Pay" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="65,793,100,12" />
+        <Label Text="{Binding TotalPayCurrent}" Style="{StaticResource RightBoldText}" AbsoluteLayout.LayoutBounds="385,793,62,12" />
+        <Label Text="{Binding TotalPayYtd}" Style="{StaticResource RightBoldText}" AbsoluteLayout.LayoutBounds="449,793,48,12" />
+
+        <!-- Taxes table -->
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="602,702,213,1" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="602,702,1,92" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="815,702,1,92" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="602,794,214,1" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="602,714,213,1" />
+
+        <Label Text="Taxes" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="605,703,80,12" />
+        <Label Text="Current" Style="{StaticResource RightBoldText}" AbsoluteLayout.LayoutBounds="706,703,45,12" />
+        <Label Text="YTD" Style="{StaticResource RightBoldText}" AbsoluteLayout.LayoutBounds="770,703,40,12" />
+
+        <Label Text="Tax" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="605,718,80,12" />
+        <Label Text="{Binding TaxCurrent}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="706,718,45,12" />
+        <Label Text="{Binding TaxYtd}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="770,718,40,12" />
+
+        <Label Text="CPP1" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="605,731,80,12" />
+        <Label Text="{Binding Cpp1Current}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="706,731,45,12" />
+        <Label Text="{Binding Cpp1Ytd}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="770,731,40,12" />
+
+        <Label Text="CPP2" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="605,744,80,12" />
+        <Label Text="{Binding Cpp2Current}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="706,744,45,12" />
+        <Label Text="{Binding Cpp2Ytd}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="770,744,40,12" />
+
+        <Label Text="EI" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="605,757,80,12" />
+        <Label Text="{Binding EiCurrent}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="706,757,45,12" />
+        <Label Text="{Binding EiYtd}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="770,757,40,12" />
+
+        <Label Text="Other Deduction" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="605,770,100,12" />
+        <Label Text="{Binding OtherDeductionCurrent}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="706,770,45,12" />
+        <Label Text="{Binding OtherDeductionYtd}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="770,770,40,12" />
+
+        <!-- Summary table -->
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="62,839,370,1" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="62,839,1,74" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="432,839,1,74" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="62,913,371,1" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="62,851,370,1" />
+        <BoxView Color="Black" AbsoluteLayout.LayoutBounds="62,896,370,1" />
+
+        <Label Text="SUMMARY" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="65,840,100,12" />
+        <Label Text="Current" Style="{StaticResource RightBoldText}" AbsoluteLayout.LayoutBounds="235,840,65,12" />
+        <Label Text="YTD" Style="{StaticResource RightBoldText}" AbsoluteLayout.LayoutBounds="367,840,62,12" />
+
+        <Label Text="Total Pay" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,856,100,12" />
+        <Label Text="{Binding SummaryTotalPayCurrent}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="235,856,65,12" />
+        <Label Text="{Binding SummaryTotalPayYtd}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="367,856,62,12" />
+
+        <Label Text="Taxes" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,871,100,12" />
+        <Label Text="{Binding SummaryTaxesCurrent}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="235,871,65,12" />
+        <Label Text="{Binding SummaryTaxesYtd}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="367,871,62,12" />
+
+        <Label Text="Deductions" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,886,100,12" />
+        <Label Text="{Binding SummaryDeductionsCurrent}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="235,886,65,12" />
+        <Label Text="{Binding SummaryDeductionsYtd}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="367,886,62,12" />
+
+        <Label Text="Net Pay" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="65,901,100,12" />
+        <Label
+            Text="{Binding SummaryNetPayCurrent, StringFormat='${0}'}"
+            Style="{StaticResource RightBoldText}"
+            AbsoluteLayout.LayoutBounds="235,901,65,12" />
+        <Label Text="{Binding SummaryNetPayYtd}" Style="{StaticResource RightBoldText}" AbsoluteLayout.LayoutBounds="367,901,62,12" />
+
+        <!-- Bottom teal bar -->
+        <BoxView
+            Color="{StaticResource HeaderTeal}"
+            AbsoluteLayout.LayoutBounds="35,998,780,27" />
+    </AbsoluteLayout>
+</ContentView>
