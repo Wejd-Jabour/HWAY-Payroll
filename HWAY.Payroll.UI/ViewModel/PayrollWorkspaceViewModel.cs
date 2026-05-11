@@ -243,6 +243,10 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
         Gross = record.Gross;
         Vacation = record.Vacation;
 
+        VacationYtd = record.VacationYtd;
+        VacationYtdUsed = record.VacationYtdUsed;
+        VacationYtdBalance = record.VacationYtdBalance;
+
         Tax1 = record.Tax1;
         Cpp1 = record.Cpp1;
         Cpp2 = record.Cpp2;
@@ -359,10 +363,55 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
         set => SetProperty(ref _previewPaystub, value);
     }
 
+    private decimal _vacationUsed;
+    public decimal VacationUsed
+    {
+        get => _vacationUsed;
+        set
+        {
+            if (SetProperty(ref _vacationUsed, value))
+            {
+                RefreshVacationTotalsPreview();
+            }
+        }
+    }
+
+    private decimal _vacationYtd;
+    public decimal VacationYtd
+    {
+        get => _vacationYtd;
+        set => SetProperty(ref _vacationYtd, value);
+    }
+
+    private decimal _vacationYtdUsed;
+    public decimal VacationYtdUsed
+    {
+        get => _vacationYtdUsed;
+        set => SetProperty(ref _vacationYtdUsed, value);
+    }
+
+    private decimal _vacationYtdBalance;
+    public decimal VacationYtdBalance
+    {
+        get => _vacationYtdBalance;
+        set => SetProperty(ref _vacationYtdBalance, value);
+    }
+
     public void CalculatePayroll()
     {
         Gross = CalculateGross(Salary, Rate, RegularHours, OvertimeHours, PublicHolidayHours, StatHolidayHours);
         Vacation = Gross * 0.04m;
+
+        VacationYtd = _record.VacationYtd + Vacation;
+        VacationYtdUsed = _record.VacationYtdUsed + VacationUsed;
+        VacationYtdBalance = VacationYtd - VacationYtdUsed;
+    }
+
+    private void RefreshVacationTotalsPreview()
+    {
+        VacationYtd = _record.VacationYtd + Vacation;
+        VacationYtdUsed = _record.VacationYtdUsed + VacationUsed;
+        VacationYtdBalance = VacationYtd - VacationYtdUsed;
     }
 
     public PayrollRecordUpdateDto ToUpdateDto()
@@ -377,6 +426,7 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
             StatHolidayHours = StatHolidayHours,
             Gross = Gross,
             Vacation = Vacation,
+            VacationUsed = VacationUsed,
             Tax1 = Tax1,
             Cpp1 = Cpp1,
             Cpp2 = Cpp2,

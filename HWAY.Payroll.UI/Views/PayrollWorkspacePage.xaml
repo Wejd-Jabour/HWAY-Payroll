@@ -124,7 +124,7 @@
                                     FontSize="13" />
 
                                 <Grid
-                                    ColumnDefinitions="Auto,160,40,Auto,160"
+                                    ColumnDefinitions="Auto,160,40,Auto,160,40,Auto,160"
                                     RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
                                     ColumnSpacing="12"
                                     RowSpacing="8">
@@ -166,6 +166,73 @@
 
                                             <Label Grid.Row="1" Grid.Column="0" Text="Vacation:" FontAttributes="Italic" VerticalOptions="Center" />
                                             <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Vacation}" IsReadOnly="True" Keyboard="Numeric" />
+                                        </Grid>
+                                    </Border>
+                                    <Border
+                                        Grid.Row="0"
+                                        Grid.RowSpan="6"
+                                        Grid.Column="6"
+                                        Grid.ColumnSpan="2"
+                                        StrokeThickness="2"
+                                        Padding="15">
+
+                                        <Grid
+                                            ColumnDefinitions="Auto,120"
+                                            RowDefinitions="Auto,Auto,Auto,Auto"
+                                            RowSpacing="12"
+                                            ColumnSpacing="12">
+
+                                            <Label
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Text="Vacation Used:"
+                                                FontAttributes="Italic"
+                                                VerticalOptions="Center" />
+
+                                            <Entry
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Text="{Binding VacationUsed}"
+                                                Keyboard="Numeric" />
+
+                                            <Label
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Text="Vacation YTD:"
+                                                FontAttributes="Italic"
+                                                VerticalOptions="Center" />
+
+                                            <Label
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Text="{Binding VacationYtd, StringFormat='{0:0.00}'}"
+                                                VerticalOptions="Center" />
+
+                                            <Label
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Text="Vacation Balance:"
+                                                FontAttributes="Italic"
+                                                VerticalOptions="Center" />
+
+                                            <Label
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Text="{Binding VacationYtdBalance, StringFormat='{0:0.00}'}"
+                                                VerticalOptions="Center" />
+
+                                            <Label
+                                                Grid.Row="3"
+                                                Grid.Column="0"
+                                                Text="Vacation Used YTD:"
+                                                FontAttributes="Italic"
+                                                VerticalOptions="Center" />
+
+                                            <Label
+                                                Grid.Row="3"
+                                                Grid.Column="1"
+                                                Text="{Binding VacationYtdUsed, StringFormat='{0:0.00}'}"
+                                                VerticalOptions="Center" />
                                         </Grid>
                                     </Border>
                                 </Grid>
