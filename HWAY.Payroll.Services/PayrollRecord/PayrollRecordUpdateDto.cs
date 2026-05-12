@@ -5,8 +5,13 @@ public class PayrollRecordUpdateDto
     public decimal Salary { get; set; }
     public decimal Rate { get; set; }
     public decimal RegularHours { get; set; }
+    public DateTime? HireDate { get; set; }
+    public decimal OvertimeHours { get; set; }
+    public decimal PublicHolidayHours { get; set; }
+    public decimal StatHolidayHours { get; set; }
     public decimal Gross { get; set; }
     public decimal Vacation { get; set; }
+    public decimal VacationUsed { get; set; }
     public decimal Tax1 { get; set; }
     public decimal Cpp1 { get; set; }
     public decimal Cpp2 { get; set; }

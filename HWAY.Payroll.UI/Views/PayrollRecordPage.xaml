@@ -86,6 +86,21 @@
                 <Entry Text="{Binding RegularHours}"
                        Keyboard="Numeric" />
 
+                <!-- Hire Date -->
+                <Label Text="Hire Date" /> 
+                <DatePicker Date="{Binding HireDateDisplay}" />
+                <Label Text="Overtime Hours" />
+                <Entry Text="{Binding OvertimeHours}"
+                       Keyboard="Numeric" />
+
+                <Label Text="Public Holiday Hours" />
+                <Entry Text="{Binding PublicHolidayHours}"
+                       Keyboard="Numeric" />
+
+                <Label Text="Statutory Holiday Hours" />
+                <Entry Text="{Binding StatHolidayHours}"
+                       Keyboard="Numeric" />
+
                 <!-- Calculate Button -->
                 <Button Text="Calculate Payroll &amp; Open CRA"
                         Command="{Binding CalculateAndOpenCraCommand}"
