@@ -397,10 +397,44 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
         set => SetProperty(ref _vacationYtdBalance, value);
     }
 
+    private DateTime? _hireDate;
+    public DateTime? HireDate
+    {
+        get => _hireDate;
+        set
+        {
+            if (SetProperty(ref _hireDate, value))
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HireDateDisplay)));
+            }
+        }
+    }
+
+    public DateTime HireDateDisplay
+    {
+        get => HireDate ?? DateTime.Today;
+        set => HireDate = value;
+    }
+
     public void CalculatePayroll()
     {
         Gross = CalculateGross(Salary, Rate, RegularHours, OvertimeHours, PublicHolidayHours, StatHolidayHours);
-        Vacation = Gross * 0.04m;
+        
+        decimal vacationRate = 0.04m;
+        
+        // Check if employee worked with company for 5+ years to apply 6% vacation rate
+        if (HireDate.HasValue)
+        {
+            var yearsWorked = DateTime.Today.Year - HireDate.Value.Year;
+
+            if (HireDate.Value.Date > DateTime.Today.AddYears(-yearsWorked))
+                yearsWorked--;
+
+            if (yearsWorked >= 5)
+                vacationRate = 0.06m;
+        }
+
+        Vacation = Gross * vacationRate;
 
         VacationYtd = _record.VacationYtd + Vacation;
         VacationYtdUsed = _record.VacationYtdUsed + VacationUsed;
@@ -431,7 +465,8 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
             Cpp1 = Cpp1,
             Cpp2 = Cpp2,
             Ei = Ei,
-            OtherDeduction = OtherDeduction
+            OtherDeduction = OtherDeduction,
+            HireDate = HireDate,
         };
     }
 

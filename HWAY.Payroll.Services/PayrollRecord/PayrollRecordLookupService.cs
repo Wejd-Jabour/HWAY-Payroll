@@ -69,7 +69,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 VacationYtd = record.VacationYtd,
                 VacationYtdUsed = record.VacationYtdUsed,
                 VacationYtdBalance = record.VacationYtdBalance,
-                TotalPd7 = record.TotalPd7
+                TotalPd7 = record.TotalPd7,
+                HireDate = record.HireDate
             })
             .ToListAsync();
     }
@@ -121,7 +122,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 VacationYtd = record.VacationYtd,
                 VacationYtdUsed = record.VacationYtdUsed,
                 VacationYtdBalance = record.VacationYtdBalance,
-                TotalPd7 = record.TotalPd7
+                TotalPd7 = record.TotalPd7,
+                HireDate = record.HireDate
             })
             .ToListAsync();
     }
@@ -172,7 +174,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 VacationYtd = record.VacationYtd,
                 VacationYtdUsed = record.VacationYtdUsed,
                 VacationYtdBalance = record.VacationYtdBalance,
-                TotalPd7 = record.TotalPd7
+                TotalPd7 = record.TotalPd7,
+                HireDate = record.HireDate
             })
             .FirstOrDefaultAsync();
     }
@@ -209,6 +212,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         record.Ei = dto.Ei;
         record.OtherDeduction = dto.OtherDeduction;
         record.NetPay = netPay;
+        record.HireDate = dto.HireDate;
 
         record.GrossYtd += dto.Gross;
         record.NetYtd += netPay;

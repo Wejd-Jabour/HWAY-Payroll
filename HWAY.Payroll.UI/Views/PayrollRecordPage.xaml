@@ -98,6 +98,9 @@
                 <Entry Text="{Binding StatHolidayHours}"
                        Keyboard="Numeric" />
 
+              <Label Text="Hire Date" /> 
+              <DatePicker Date="{Binding HireDateDisplay}" />
+
                 <!-- Calculate Button -->
                 <Button Text="Calculate Payroll &amp; Open CRA"
                         Command="{Binding CalculateAndOpenCraCommand}"

@@ -16,4 +16,5 @@ public class PayrollRecordUpdateDto
     public decimal Cpp2 { get; set; }
     public decimal Ei { get; set; }
     public decimal OtherDeduction { get; set; }
+    public DateTime? HireDate { get; set; }
 }
