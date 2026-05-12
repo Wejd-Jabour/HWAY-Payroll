@@ -37,6 +37,12 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
 
+                EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
+                EmployeeCity = record.Employee != null ? record.Employee.City ?? "" : "",
+                EmployeeProvince = record.Employee != null ? record.Employee.Province ?? "" : "",
+                EmployeePostalCode = record.Employee != null ? record.Employee.PostalCode ?? "" : "",
+                EmployeeEmailAddress = record.Employee != null ? record.Employee.EmailAddress ?? "" : "",
+
                 Salary = record.Salary,
                 Rate = record.Rate,
                 RegularHours = record.RegularHours,
@@ -83,6 +89,12 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 EmployeeNumber = record.EmployeeNumber,
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
+
+                EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
+                EmployeeCity = record.Employee != null ? record.Employee.City ?? "" : "",
+                EmployeeProvince = record.Employee != null ? record.Employee.Province ?? "" : "",
+                EmployeePostalCode = record.Employee != null ? record.Employee.PostalCode ?? "" : "",
+                EmployeeEmailAddress = record.Employee != null ? record.Employee.EmailAddress ?? "" : "",
 
                 Salary = record.Salary,
                 Rate = record.Rate,
@@ -131,6 +143,12 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
 
+                EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
+                EmployeeCity = record.Employee != null ? record.Employee.City ?? "" : "",
+                EmployeeProvince = record.Employee != null ? record.Employee.Province ?? "" : "",
+                EmployeePostalCode = record.Employee != null ? record.Employee.PostalCode ?? "" : "",
+                EmployeeEmailAddress = record.Employee != null ? record.Employee.EmailAddress ?? "" : "",
+
                 Salary = record.Salary,
                 Rate = record.Rate,
                 RegularHours = record.RegularHours,
@@ -173,18 +191,21 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
             throw new InvalidOperationException($"Payroll record with Id {payrollRecordId} not found.");
 
         var netPay = CalculateNetPay(
-            dto.Salary,
             dto.Gross,
             dto.Vacation,
             dto.Tax1,
             dto.Cpp1,
             dto.Cpp2,
-            dto.Ei);
+            dto.Ei,
+            dto.OtherDeduction);
 
         record.Salary = dto.Salary;
         record.Rate = dto.Rate;
         record.RegularHours = dto.RegularHours;
         record.HireDate = dto.HireDate;
+        record.OvertimeHours = dto.OvertimeHours;
+        record.PublicHolidayHours = dto.PublicHolidayHours;
+        record.StatHolidayHours = dto.StatHolidayHours;
         record.Gross = dto.Gross;
         record.Vacation = dto.Vacation;
         record.Tax1 = dto.Tax1;
@@ -201,24 +222,29 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         record.Cpp2Ytd += dto.Cpp2;
         record.EiYtd += dto.Ei;
         record.OtherDeductionYtd += dto.OtherDeduction;
-        record.VacationYtd += dto.Vacation;
+
+
+        var updatedVacationYtd = record.VacationYtd + dto.Vacation;
+        var updatedVacationYtdUsed = record.VacationYtdUsed + dto.VacationUsed;
+
+        record.VacationYtd = updatedVacationYtd;
+        record.VacationYtdUsed = updatedVacationYtdUsed;
+        record.VacationYtdBalance = updatedVacationYtd - updatedVacationYtdUsed;
 
         await _dbContext.SaveChangesAsync();
     }
 
     private static decimal CalculateNetPay(
-        decimal salary,
         decimal gross,
         decimal vacation,
         decimal tax1,
         decimal cpp1,
         decimal cpp2,
-        decimal ei)
+        decimal ei,
+        decimal otherDeduction)
     {
-        var totalDeductions = tax1 + cpp1 + cpp2 + ei;
+        var totalDeductions = tax1 + cpp1 + cpp2 + ei + otherDeduction;
 
-        return salary > 0
-            ? salary - totalDeductions
-            : gross + vacation - totalDeductions;
+        return gross + vacation - totalDeductions;
     }
 }
