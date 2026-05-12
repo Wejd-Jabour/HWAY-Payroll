@@ -208,6 +208,25 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         set => SetProperty(ref _otherDeduction, value);
     }
 
+    private DateTime? _hireDate;
+    public DateTime? HireDate
+    {
+        get => _hireDate;
+        set
+        {
+            if (SetProperty(ref _hireDate, value))
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HireDateDisplay)));
+            }
+        }
+    }
+
+    public DateTime HireDateDisplay
+    {
+        get => HireDate ?? DateTime.Today;
+        set => HireDate = value;
+    }
+
     private async Task LoadInitialEmployersAsync()
     {
         await SearchEmployersAsync();
@@ -293,6 +312,7 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         Salary = selectedRecord.Salary;
         Rate = selectedRecord.Rate;
         RegularHours = selectedRecord.RegularHours;
+        HireDate = selectedRecord.HireDate;
         Gross = selectedRecord.Gross;
         Vacation = selectedRecord.Vacation;
 
@@ -320,6 +340,7 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
             Salary = Salary,
             Rate = Rate,
             RegularHours = RegularHours,
+            HireDate = HireDate,
             Gross = Gross,
             Vacation = Vacation,
             Tax1 = Tax1,
@@ -369,9 +390,27 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
 
     private void CalculateAndOpenCra()
     {
+        // Calculate Gross
         Gross = Salary + (Rate * RegularHours);
-        Vacation = Gross * 0.04m;
 
+        // Set Vacation Rate
+        decimal vacationRate = 0.04m;
+        
+        // Check if employee worked with company for 5+ years to apply 6% vacation rate
+        if (HireDate.HasValue)
+        {
+            var yearsWorked = DateTime.Today.Year - HireDate.Value.Year;
+
+            if (HireDate.Value.Date > DateTime.Today.AddYears(-yearsWorked))
+                yearsWorked--;
+
+            if (yearsWorked >= 5)
+                vacationRate = 0.06m;
+        }
+
+        Vacation = Gross * vacationRate;
+
+        // Open CRA website
         OpenCraWebsite();
     }
 

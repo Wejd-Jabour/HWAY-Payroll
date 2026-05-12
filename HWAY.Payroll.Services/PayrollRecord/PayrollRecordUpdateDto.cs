@@ -5,6 +5,7 @@ public class PayrollRecordUpdateDto
     public decimal Salary { get; set; }
     public decimal Rate { get; set; }
     public decimal RegularHours { get; set; }
+    public DateTime? HireDate { get; set; }
     public decimal Gross { get; set; }
     public decimal Vacation { get; set; }
     public decimal Tax1 { get; set; }

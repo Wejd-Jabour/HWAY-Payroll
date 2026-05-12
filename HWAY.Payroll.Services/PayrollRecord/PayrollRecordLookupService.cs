@@ -63,7 +63,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 VacationYtd = record.VacationYtd,
                 VacationYtdUsed = record.VacationYtdUsed,
                 VacationYtdBalance = record.VacationYtdBalance,
-                TotalPd7 = record.TotalPd7
+                TotalPd7 = record.TotalPd7,
+                HireDate = record.HireDate
             })
             .ToListAsync();
     }
@@ -86,6 +87,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 Salary = record.Salary,
                 Rate = record.Rate,
                 RegularHours = record.RegularHours,
+                
                 OvertimeHours = record.OvertimeHours,
                 PublicHolidayHours = record.PublicHolidayHours,
                 StatHolidayHours = record.StatHolidayHours,
@@ -109,7 +111,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 VacationYtd = record.VacationYtd,
                 VacationYtdUsed = record.VacationYtdUsed,
                 VacationYtdBalance = record.VacationYtdBalance,
-                TotalPd7 = record.TotalPd7
+                TotalPd7 = record.TotalPd7,
+                HireDate = record.HireDate
             })
             .ToListAsync();
     }
@@ -154,7 +157,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 VacationYtd = record.VacationYtd,
                 VacationYtdUsed = record.VacationYtdUsed,
                 VacationYtdBalance = record.VacationYtdBalance,
-                TotalPd7 = record.TotalPd7
+                TotalPd7 = record.TotalPd7,
+                HireDate = record.HireDate
             })
             .FirstOrDefaultAsync();
     }
@@ -180,6 +184,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         record.Salary = dto.Salary;
         record.Rate = dto.Rate;
         record.RegularHours = dto.RegularHours;
+        record.HireDate = dto.HireDate;
         record.Gross = dto.Gross;
         record.Vacation = dto.Vacation;
         record.Tax1 = dto.Tax1;

@@ -116,6 +116,25 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         set => SetProperty(ref _otherDeduction, value);
     }
 
+    private DateTime? _hireDate;
+    public DateTime? HireDate
+    {
+        get => _hireDate;
+        set
+        {
+            if (SetProperty(ref _hireDate, value))
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HireDateDisplay)));
+            }
+        }
+    }
+
+    public DateTime HireDateDisplay
+    {
+        get => HireDate ?? DateTime.Today;
+        set => HireDate = value;
+    }
+
     // -------------------------
     // UI STATE FLAGS
     // -------------------------
@@ -203,6 +222,8 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         Salary = selectedRecord.Salary;
         Rate = selectedRecord.Rate;
         RegularHours = selectedRecord.RegularHours;
+        HireDate = selectedRecord.HireDate;
+
         Gross = selectedRecord.Gross;
         Vacation = selectedRecord.Vacation;
 
@@ -229,6 +250,7 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
             Salary = Salary,
             Rate = Rate,
             RegularHours = RegularHours,
+            HireDate = HireDate,
             Gross = Gross,
             Vacation = Vacation,
             Tax1 = Tax1,
@@ -241,10 +263,14 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         await _service.UpdatePayrollRecordAsync(_currentPayrollRecordId, dto);
 
         // Clear selection and hide details to allow selecting next employee
-        SelectedPayrollRecord = null;
-        ClearFields();
-        EmployeeFound = false;
-        _currentPayrollRecordId = 0;
+        await _service.UpdatePayrollRecordAsync(_currentPayrollRecordId, dto);
+
+        await SearchByRpNumber();
+
+        SelectedPayrollRecord = SearchResults
+            .FirstOrDefault(r => r.Id == _currentPayrollRecordId);
+
+        EmployeeFound = true;
 
         // Optionally, show a success message or something
     }
@@ -254,11 +280,25 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
     // -------------------------
     private void CalculateAndOpenCra()
     {
-        // Calculate Gross: Salary + (Rate * RegularHours)
+        // Calculate Gross
         Gross = Salary + (Rate * RegularHours);
 
-        // Calculate Vacation: 4% of Gross (adjust as needed)
-        Vacation = Gross * 0.04m;
+        // Set Vacation Rate
+        decimal vacationRate = 0.04m;
+        
+        // Check if employee worked with company for 5+ years to apply 6% vacation rate
+        if (HireDate.HasValue)
+        {
+            var yearsWorked = DateTime.Today.Year - HireDate.Value.Year;
+
+            if (HireDate.Value.Date > DateTime.Today.AddYears(-yearsWorked))
+                yearsWorked--;
+
+            if (yearsWorked >= 5)
+                vacationRate = 0.06m;
+        }
+
+        Vacation = Gross * vacationRate;
 
         // Open CRA website
         OpenCraWebsite();
@@ -289,6 +329,7 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         Cpp2 = 0;
         Ei = 0;
         OtherDeduction = 0;
+        HireDate = null;
     }
 
     private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string name = "")

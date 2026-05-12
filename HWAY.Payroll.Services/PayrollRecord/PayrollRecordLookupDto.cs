@@ -36,4 +36,5 @@ public class PayrollRecordLookupDto
     public decimal VacationYtdUsed { get; set; }
     public decimal VacationYtdBalance { get; set; }
     public decimal TotalPd7 { get; set; }
+    public DateTime? HireDate { get; set; }
 }
