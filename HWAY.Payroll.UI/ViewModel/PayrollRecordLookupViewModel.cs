@@ -81,6 +81,27 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         set => SetProperty(ref _regularHours, value);
     }
 
+    private decimal _overtimeHours;
+    public decimal OvertimeHours
+    {
+        get => _overtimeHours;
+        set => SetProperty(ref _overtimeHours, value);
+    }
+
+    private decimal _publicHolidayHours;
+    public decimal PublicHolidayHours
+    {
+        get => _publicHolidayHours;
+        set => SetProperty(ref _publicHolidayHours, value);
+    }
+
+    private decimal _statHolidayHours;
+    public decimal StatHolidayHours
+    {
+        get => _statHolidayHours;
+        set => SetProperty(ref _statHolidayHours, value);
+    }
+
     private decimal _tax1;
     public decimal Tax1
     {
@@ -114,6 +135,25 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
     {
         get => _otherDeduction;
         set => SetProperty(ref _otherDeduction, value);
+    }
+
+    private DateTime? _hireDate;
+    public DateTime? HireDate
+    {
+        get => _hireDate;
+        set
+        {
+            if (SetProperty(ref _hireDate, value))
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HireDateDisplay)));
+            }
+        }
+    }
+
+    public DateTime HireDateDisplay
+    {
+        get => HireDate ?? DateTime.Today;
+        set => HireDate = value;
     }
 
     // -------------------------
@@ -203,6 +243,9 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         Salary = selectedRecord.Salary;
         Rate = selectedRecord.Rate;
         RegularHours = selectedRecord.RegularHours;
+        OvertimeHours = selectedRecord.OvertimeHours;
+        PublicHolidayHours = selectedRecord.PublicHolidayHours;
+        StatHolidayHours = selectedRecord.StatHolidayHours;
         Gross = selectedRecord.Gross;
         Vacation = selectedRecord.Vacation;
 
@@ -211,6 +254,7 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         Cpp2 = selectedRecord.Cpp2;
         Ei = selectedRecord.Ei;
         OtherDeduction = selectedRecord.OtherDeduction;
+        HireDate = selectedRecord.HireDate;
 
         EmployeeFound = true;
         EmployeeNotFound = false;
@@ -229,22 +273,27 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
             Salary = Salary,
             Rate = Rate,
             RegularHours = RegularHours,
+            OvertimeHours = OvertimeHours,
+            PublicHolidayHours = PublicHolidayHours,
+            StatHolidayHours = StatHolidayHours,
             Gross = Gross,
             Vacation = Vacation,
             Tax1 = Tax1,
             Cpp1 = Cpp1,
             Cpp2 = Cpp2,
             Ei = Ei,
-            OtherDeduction = OtherDeduction
+            OtherDeduction = OtherDeduction,
+            HireDate = HireDate
         };
 
         await _service.UpdatePayrollRecordAsync(_currentPayrollRecordId, dto);
 
-        // Clear selection and hide details to allow selecting next employee
-        SelectedPayrollRecord = null;
-        ClearFields();
-        EmployeeFound = false;
-        _currentPayrollRecordId = 0;
+        await SearchByRpNumber();
+
+        SelectedPayrollRecord = SearchResults
+            .FirstOrDefault(r => r.Id == _currentPayrollRecordId);
+
+        EmployeeFound = true;
 
         // Optionally, show a success message or something
     }
@@ -254,11 +303,24 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
     // -------------------------
     private void CalculateAndOpenCra()
     {
-        // Calculate Gross: Salary + (Rate * RegularHours)
-        Gross = Salary + (Rate * RegularHours);
+        Gross = CalculateGross(Salary, Rate, RegularHours, OvertimeHours, PublicHolidayHours, StatHolidayHours);
 
-        // Calculate Vacation: 4% of Gross (adjust as needed)
-        Vacation = Gross * 0.04m;
+        // Set Vacation Rate
+        decimal vacationRate = 0.04m;
+        
+        // Check if employee worked with company for 5+ years to apply 6% vacation rate
+        if (HireDate.HasValue)
+        {
+            var yearsWorked = DateTime.Today.Year - HireDate.Value.Year;
+
+            if (HireDate.Value.Date > DateTime.Today.AddYears(-yearsWorked))
+                yearsWorked--;
+
+            if (yearsWorked >= 5)
+                vacationRate = 0.06m;
+        }
+
+        Vacation = Gross * vacationRate;
 
         // Open CRA website
         OpenCraWebsite();
@@ -282,6 +344,9 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         Salary = 0;
         Rate = 0;
         RegularHours = 0;
+        OvertimeHours = 0;
+        PublicHolidayHours = 0;
+        StatHolidayHours = 0;
         Gross = 0;
         Vacation = 0;
         Tax1 = 0;
@@ -289,6 +354,7 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         Cpp2 = 0;
         Ei = 0;
         OtherDeduction = 0;
+        HireDate = null;
     }
 
     private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string name = "")
@@ -299,5 +365,21 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         return true;
+    }
+
+    private static decimal CalculateGross(
+        decimal salary,
+        decimal rate,
+        decimal regularHours,
+        decimal overtimeHours,
+        decimal publicHolidayHours,
+        decimal statHolidayHours)
+    {
+        var regularPay = rate * regularHours;
+        var overtimePay = rate * 1.5m * overtimeHours;
+        var publicHolidayPay = rate * publicHolidayHours;
+        var statHolidayPay = rate * 1.5m * statHolidayHours;
+
+        return salary + regularPay + overtimePay + publicHolidayPay + statHolidayPay;
     }
 }
