@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="HWAY.Payroll.UI.Views.EmployerSearchPage"
+    x:Name="ThisPage"
+    Title="Employer Search">
+
+    <Grid RowDefinitions="Auto, Auto, Auto, *" Padding="20" RowSpacing="15">
+
+        <!-- TITLE -->
+        <Label Grid.Row="0"
+               Text="Employer Search"
+               FontSize="26"
+               FontAttributes="Bold"
+               HorizontalOptions="Center"/>
+
+        <!-- SEARCH BAR -->
+        <Entry Grid.Row="1"
+               Placeholder="Search by RP or Employer Name"
+               Text="{Binding SearchText}" />
+
+        <!-- SEARCH BUTTON -->
+        <Button Grid.Row="2"
+                Text="Search"
+                Command="{Binding SearchCommand}"
+                BackgroundColor="DodgerBlue"
+                TextColor="White"/>
+
+        <!-- RESULTS -->
+        <CollectionView Grid.Row="3"
+                        ItemsSource="{Binding Employers}"
+                        SelectionMode="None">
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+
+                    <Frame Padding="10" Margin="5">
+                        <Frame.GestureRecognizers>
+
+                            <TapGestureRecognizer
+                                Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectEmployerCommand}"
+                                CommandParameter="{Binding .}" />
+
+                        </Frame.GestureRecognizers>
+
+                        <VerticalStackLayout>
+                            <Label Text="{Binding RpNumber}" TextColor="Gray"/>
+                            <Label Text="{Binding EmployerName}" TextColor="Gray"/>
+
+                        </VerticalStackLayout>
+                    </Frame>
+
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+    </Grid>
+
+</ContentPage>

@@ -7,6 +7,9 @@ using HWAY.Payroll.Services.Paystub;
 using HWAY.Payroll.Services.EmployeeInsert;
 using HWAY.Payroll.Services.EmployeeUpdate;
 using HWAY.Payroll.Services.EmployeeRemove;
+using HWAY.Payroll.Services.EmployerRemove;
+using HWAY.Payroll.Services.EmployerInsert;
+using HWAY.Payroll.Services.EmployerUpdate;
 using HWAY.Payroll.UI.ViewModels;
 using HWAY.Payroll.UI.Views;
 namespace HWAY.Payroll.UI;
@@ -49,6 +52,9 @@ public static class MauiProgram
         builder.Services.AddScoped<IEmployeeInsertService, EmployeeInsertService>();
         builder.Services.AddScoped<IEmployeeUpdateService, EmployeeUpdateService>();
         builder.Services.AddScoped<IEmployeeRemoveService, EmployeeRemoveService>();
+        builder.Services.AddScoped<IEmployerInsertService, EmployerInsertService>();
+        builder.Services.AddScoped<IEmployerRemoveService, EmployerRemoveService>();
+        builder.Services.AddScoped<IEmployerUpdateService, EmployerUpdateService>();
 
         builder.Services.AddTransient<EmployerLookupViewModel>();
         builder.Services.AddTransient<EmployerLookupPage>();
@@ -62,7 +68,10 @@ public static class MauiProgram
         builder.Services.AddTransient<PaystubPreviewPage>();
 
         builder.Services.AddTransient<EmployeePage>();
-        builder.Services.AddTransient<EmployeeViewModel>(); // if you have one
+        builder.Services.AddTransient<EmployeeViewModel>();
+
+        builder.Services.AddTransient<EmployerPage>();
+        builder.Services.AddTransient<EmployerViewModel>();
 
         builder.Services.AddTransient<EmployeeInsertViewModel>();
         builder.Services.AddTransient<EmployeeInsertPage>();
@@ -76,6 +85,18 @@ public static class MauiProgram
 
         builder.Services.AddTransient<EmployeeRemoveViewModel>();
         builder.Services.AddTransient<EmployeeRemovePage>();
+
+        builder.Services.AddTransient<EmployerInsertViewModel>();
+        builder.Services.AddTransient<EmployerInsertPage>();
+
+        builder.Services.AddTransient<EmployerRemoveViewModel>();
+        builder.Services.AddTransient<EmployerRemovePage>();
+
+        builder.Services.AddTransient<EmployerUpdateViewModel>();
+        builder.Services.AddTransient<EmployerUpdatePage>();
+
+        builder.Services.AddTransient<EmployerSearchViewModel>();
+        builder.Services.AddTransient<EmployerSearchPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();
