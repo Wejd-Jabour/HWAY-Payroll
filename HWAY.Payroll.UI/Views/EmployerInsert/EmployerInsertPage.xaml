@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns:views="clr-namespace:HWAY.Payroll.UI.Views"
+    x:Class="HWAY.Payroll.UI.Views.EmployerInsertPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Employer Insert">
+
+<ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="12">
+
+            <Label Text="Create Employer" FontSize="24" FontAttributes="Bold"/>
+
+            <Entry Placeholder="RP Number"
+                   Text="{Binding RpNumber}" />
+
+            <Entry Placeholder="Employer Name"
+                   Text="{Binding EmployerName}" />
+
+            <Entry Placeholder="Address"
+                   Text="{Binding Address}" />
+
+            <Entry Placeholder="City"
+                   Text="{Binding City}" />
+
+            <Entry Placeholder="Postal Code"
+                   Text="{Binding PostalCode}" />
+
+            <Entry Placeholder="Employer Group"
+                   Text="{Binding EmployerGroup}" />
+
+            <Button Text="Save Employer"
+                    Command="{Binding SaveCommand}"
+                    BackgroundColor="Green"
+                    TextColor="White"/>
+
+              <Label Text="{Binding Message}"
+                     HorizontalOptions="Center"
+                     Margin="0,10,0,0">
+
+              <Label.Triggers>
+                     <DataTrigger TargetType="Label"
+                                   Binding="{Binding IsSuccess}"
+                                   Value="True">
+                     <Setter Property="TextColor" Value="Green"/>
+                     </DataTrigger>
+
+                     <DataTrigger TargetType="Label"
+                                   Binding="{Binding IsSuccess}"
+                                   Value="False">
+                     <Setter Property="TextColor" Value="Red"/>
+                     </DataTrigger>
+              </Label.Triggers>
+              </Label>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+
+</ContentPage>

@@ -27,6 +27,11 @@
         Title="Employees"
         ContentTemplate="{DataTemplate views:EmployeePage}"
         Route="EmployeePage" />
+
+        <ShellContent
+        Title="Employers"
+        ContentTemplate="{DataTemplate views:EmployerPage}"
+        Route="EmployerPage" />
         
     </TabBar>
 
