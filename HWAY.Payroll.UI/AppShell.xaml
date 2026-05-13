@@ -24,9 +24,9 @@
         Route="PayrollRecordPage" />
 
         <ShellContent
-        Title="Employee Insert"
-        ContentTemplate="{DataTemplate views:EmployeeInsertPage}"
-        Route="EmployeeInsertPage" />
+        Title="Employees"
+        ContentTemplate="{DataTemplate views:EmployeePage}"
+        Route="EmployeePage" />
         
     </TabBar>
 
