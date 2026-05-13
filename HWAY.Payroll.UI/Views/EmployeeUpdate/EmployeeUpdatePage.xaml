@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="HWAY.Payroll.UI.Views.EmployeeUpdatePage"
+    Title="Update Employee">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="12">
+
+            <Label Text="Update Employee"
+                   FontSize="26"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"/>
+
+            <Entry Placeholder="RP Number"
+                   Text="{Binding RpNumber}" />
+
+            <Entry Placeholder="Employee Number"
+                   Text="{Binding EmployeeNumber}" />
+
+            <Entry Placeholder="First Name"
+                   Text="{Binding FirstName}" />
+
+            <Entry Placeholder="Last Name"
+                   Text="{Binding LastName}" />
+
+            <Entry Placeholder="SIN"
+                   Text="{Binding Sin}" />
+
+            <Entry Placeholder="Address"
+                   Text="{Binding Address}" />
+
+            <Entry Placeholder="City"
+                   Text="{Binding City}" />
+
+            <Entry Placeholder="Province"
+                   Text="{Binding Province}" />
+
+            <Entry Placeholder="Postal Code"
+                   Text="{Binding PostalCode}" />
+
+            <Entry Placeholder="Email"
+                   Text="{Binding EmailAddress}" />
+
+            <Button Text="Save Changes"
+                    Command="{Binding SaveCommand}"
+                    BackgroundColor="Green"
+                    TextColor="White"/>
+
+            <Label Text="{Binding Message}"
+                   HorizontalOptions="Center"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

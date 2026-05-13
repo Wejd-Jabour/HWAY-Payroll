@@ -7,7 +7,7 @@ namespace HWAY.Payroll.UI.ViewModels;
 public class EmployeeViewModel
 {
     public ICommand GoToAddEmployeeCommand { get; }
-    public ICommand GoToUpdateEmployeeCommand { get; }
+    public ICommand GoToSearchEmployeeCommand { get; }
 
     public EmployeeViewModel()
     {
@@ -16,9 +16,9 @@ public class EmployeeViewModel
             await Shell.Current.GoToAsync(nameof(EmployeeInsertPage));
         });
 
-        GoToUpdateEmployeeCommand = new Command(async () =>
+        GoToSearchEmployeeCommand = new Command(async () =>
         {
-            await Shell.Current.GoToAsync(nameof(EmployeeUpdatePage));
+            await Shell.Current.GoToAsync(nameof(EmployeeSearchPage));
         });
     }
 }

@@ -63,6 +63,9 @@ public static class MauiProgram
         builder.Services.AddTransient<EmployeeUpdateViewModel>();
         builder.Services.AddTransient<EmployeeUpdatePage>();
 
+        builder.Services.AddTransient<EmployeeSearchViewModel>();
+        builder.Services.AddTransient<EmployeeSearchPage>();
+
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
