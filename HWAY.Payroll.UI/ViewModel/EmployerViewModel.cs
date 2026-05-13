@@ -19,7 +19,7 @@ public class EmployerViewModel
 
         GoToSearchEmployerCommand = new Command(async () =>
         {
-            await Shell.Current.GoToAsync(nameof(EmployerUpdatePage));
+            await Shell.Current.GoToAsync(nameof(EmployerSearchPage));
         });
 
         GoToRemoveEmployerCommand = new Command(async () =>
