@@ -22,5 +22,10 @@
                 BackgroundColor="Blue"
                 TextColor="White"/>
 
+        <Button Text="Remove Employee"
+                Command="{Binding GoToRemoveEmployeeCommand}"
+                BackgroundColor="Red"
+                TextColor="White"/>
+
     </VerticalStackLayout>
 </ContentPage>

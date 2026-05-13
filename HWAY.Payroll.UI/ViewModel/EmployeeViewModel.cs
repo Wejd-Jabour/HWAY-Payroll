@@ -8,6 +8,7 @@ public class EmployeeViewModel
 {
     public ICommand GoToAddEmployeeCommand { get; }
     public ICommand GoToSearchEmployeeCommand { get; }
+    public ICommand GoToRemoveEmployeeCommand { get; }
 
     public EmployeeViewModel()
     {
@@ -19,6 +20,11 @@ public class EmployeeViewModel
         GoToSearchEmployeeCommand = new Command(async () =>
         {
             await Shell.Current.GoToAsync(nameof(EmployeeSearchPage));
+        });
+
+        GoToRemoveEmployeeCommand = new Command(async () =>
+        {
+            await Shell.Current.GoToAsync(nameof(EmployeeRemovePage));
         });
     }
 }

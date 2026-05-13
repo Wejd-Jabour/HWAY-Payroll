@@ -6,6 +6,7 @@ using HWAY.Payroll.Services.PayrollRecord;
 using HWAY.Payroll.Services.Paystub;
 using HWAY.Payroll.Services.EmployeeInsert;
 using HWAY.Payroll.Services.EmployeeUpdate;
+using HWAY.Payroll.Services.EmployeeRemove;
 using HWAY.Payroll.UI.ViewModels;
 using HWAY.Payroll.UI.Views;
 namespace HWAY.Payroll.UI;
@@ -42,6 +43,7 @@ public static class MauiProgram
         builder.Services.AddScoped<IPaystubPDFService, PaystubPDFService>();
         builder.Services.AddScoped<IEmployeeInsertService, EmployeeInsertService>();
         builder.Services.AddScoped<IEmployeeUpdateService, EmployeeUpdateService>();
+        builder.Services.AddScoped<IEmployeeRemoveService, EmployeeRemoveService>();
 
         builder.Services.AddTransient<EmployerLookupViewModel>();
         builder.Services.AddTransient<EmployerLookupPage>();
@@ -65,6 +67,9 @@ public static class MauiProgram
 
         builder.Services.AddTransient<EmployeeSearchViewModel>();
         builder.Services.AddTransient<EmployeeSearchPage>();
+
+        builder.Services.AddTransient<EmployeeRemoveViewModel>();
+        builder.Services.AddTransient<EmployeeRemovePage>();
 
 #if DEBUG
         builder.Logging.AddDebug();
