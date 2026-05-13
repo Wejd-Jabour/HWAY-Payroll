@@ -10,6 +10,9 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(PayrollWorkspacePage), typeof(PayrollWorkspacePage));
         Routing.RegisterRoute(nameof(EmployerLookupPage), typeof(EmployerLookupPage));
         Routing.RegisterRoute(nameof(PayrollRecordPage), typeof(PayrollRecordPage));
+
+        Routing.RegisterRoute(nameof(EmployeePage), typeof(EmployeePage));
         Routing.RegisterRoute(nameof(EmployeeInsertPage), typeof(EmployeeInsertPage));
+        Routing.RegisterRoute(nameof(EmployeeUpdatePage), typeof(EmployeeUpdatePage));
     }
 }

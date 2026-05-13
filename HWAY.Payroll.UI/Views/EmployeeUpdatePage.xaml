@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:HWAY.Payroll.UI.Views"
+    x:Class="HWAY.Payroll.UI.Views.EmployeeUpdatePage"
+    Title="Employee Update">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+
+            <!-- HEADER -->
+            <Label Text="Employee Update"
+                   FontSize="26"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"/>
+
+            <!-- ================= SEARCH SECTION ================= -->
+            <Frame Padding="10">
+                <VerticalStackLayout Spacing="10">
+
+                    <Label Text="Search Employee"
+                           FontSize="18"
+                           FontAttributes="Bold"/>
+
+                    <Entry Placeholder="Search by RP, Employee #, or Name"
+                           Text="{Binding SearchText}" />
+
+                    <Button Text="Search"
+                            Command="{Binding SearchCommand}"
+                            BackgroundColor="DodgerBlue"
+                            TextColor="White"/>
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- ================= SEARCH RESULTS ================= -->
+            <CollectionView ItemsSource="{Binding Employees}"
+                            SelectionMode="Single"
+                            SelectedItem="{Binding SelectedEmployee}">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+
+                        <Frame Padding="10" Margin="5">
+                            <VerticalStackLayout>
+
+                                <Label Text="{Binding FirstName}"
+                                       FontAttributes="Bold"
+                                       FontSize="16"/>
+
+                                <Label Text="{Binding LastName}" />
+
+                                <Label Text="{Binding RpNumber}"
+                                       FontSize="12"
+                                       TextColor="Gray"/>
+
+                                <Label Text="{Binding EmployeeNumber}"
+                                       FontSize="12"
+                                       TextColor="Gray"/>
+
+                            </VerticalStackLayout>
+                        </Frame>
+
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+            <!-- ================= EDIT FORM ================= -->
+            <Frame Padding="15">
+                <VerticalStackLayout Spacing="10">
+
+                    <Label Text="Employee Details"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           IsVisible="{Binding IsEmployeeSelected}" />
+
+                    <Entry Placeholder="RP Number"
+                           Text="{Binding RpNumber}"
+                           IsEnabled="{Binding IsEmployeeSelected}" />
+
+                    <Entry Placeholder="Employee Number"
+                           Text="{Binding EmployeeNumber}"
+                           IsEnabled="{Binding IsEmployeeSelected}" />
+
+                    <Entry Placeholder="First Name"
+                           Text="{Binding FirstName}"
+                           IsEnabled="{Binding IsEmployeeSelected}" />
+
+                    <Entry Placeholder="Last Name"
+                           Text="{Binding LastName}"
+                           IsEnabled="{Binding IsEmployeeSelected}" />
+
+                    <Entry Placeholder="SIN"
+                           Text="{Binding Sin}"
+                           IsEnabled="{Binding IsEmployeeSelected}" />
+
+                    <Entry Placeholder="Address"
+                           Text="{Binding Address}"
+                           IsEnabled="{Binding IsEmployeeSelected}" />
+
+                    <Entry Placeholder="City"
+                           Text="{Binding City}"
+                           IsEnabled="{Binding IsEmployeeSelected}" />
+
+                    <Entry Placeholder="Province"
+                           Text="{Binding Province}"
+                           IsEnabled="{Binding IsEmployeeSelected}" />
+
+                    <Entry Placeholder="Postal Code"
+                           Text="{Binding PostalCode}"
+                           IsEnabled="{Binding IsEmployeeSelected}" />
+
+                    <Entry Placeholder="Email Address"
+                           Keyboard="Email"
+                           Text="{Binding EmailAddress}"
+                           IsEnabled="{Binding IsEmployeeSelected}" />
+
+                    <!-- SAVE BUTTON -->
+                    <Button Text="Update Employee"
+                            Command="{Binding SaveCommand}"
+                            BackgroundColor="Green"
+                            TextColor="White"
+                            IsEnabled="{Binding IsEmployeeSelected}" />
+
+                    <!-- MESSAGE -->
+                    <Label Text="{Binding Message}"
+                           HorizontalOptions="Center">
+
+                        <Label.Triggers>
+
+                            <DataTrigger TargetType="Label"
+                                         Binding="{Binding IsSuccess}"
+                                         Value="True">
+                                <Setter Property="TextColor" Value="Green"/>
+                            </DataTrigger>
+
+                            <DataTrigger TargetType="Label"
+                                         Binding="{Binding IsSuccess}"
+                                         Value="False">
+                                <Setter Property="TextColor" Value="Red"/>
+                            </DataTrigger>
+
+                        </Label.Triggers>
+
+                    </Label>
+
+                </VerticalStackLayout>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
