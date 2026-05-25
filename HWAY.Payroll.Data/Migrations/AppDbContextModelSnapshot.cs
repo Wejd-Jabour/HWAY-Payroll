@@ -208,6 +208,12 @@ namespace HWAY.Payroll.Data.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("OV.Hours");
 
+                    b.Property<int>("Period")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("Period");
+
                     b.Property<decimal>("PublicHolidayHours")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("Public.H");

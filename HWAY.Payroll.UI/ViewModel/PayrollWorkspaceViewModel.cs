@@ -558,9 +558,12 @@ public class PaystubTemplateBindingModel
         EmployeeEmailLine = record.EmployeeEmailAddress;
 
         PayDate = DateTime.Today.ToString("yyyy-MM-dd");
-        PayPeriod = "";
-        PeriodBeginning = "";
-        PeriodEnding = "";
+        Period = record.Period.ToString();
+        PayPeriod = record.Period.ToString();
+
+        (PeriodBeginning, PeriodEnding) = CalculatePeriodRange(
+            employer.EmployerGroup ?? string.Empty,
+            record.Period);
 
         var regularPay = salary + rate * regularHours;
         var overtimePay = rate * 1.5m * overtimeHours;
@@ -641,6 +644,60 @@ public class PaystubTemplateBindingModel
         Memo = "";
     }
 
+    private static (string Beginning, string Ending) CalculatePeriodRange(string employerGroup, int period)
+    {
+        var group = (employerGroup ?? "A").Trim().ToUpperInvariant();
+
+        return group switch
+        {
+            "B" => GetSemiMonthlyRange(period),
+            "C" or "D" => GetBiWeeklyRange(period),
+            _ => GetMonthlyRange(period),
+        };
+    }
+
+    private static (string Beginning, string Ending) GetMonthlyRange(int period)
+    {
+        var year = period / 100;
+        var month = period % 100;
+        var start = new DateTime(year, month, 1);
+        var end = start.AddMonths(1).AddDays(-1);
+        return (start.ToString("yyyy-MM-dd"), end.ToString("yyyy-MM-dd"));
+    }
+
+    private static (string Beginning, string Ending) GetSemiMonthlyRange(int period)
+    {
+        var year = period / 100;
+        var periodDigits = period % 100;
+        var month = periodDigits / 10;
+        var half = periodDigits % 10;
+        var daysInMonth = DateTime.DaysInMonth(year, month);
+
+        var start = half == 2
+            ? new DateTime(year, month, 16)
+            : new DateTime(year, month, 1);
+        var end = half == 2
+            ? new DateTime(year, month, daysInMonth)
+            : new DateTime(year, month, Math.Min(15, daysInMonth));
+
+        return (start.ToString("yyyy-MM-dd"), end.ToString("yyyy-MM-dd"));
+    }
+
+    private static (string Beginning, string Ending) GetBiWeeklyRange(int period)
+    {
+        var year = period / 100;
+        var periodIndex = period % 100;
+        var start = new DateTime(year, 1, 1).AddDays((periodIndex - 1) * 14);
+        var end = start.AddDays(13);
+
+        if (end.Year != year)
+        {
+            end = new DateTime(year, 12, 31);
+        }
+
+        return (start.ToString("yyyy-MM-dd"), end.ToString("yyyy-MM-dd"));
+    }
+
     public string EmployerGroup { get; }
     public string EmployerName { get; }
     public string Address { get; }
@@ -654,6 +711,7 @@ public class PaystubTemplateBindingModel
     public string EmployeeEmailLine { get; }
 
     public string PayDate { get; }
+    public string Period { get; }
     public string PayPeriod { get; }
     public string PeriodBeginning { get; }
     public string PeriodEnding { get; }

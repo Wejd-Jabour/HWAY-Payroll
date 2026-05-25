@@ -97,6 +97,10 @@ public class AppDbContext : DbContext
             entity.Property(e => e.EmployeeNumber).HasColumnName("Employee #").HasMaxLength(50).IsRequired();
             entity.Property(e => e.RpNumber).HasColumnName("RP#").HasMaxLength(50).IsRequired();
             entity.Property(e => e.EmployeeName).HasColumnName("Employees Name").HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Period)
+                .HasColumnName("Period")
+                .IsRequired()
+                .HasDefaultValue(0);
 
             entity.Property(e => e.Salary).HasColumnType("decimal(18,2)");
             entity.Property(e => e.Rate).HasColumnType("decimal(18,2)");

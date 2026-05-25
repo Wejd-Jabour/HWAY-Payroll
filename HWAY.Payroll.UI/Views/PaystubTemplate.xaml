@@ -101,7 +101,7 @@
 
         <!-- Pay period section -->
         <Label Text="PAY PERIOD" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="610,425,90,14" />
-        <Label Text="{Binding PayPeriod}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="706,425,70,14" />
+        <Label Text="{Binding Period}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="706,425,70,14" />
 
         <Label Text="Period Beginning" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="610,436,100,14" />
         <Label Text="{Binding PeriodBeginning}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="698,436,100,14" />
