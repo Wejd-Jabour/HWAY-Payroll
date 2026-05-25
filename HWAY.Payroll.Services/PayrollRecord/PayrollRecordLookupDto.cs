@@ -10,6 +10,11 @@ public class PayrollRecordLookupDto
     public string EmployeeName { get; set; } = string.Empty;
     public string EmployerName { get; set; } = string.Empty;
     public int Period { get; set; }
+    public string EmployeeAddress { get; set; } = string.Empty;
+    public string EmployeeCity { get; set; } = string.Empty;
+    public string EmployeeProvince { get; set; } = string.Empty;
+    public string EmployeePostalCode { get; set; } = string.Empty;
+    public string EmployeeEmailAddress { get; set; } = string.Empty;
 
     public decimal Salary { get; set; }
     public decimal Rate { get; set; }
@@ -38,4 +43,5 @@ public class PayrollRecordLookupDto
     public decimal VacationYtdUsed { get; set; }
     public decimal VacationYtdBalance { get; set; }
     public decimal TotalPd7 { get; set; }
+    public DateTime? HireDate { get; set; }
 }

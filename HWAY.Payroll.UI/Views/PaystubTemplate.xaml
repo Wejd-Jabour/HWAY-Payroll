@@ -77,6 +77,8 @@
 
         <Label Text="EMPLOYEE NO" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="440,241,100,14" />
         <Label Text="{Binding EmployeeNumber}" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="627,241,100,14" />
+        <Label Text="{Binding EmployeeName}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,319,250,14" />
+        <Label Text="{Binding EmployeeAddressLine}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,330,330,14" />
 
         <Label Text="EMPLOYEE" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="65,307,140,14" />
         <Label Text="{Binding EmployeeName}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,319,250,14" />

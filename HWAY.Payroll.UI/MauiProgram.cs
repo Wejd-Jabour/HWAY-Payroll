@@ -14,12 +14,17 @@ using HWAY.Payroll.Services.EmployerUpdate;
 using HWAY.Payroll.UI.ViewModels;
 using HWAY.Payroll.UI.Views;
 namespace HWAY.Payroll.UI;
+using QuestPDF.Infrastructure;
 
 public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
-		var builder = MauiApp.CreateBuilder();
+
+        QuestPDF.Settings.License = LicenseType.Community;
+
+
+        var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
 			.ConfigureFonts(fonts =>
@@ -74,6 +79,7 @@ public static class MauiProgram
 
         builder.Services.AddTransient<EmployeeInsertViewModel>();
         builder.Services.AddTransient<EmployeeInsertPage>();
+        builder.Services.AddScoped<IPaystubPDFService, PaystubPDFService>();
 
         builder.Services.AddTransient<EmployeeUpdateViewModel>();
         builder.Services.AddTransient<EmployeeUpdatePage>();

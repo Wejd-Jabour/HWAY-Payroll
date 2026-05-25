@@ -129,6 +129,7 @@ public class AppDbContext : DbContext
             entity.Property(e => e.VacationYtdUsed).HasColumnName("Vacation -YTD-Used").HasColumnType("decimal(18,2)");
             entity.Property(e => e.VacationYtdBalance).HasColumnName("Vacation -YTD- Balance").HasColumnType("decimal(18,2)");
             entity.Property(e => e.TotalPd7).HasColumnName("Total PD7").HasColumnType("decimal(18,2)");
+            entity.Property(e => e.HireDate).HasColumnName("Hire Date").HasColumnType("date");
 
             entity.HasOne(e => e.Employee)
                 .WithMany(e => e.PayrollRecords)
