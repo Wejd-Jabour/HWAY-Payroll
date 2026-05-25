@@ -8,6 +8,7 @@ public class PayrollRecordLookupDto
     public string EmployeeNumber { get; set; } = string.Empty;
     public string RpNumber { get; set; } = string.Empty;
     public string EmployeeName { get; set; } = string.Empty;
+    public string EmployerName { get; set; } = string.Empty;
     public string EmployeeAddress { get; set; } = string.Empty;
     public string EmployeeCity { get; set; } = string.Empty;
     public string EmployeeProvince { get; set; } = string.Empty;

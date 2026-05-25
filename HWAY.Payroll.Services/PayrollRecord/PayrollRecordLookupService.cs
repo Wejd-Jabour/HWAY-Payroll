@@ -24,7 +24,9 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
             query = query.Where(record =>
                 record.EmployeeNumber.Contains(searchText) ||
                 record.EmployeeName.Contains(searchText) ||
-                record.RpNumber.Contains(searchText));
+                record.RpNumber.Contains(searchText) ||
+                record.Employer!.EmployerName.Contains(searchText) ||
+                record.Employer.RpNumber.Contains(searchText));
         }
 
         return await query
@@ -36,6 +38,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 EmployeeNumber = record.EmployeeNumber,
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
+                EmployerName = record.Employer!.EmployerName,
 
                 EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
                 EmployeeCity = record.Employee != null ? record.Employee.City ?? "" : "",
@@ -89,6 +92,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 EmployeeNumber = record.EmployeeNumber,
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
+                EmployerName = record.Employer!.EmployerName,
 
                 EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
                 EmployeeCity = record.Employee != null ? record.Employee.City ?? "" : "",
@@ -141,6 +145,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 EmployeeNumber = record.EmployeeNumber,
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
+                EmployerName = record.Employer!.EmployerName,
 
                 EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
                 EmployeeCity = record.Employee != null ? record.Employee.City ?? "" : "",
