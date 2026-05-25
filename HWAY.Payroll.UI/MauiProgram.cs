@@ -3,6 +3,7 @@ using HWAY.Payroll.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using HWAY.Payroll.Services.Employers;
 using HWAY.Payroll.Services.PayrollRecord;
+using HWAY.Payroll.Services.PayrollRecordEdit;
 using HWAY.Payroll.Services.Paystub;
 using HWAY.Payroll.Services.EmployeeInsert;
 using HWAY.Payroll.Services.EmployeeUpdate;
@@ -43,6 +44,7 @@ public static class MauiProgram
 
         builder.Services.AddScoped<IEmployerLookupService, EmployerLookupService>();
         builder.Services.AddScoped<IPayrollRecordLookupService, PayrollRecordLookupService>();
+        builder.Services.AddScoped<IPayrollRecordEditService, PayrollRecordEditService>();
         builder.Services.AddScoped<IPaystubPDFService, PaystubPDFService>();
         builder.Services.AddScoped<IEmployeeInsertService, EmployeeInsertService>();
         builder.Services.AddScoped<IEmployeeUpdateService, EmployeeUpdateService>();
@@ -55,6 +57,8 @@ public static class MauiProgram
         builder.Services.AddTransient<EmployerLookupPage>();
         builder.Services.AddTransient<PayrollRecordViewModel>();
         builder.Services.AddTransient<PayrollRecordPage>();
+        builder.Services.AddTransient<PayrollRecordEditViewModel>();
+        builder.Services.AddTransient<PayrollRecordEditPage>();
 
         builder.Services.AddTransient<PayrollWorkspaceViewModel>();
         builder.Services.AddTransient<PayrollWorkspacePage>();

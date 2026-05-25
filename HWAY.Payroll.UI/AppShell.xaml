@@ -24,6 +24,11 @@
         Route="PayrollRecordPage" />
 
         <ShellContent
+        Title="Payroll Edit"
+        ContentTemplate="{DataTemplate views:PayrollRecordEditPage}"
+        Route="PayrollRecordEditPage" />
+
+        <ShellContent
         Title="Employees"
         ContentTemplate="{DataTemplate views:EmployeePage}"
         Route="EmployeePage" />

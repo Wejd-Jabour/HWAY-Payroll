@@ -8,6 +8,7 @@ public class PayrollRecordLookupDto
     public string EmployeeNumber { get; set; } = string.Empty;
     public string RpNumber { get; set; } = string.Empty;
     public string EmployeeName { get; set; } = string.Empty;
+    public string EmployerName { get; set; } = string.Empty;
 
     public decimal Salary { get; set; }
     public decimal Rate { get; set; }
