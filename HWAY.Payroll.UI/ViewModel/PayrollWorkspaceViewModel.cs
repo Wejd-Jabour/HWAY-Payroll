@@ -447,7 +447,8 @@ public class PaystubTemplateBindingModel
 
         (PeriodBeginning, PeriodEnding) = CalculatePeriodRange(
             employer.EmployerGroup ?? string.Empty,
-            record.Period);
+            record.Period,
+            DateTime.Today.Year);
 
         RegularPaySalary = FormatMoney(salary);
         RegularPayHours = FormatNumber(regularHours);
@@ -523,33 +524,33 @@ public class PaystubTemplateBindingModel
         Memo = "";
     }
 
-    private static (string Beginning, string Ending) CalculatePeriodRange(string employerGroup, int period)
+    private static (string Beginning, string Ending) CalculatePeriodRange(string employerGroup, int period, int year)
     {
         var group = (employerGroup ?? "A").Trim().ToUpperInvariant();
 
         return group switch
         {
-            "B" => GetSemiMonthlyRange(period),
-            "C" or "D" => GetBiWeeklyRange(period),
-            _ => GetMonthlyRange(period),
+            "B" => GetSemiMonthlyRange(period, year),
+            "C" or "D" => GetBiWeeklyRange(period, year),
+            _ => GetMonthlyRange(period, year),
         };
     }
 
-    private static (string Beginning, string Ending) GetMonthlyRange(int period)
+    private static (string Beginning, string Ending) GetMonthlyRange(int period, int year)
     {
-        var year = period / 100;
-        var month = period % 100;
+        var month = period;  // period is now just 1-12
         var start = new DateTime(year, month, 1);
         var end = start.AddMonths(1).AddDays(-1);
         return (start.ToString("yyyy-MM-dd"), end.ToString("yyyy-MM-dd"));
     }
 
-    private static (string Beginning, string Ending) GetSemiMonthlyRange(int period)
+    private static (string Beginning, string Ending) GetSemiMonthlyRange(int period, int year)
     {
-        var year = period / 100;
-        var periodDigits = period % 100;
-        var month = periodDigits / 10;
-        var half = periodDigits % 10;
+        var periodNumber = period;  // 1-24 for the year
+        
+        // Calculate which month and half: periodNumber 1-2 = Jan, 3-4 = Feb, etc.
+        var month = (periodNumber - 1) / 2 + 1;
+        var half = (periodNumber - 1) % 2 + 1;  // 1 = first half, 2 = second half
         var daysInMonth = DateTime.DaysInMonth(year, month);
 
         var start = half == 2
@@ -562,10 +563,9 @@ public class PaystubTemplateBindingModel
         return (start.ToString("yyyy-MM-dd"), end.ToString("yyyy-MM-dd"));
     }
 
-    private static (string Beginning, string Ending) GetBiWeeklyRange(int period)
+    private static (string Beginning, string Ending) GetBiWeeklyRange(int period, int year)
     {
-        var year = period / 100;
-        var periodIndex = period % 100;
+        var periodIndex = period;  // 1-26 for the year
         var start = new DateTime(year, 1, 1).AddDays((periodIndex - 1) * 14);
         var end = start.AddDays(13);
 
