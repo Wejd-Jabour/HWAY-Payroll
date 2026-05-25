@@ -13,6 +13,7 @@ using HWAY.Payroll.Services.EmployerInsert;
 using HWAY.Payroll.Services.EmployerUpdate;
 using HWAY.Payroll.UI.ViewModels;
 using HWAY.Payroll.UI.Views;
+using HWAY.Payroll.UI.ViewModel;
 namespace HWAY.Payroll.UI;
 
 public static class MauiProgram
@@ -66,8 +67,8 @@ public static class MauiProgram
         // Temporary paystub preview page
         builder.Services.AddTransient<PaystubPreviewPage>();
 
+        builder.Services.AddTransient<EmployeeWorkspaceViewModel>();
         builder.Services.AddTransient<EmployeePage>();
-        builder.Services.AddTransient<EmployeeViewModel>();
 
         builder.Services.AddTransient<EmployerPage>();
         builder.Services.AddTransient<EmployerViewModel>();
