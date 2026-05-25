@@ -397,44 +397,31 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
         set => SetProperty(ref _vacationYtdBalance, value);
     }
 
-    private DateTime? _hireDate;
-    public DateTime? HireDate
+    private DateTime _payDate = DateTime.Today;
+    public DateTime PayDate
     {
-        get => _hireDate;
+        get => _payDate;
         set
         {
-            if (SetProperty(ref _hireDate, value))
+            if (SetProperty(ref _payDate, value))
             {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HireDateDisplay)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PayDateDisplay)));
             }
         }
     }
 
-    public DateTime HireDateDisplay
+    public DateTime PayDateDisplay
     {
-        get => HireDate ?? DateTime.Today;
-        set => HireDate = value;
+        get => PayDate;
+        set => PayDate = value;
     }
+
 
     public void CalculatePayroll()
     {
         Gross = CalculateGross(Salary, Rate, RegularHours, OvertimeHours, PublicHolidayHours, StatHolidayHours);
-        
-        decimal vacationRate = 0.04m;
-        
-        // Check if employee worked with company for 5+ years to apply 6% vacation rate
-        if (HireDate.HasValue)
-        {
-            var yearsWorked = DateTime.Today.Year - HireDate.Value.Year;
 
-            if (HireDate.Value.Date > DateTime.Today.AddYears(-yearsWorked))
-                yearsWorked--;
-
-            if (yearsWorked >= 5)
-                vacationRate = 0.06m;
-        }
-
-        Vacation = Gross * vacationRate;
+        Vacation = Gross * 0.04m;
 
         VacationYtd = _record.VacationYtd + Vacation;
         VacationYtdUsed = _record.VacationYtdUsed + VacationUsed;
@@ -465,8 +452,7 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
             Cpp1 = Cpp1,
             Cpp2 = Cpp2,
             Ei = Ei,
-            OtherDeduction = OtherDeduction,
-            HireDate = HireDate,
+            OtherDeduction = OtherDeduction
         };
     }
 
@@ -487,7 +473,8 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
             Cpp1,
             Cpp2,
             Ei,
-            OtherDeduction);
+            OtherDeduction,
+            PayDate);
 
         IsPaystubVisible = true;
     }
@@ -524,21 +511,22 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
 public class PaystubTemplateBindingModel
 {
     public PaystubTemplateBindingModel(
-        EmployerLookupDto employer,
-        PayrollRecordLookupDto record,
-        decimal salary,
-        decimal rate,
-        decimal regularHours,
-        decimal overtimeHours,
-        decimal publicHolidayHours,
-        decimal statHolidayHours,
-        decimal gross,
-        decimal vacation,
-        decimal tax1,
-        decimal cpp1,
-        decimal cpp2,
-        decimal ei,
-        decimal otherDeduction)
+    EmployerLookupDto employer,
+    PayrollRecordLookupDto record,
+    decimal salary,
+    decimal rate,
+    decimal regularHours,
+    decimal overtimeHours,
+    decimal publicHolidayHours,
+    decimal statHolidayHours,
+    decimal gross,
+    decimal vacation,
+    decimal tax1,
+    decimal cpp1,
+    decimal cpp2,
+    decimal ei,
+    decimal otherDeduction,
+    DateTime payDate)
     {
         EmployerName = employer.EmployerName;
         Address = employer.Address ?? "";
@@ -557,7 +545,7 @@ public class PaystubTemplateBindingModel
 
         EmployeeEmailLine = record.EmployeeEmailAddress;
 
-        PayDate = DateTime.Today.ToString("yyyy-MM-dd");
+        PayDate = payDate.ToString("yyyy-MM-dd");
         Period = record.Period.ToString();
         PayPeriod = record.Period.ToString();
 

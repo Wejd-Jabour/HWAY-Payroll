@@ -147,8 +147,8 @@
                                     <Label Grid.Row="5" Grid.Column="0" Text="Stat H." VerticalOptions="Center" />
                                     <Entry Grid.Row="5" Grid.Column="1" Text="{Binding StatHolidayHours}" Keyboard="Numeric" />
 
-                                    <Label Grid.Row="6" Grid.Column="0" Text="Hire Date" VerticalOptions="Center"/> 
-                                    <DatePicker Grid.Row="6" Grid.Column="1" Date="{Binding HireDateDisplay}" />
+                                    <Label Grid.Row="6" Grid.Column="0" Text="Pay Date" VerticalOptions="Center" />
+                                    <DatePicker Grid.Row="6" Grid.Column="1" Date="{Binding PayDateDisplay}" />
 
                                     <Border
                                         Grid.Row="0"
