@@ -7,6 +7,7 @@ public class PayrollRecord
     public string EmployeeNumber { get; set; } = string.Empty;
     public string RpNumber { get; set; } = string.Empty;
     public string EmployeeName { get; set; } = string.Empty;
+    public int Period { get; set; }
 
     public decimal Salary { get; set; }
     public decimal Rate { get; set; }

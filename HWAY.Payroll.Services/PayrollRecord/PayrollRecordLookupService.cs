@@ -39,6 +39,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
                 EmployerName = record.Employer!.EmployerName,
+                Period = record.Period,
 
                 Salary = record.Salary,
                 Rate = record.Rate,
@@ -86,6 +87,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
                 EmployerName = record.Employer!.EmployerName,
+                Period = record.Period,
 
                 Salary = record.Salary,
                 Rate = record.Rate,
@@ -132,6 +134,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
                 EmployerName = record.Employer!.EmployerName,
+                Period = record.Period,
 
                 Salary = record.Salary,
                 Rate = record.Rate,
@@ -167,11 +170,14 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
     public async Task UpdatePayrollRecordAsync(int payrollRecordId, PayrollRecordUpdateDto dto)
     {
         var record = await _dbContext.PayrollRecords
+            .Include(r => r.Employer)
             .Where(r => r.Id == payrollRecordId)
             .FirstOrDefaultAsync();
 
         if (record == null)
             throw new InvalidOperationException($"Payroll record with Id {payrollRecordId} not found.");
+
+        record.Period = CalculatePeriod(record.Employer?.EmployerGroup, DateTime.Today);
 
         var netPay = CalculateNetPay(
             dto.Salary,
@@ -204,6 +210,18 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         record.VacationYtd += dto.Vacation;
 
         await _dbContext.SaveChangesAsync();
+    }
+
+    private static int CalculatePeriod(string? employerGroup, DateTime currentDate)
+    {
+        var group = (employerGroup ?? "A").Trim().ToUpperInvariant();
+
+        return group switch
+        {
+            "B" => currentDate.Year * 100 + currentDate.Month * 10 + (currentDate.Day <= 15 ? 1 : 2),
+            "C" or "D" => currentDate.Year * 100 + ((currentDate.DayOfYear - 1) / 14) + 1,
+            _ => currentDate.Year * 100 + currentDate.Month,
+        };
     }
 
     private static decimal CalculateNetPay(
