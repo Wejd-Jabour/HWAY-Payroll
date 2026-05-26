@@ -250,9 +250,12 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
 
         return group switch
         {
-            "B" => currentDate.Year * 100 + currentDate.Month * 10 + (currentDate.Day <= 15 ? 1 : 2),
-            "C" or "D" => currentDate.Year * 100 + ((currentDate.DayOfYear - 1) / 14) + 1,
-            _ => currentDate.Year * 100 + currentDate.Month,
+            // Semi-monthly: 2 periods per month (01-24 per year)
+            "B" => (currentDate.Month - 1) * 2 + (currentDate.Day <= 15 ? 1 : 2),
+            // Biweekly: ~26 periods per year
+            "C" or "D" => ((currentDate.DayOfYear - 1) / 14) + 1,
+            // Monthly: 12 periods per year (01-12 per year)
+            _ => currentDate.Month,
         };
     }
 
