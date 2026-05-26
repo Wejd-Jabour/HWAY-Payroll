@@ -5,6 +5,7 @@ using System.Windows.Input;
 using HWAY.Payroll.Services.EmployeeInsert;
 using HWAY.Payroll.Services.EmployeeUpdate;
 using HWAY.Payroll.Services.EmployeeRemove;
+using HWAY.Payroll.Services.Employers;
 using Microsoft.Maui.Controls;
 
 namespace HWAY.Payroll.UI.ViewModel;
@@ -14,19 +15,24 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
     private readonly IEmployeeUpdateService _employeeUpdateService;
     private readonly IEmployeeInsertService _employeeInsertService;
     private readonly IEmployeeRemoveService _employeeRemoveService;
+    private readonly IEmployerLookupService _employerLookupService;
 
     public EmployeeWorkspaceViewModel(
         IEmployeeUpdateService employeeUpdateService,
         IEmployeeInsertService employeeInsertService,
-        IEmployeeRemoveService employeeRemoveService)
+        IEmployeeRemoveService employeeRemoveService,
+        IEmployerLookupService employerLookupService)
     {
         _employeeUpdateService = employeeUpdateService;
         _employeeInsertService = employeeInsertService;
         _employeeRemoveService = employeeRemoveService;
+        _employerLookupService = employerLookupService;
 
+        Employers = new ObservableCollection<EmployerLookupDto>();
         Employees = new ObservableCollection<EmployeeLookupDto>();
 
         SearchCommand = new Command(async () => await SearchEmployeesAsync());
+        SelectEmployerCommand = new Command<EmployerLookupDto>(async (employer) => await SelectEmployerAsync(employer));
         SelectEmployeeCommand = new Command<EmployeeLookupDto>(async (emp) => await SelectEmployeeAsync(emp));
         SaveCommand = new Command(async () => await SaveEmployeeAsync());
         DeleteCommand = new Command(async () => await DeleteEmployeeAsync());
@@ -45,7 +51,15 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
         set => SetProperty(ref _searchText, value);
     }
 
+    public ObservableCollection<EmployerLookupDto> Employers { get; }
     public ObservableCollection<EmployeeLookupDto> Employees { get; }
+
+    private EmployerLookupDto? _selectedEmployer;
+    public EmployerLookupDto? SelectedEmployer
+    {
+        get => _selectedEmployer;
+        set => SetProperty(ref _selectedEmployer, value);
+    }
 
     private EmployeeLookupDto? _selectedEmployee;
     public EmployeeLookupDto? SelectedEmployee
@@ -163,6 +177,7 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
 
     // ===================== Commands =====================
     public ICommand SearchCommand { get; }
+    public ICommand SelectEmployerCommand { get; }
     public ICommand SelectEmployeeCommand { get; }
     public ICommand SaveCommand { get; }
     public ICommand DeleteCommand { get; }
@@ -179,19 +194,20 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
             IsBusy = true;
             Message = "";
 
-            // Load all employees with empty search
-            var results = await _employeeUpdateService.SearchEmployeesAsync("");
+            // Load all employers in the top selection box
+            var employers = await _employerLookupService.SearchEmployersAsync("");
 
-            Employees.Clear();
-            foreach (var emp in results)
-                Employees.Add(emp);
+            Employers.Clear();
+            foreach (var employer in employers)
+                Employers.Add(employer);
 
-            SearchResultsFound = results.Count > 0;
+            SearchResultsFound = false;
+            SelectedEmployer = null;
             Message = "";
         }
         catch (Exception ex)
         {
-            Message = $"Error loading employees: {ex.Message}";
+            Message = $"Error loading employers: {ex.Message}";
         }
         finally
         {
@@ -227,6 +243,16 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
         }
     }
 
+    private async Task SelectEmployerAsync(EmployerLookupDto? employer)
+    {
+        if (employer == null)
+            return;
+
+        SelectedEmployer = employer;
+        SearchText = employer.RpNumber;
+        await SearchEmployeesAsync();
+    }
+
     private async Task SelectEmployeeAsync(EmployeeLookupDto? employee)
     {
         if (employee == null)
@@ -237,26 +263,19 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
             IsBusy = true;
             Message = "";
 
-            // Load full employee details
-            SelectedEmployee = await _employeeUpdateService.GetEmployeeByRpNumberAsync(employee.RpNumber);
-
-            if (SelectedEmployee == null)
-            {
-                Message = "Failed to load employee details";
-                return;
-            }
+            SelectedEmployee = employee;
 
             // Populate form
-            RpNumber = SelectedEmployee.RpNumber;
-            EmployeeNumber = SelectedEmployee.EmployeeNumber;
-            FirstName = SelectedEmployee.FirstName;
-            LastName = SelectedEmployee.LastName;
-            Sin = SelectedEmployee.Sin ?? "";
-            Address = SelectedEmployee.Address ?? "";
-            City = SelectedEmployee.City ?? "";
-            Province = SelectedEmployee.Province ?? "";
-            PostalCode = SelectedEmployee.PostalCode ?? "";
-            EmailAddress = SelectedEmployee.EmailAddress ?? "";
+            RpNumber = employee.RpNumber;
+            EmployeeNumber = employee.EmployeeNumber;
+            FirstName = employee.FirstName;
+            LastName = employee.LastName;
+            Sin = employee.Sin ?? "";
+            Address = employee.Address ?? "";
+            City = employee.City ?? "";
+            Province = employee.Province ?? "";
+            PostalCode = employee.PostalCode ?? "";
+            EmailAddress = employee.EmailAddress ?? "";
 
             IsEditMode = true;
             EmployeeSelected = true;
