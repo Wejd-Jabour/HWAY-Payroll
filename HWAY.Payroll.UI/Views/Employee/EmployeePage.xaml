@@ -122,7 +122,8 @@
                                 HorizontalOptions="Fill"/>
 
                         <Button Text="Delete"
-                                Command="{Binding DeleteCommand}"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteCommand}"
+                                CommandParameter="{Binding}"
                                 IsVisible="{Binding IsEditMode}"
                                 BackgroundColor="Red"
                                 TextColor="White"
