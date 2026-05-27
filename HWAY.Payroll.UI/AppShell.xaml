@@ -37,6 +37,11 @@
         Title="Employers"
         ContentTemplate="{DataTemplate views:EmployerPage}"
         Route="EmployerPage" />
+
+        <ShellContent
+        Title="PD7 Records"
+        ContentTemplate="{DataTemplate views:PD7Page}"
+        Route="PD7Page" />
         
     </TabBar>
 

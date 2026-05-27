@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Name="ThisPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="HWAY.Payroll.UI.Views.PD7Page"
+    Title="PD7 Records">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="12">
+            <Label Text="PD7 Records" FontSize="24" FontAttributes="Bold"/>
+
+            <Entry Placeholder="Search by RP# or Period"
+                   Text="{Binding SearchText}"
+                   ReturnCommand="{Binding SearchCommand}"/>
+
+            <HorizontalStackLayout Spacing="10">
+                <Button Text="Search" Command="{Binding SearchCommand}" BackgroundColor="Blue" TextColor="White" HorizontalOptions="Fill"/>
+                <Button Text="Refresh" Command="{Binding InitializeCommand}" BackgroundColor="Gray" TextColor="White" HorizontalOptions="Fill"/>
+            </HorizontalStackLayout>
+
+            <Label Text="{Binding Message}" TextColor="Red" HorizontalOptions="Center" FontAttributes="Bold"/>
+
+            <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}"/>
+
+            <Border StrokeThickness="1" Padding="0" Margin="0,12,0,0">
+                <CollectionView ItemsSource="{Binding Records}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="12">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="{Binding DisplayText}" FontAttributes="Bold" FontSize="14"/>
+                                    <Label Text="{Binding Fee, StringFormat='Fee: {0:C}'}" FontSize="12"/>
+                                    <Label Text="{Binding Gross, StringFormat='Gross: {0:C}'}" FontSize="12"/>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
