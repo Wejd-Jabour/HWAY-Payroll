@@ -1,4 +1,5 @@
 using HWAY.Payroll.Data.Context;
+using HWAY.Payroll.Domain;
 using HWAY.Payroll.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -55,6 +56,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 PublicHolidayHours = record.PublicHolidayHours,
                 StatHolidayHours = record.StatHolidayHours,
                 Vacation = record.Vacation,
+                VacationSetting = record.VacationSetting,
                 Gross = record.Gross,
 
                 Tax1 = record.Tax1,
@@ -110,6 +112,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 PublicHolidayHours = record.PublicHolidayHours,
                 StatHolidayHours = record.StatHolidayHours,
                 Vacation = record.Vacation,
+                VacationSetting = record.VacationSetting,
                 Gross = record.Gross,
 
                 Tax1 = record.Tax1,
@@ -164,6 +167,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 PublicHolidayHours = record.PublicHolidayHours,
                 StatHolidayHours = record.StatHolidayHours,
                 Vacation = record.Vacation,
+                VacationSetting = record.VacationSetting,
                 Gross = record.Gross,
 
                 Tax1 = record.Tax1,
@@ -206,10 +210,15 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         var cpp1 = PayrollDeductionCaps.ClampCpp1(dto.Cpp1, record.Cpp1Ytd, payrollYear);
         var cpp2 = PayrollDeductionCaps.ClampCpp2(dto.Cpp2, record.Cpp2Ytd, payrollYear);
         var ei = PayrollDeductionCaps.ClampEi(dto.Ei, record.EiYtd, payrollYear);
+        var vacationSetting = VacationSettings.Normalize(dto.VacationSetting);
+        var vacationUsed = VacationSettings.IsPaidOut(vacationSetting)
+            ? dto.Vacation
+            : dto.VacationUsed;
 
         var netPay = CalculateNetPay(
             dto.Gross,
             dto.Vacation,
+            vacationSetting,
             dto.Tax1,
             cpp1,
             cpp2,
@@ -224,6 +233,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         record.StatHolidayHours = dto.StatHolidayHours;
         record.Gross = dto.Gross;
         record.Vacation = dto.Vacation;
+        record.VacationSetting = vacationSetting;
         record.Tax1 = dto.Tax1;
         record.Cpp1 = cpp1;
         record.Cpp2 = cpp2;
@@ -242,7 +252,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
 
 
         var updatedVacationYtd = record.VacationYtd + dto.Vacation;
-        var updatedVacationYtdUsed = record.VacationYtdUsed + dto.VacationUsed;
+        var updatedVacationYtdUsed = record.VacationYtdUsed + vacationUsed;
 
         record.VacationYtd = updatedVacationYtd;
         record.VacationYtdUsed = updatedVacationYtdUsed;
@@ -269,6 +279,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
     private static decimal CalculateNetPay(
         decimal gross,
         decimal vacation,
+        string vacationSetting,
         decimal tax1,
         decimal cpp1,
         decimal cpp2,
@@ -276,7 +287,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         decimal otherDeduction)
     {
         var totalDeductions = tax1 + cpp1 + cpp2 + ei + otherDeduction;
+        var paidVacation = VacationSettings.IsPaidOut(vacationSetting) ? vacation : 0m;
 
-        return gross + vacation - totalDeductions;
+        return gross + paidVacation - totalDeductions;
     }
 }

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
+using HWAY.Payroll.Domain;
 using HWAY.Payroll.Services.PayrollRecord;
 
 namespace HWAY.Payroll.UI.ViewModels;
@@ -58,6 +59,13 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
     {
         get => _vacation;
         set => SetProperty(ref _vacation, value);
+    }
+
+    private string _vacationSetting = VacationSettings.Accumulate;
+    public string VacationSetting
+    {
+        get => _vacationSetting;
+        set => SetProperty(ref _vacationSetting, VacationSettings.Normalize(value));
     }
 
     private decimal _salary;
@@ -197,6 +205,7 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
     // SEARCH RESULTS
     // -------------------------
     public ObservableCollection<PayrollRecordLookupDto> SearchResults { get; }
+    public IReadOnlyList<string> VacationSettingOptions { get; } = VacationSettings.Options;
 
     private bool _searchResultsFound;
     public bool SearchResultsFound
@@ -260,6 +269,7 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         StatHolidayHours = 0;
         Gross = 0;
         Vacation = 0;
+        VacationSetting = selectedRecord.VacationSetting;
 
         Tax1 = 0;
         Cpp1 = 0;
@@ -290,6 +300,7 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
             StatHolidayHours = StatHolidayHours,
             Gross = Gross,
             Vacation = Vacation,
+            VacationSetting = VacationSetting,
             Tax1 = Tax1,
             Cpp1 = Cpp1,
             Cpp2 = Cpp2,
@@ -361,6 +372,7 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         StatHolidayHours = 0;
         Gross = 0;
         Vacation = 0;
+        VacationSetting = VacationSettings.Accumulate;
         Tax1 = 0;
         Cpp1 = 0;
         Cpp2 = 0;

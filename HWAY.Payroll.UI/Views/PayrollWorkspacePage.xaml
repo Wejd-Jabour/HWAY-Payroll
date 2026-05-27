@@ -125,7 +125,7 @@
 
                                 <Grid
                                     ColumnDefinitions="Auto,160,40,Auto,160,40,Auto,160"
-                                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,160"
+                                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                                     ColumnSpacing="12"
                                     RowSpacing="8">
 
@@ -149,6 +149,14 @@
 
                                     <Label Grid.Row="6" Grid.Column="0" Text="Pay Date" VerticalOptions="Center" />
                                     <DatePicker Grid.Row="6" Grid.Column="1" Date="{Binding PayDateDisplay}" />
+
+                                    <Label Grid.Row="7" Grid.Column="0" Text="Vacation Setting" VerticalOptions="Center" />
+                                    <Picker
+                                        Grid.Row="7"
+                                        Grid.Column="1"
+                                        ItemsSource="{Binding VacationSettingOptions}"
+                                        SelectedItem="{Binding VacationSetting}"
+                                        Title="Vacation setting" />
 
                                     <Border
                                         Grid.Row="0"
@@ -196,6 +204,7 @@
                                                 Grid.Row="0"
                                                 Grid.Column="1"
                                                 Text="{Binding VacationUsed}"
+                                                IsEnabled="{Binding CanEditVacationUsed}"
                                                 Keyboard="Numeric" />
 
                                             <Label

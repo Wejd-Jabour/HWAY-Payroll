@@ -10,6 +10,7 @@ public class PayrollRecordUpdateDto
     public decimal StatHolidayHours { get; set; }
     public decimal Gross { get; set; }
     public decimal Vacation { get; set; }
+    public string VacationSetting { get; set; } = HWAY.Payroll.Domain.VacationSettings.Accumulate;
     public decimal VacationUsed { get; set; }
     public decimal Tax1 { get; set; }
     public decimal Cpp1 { get; set; }

@@ -120,6 +120,11 @@
                        Keyboard="Numeric"
                        IsReadOnly="True" />
 
+                <Label Text="Vacation Setting" />
+                <Picker ItemsSource="{Binding VacationSettingOptions}"
+                        SelectedItem="{Binding VacationSetting}"
+                        Title="Vacation setting" />
+
                 <!-- Tax / Deductions -->
                 <Label Text="Tax1" />
                 <Entry Text="{Binding Tax1}"

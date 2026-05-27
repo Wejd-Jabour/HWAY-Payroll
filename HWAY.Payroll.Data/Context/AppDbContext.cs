@@ -109,6 +109,11 @@ public class AppDbContext : DbContext
             entity.Property(e => e.PublicHolidayHours).HasColumnName("Public.H").HasColumnType("decimal(18,2)");
             entity.Property(e => e.StatHolidayHours).HasColumnName("S.H Hours").HasColumnType("decimal(18,2)");
             entity.Property(e => e.Vacation).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.VacationSetting)
+                .HasColumnName("vacation_setting")
+                .HasMaxLength(20)
+                .HasDefaultValue(HWAY.Payroll.Domain.VacationSettings.Accumulate)
+                .IsRequired();
             entity.Property(e => e.Gross).HasColumnType("decimal(18,2)");
 
             entity.Property(e => e.Tax1).HasColumnName("TAX1").HasColumnType("decimal(18,2)");
