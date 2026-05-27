@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
+using HWAY.Payroll.Services;
 using HWAY.Payroll.Services.PayrollRecord;
 using HWAY.Payroll.Services.PayrollRecordEdit;
 
@@ -15,7 +16,12 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
     private readonly IPayrollRecordLookupService _lookupService;
 
     private int _currentPayrollRecordId;
+    private decimal _cpp1Ytd;
+    private decimal _cpp2Ytd;
+    private decimal _eiYtd;
     private bool _requiresRecalculate;
+
+    private static int PayrollYear => DateTime.Today.Year;
 
     public PayrollRecordEditViewModel(IPayrollRecordEditService service, IPayrollRecordLookupService lookupService)
     {
@@ -148,22 +154,46 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
     public decimal Cpp1
     {
         get => _cpp1;
-        set => SetProperty(ref _cpp1, value);
+        set => SetDeductionWithCap(
+            ref _cpp1,
+            value,
+            _cpp1Ytd,
+            PayrollDeductionCaps.ClampCpp1,
+            nameof(Cpp1),
+            nameof(CanEditCpp1));
     }
 
     private decimal _cpp2;
     public decimal Cpp2
     {
         get => _cpp2;
-        set => SetProperty(ref _cpp2, value);
+        set => SetDeductionWithCap(
+            ref _cpp2,
+            value,
+            _cpp2Ytd,
+            PayrollDeductionCaps.ClampCpp2,
+            nameof(Cpp2),
+            nameof(CanEditCpp2));
     }
 
     private decimal _ei;
     public decimal Ei
     {
         get => _ei;
-        set => SetProperty(ref _ei, value);
+        set => SetDeductionWithCap(
+            ref _ei,
+            value,
+            _eiYtd,
+            PayrollDeductionCaps.ClampEi,
+            nameof(Ei),
+            nameof(CanEditEi));
     }
+
+    public bool CanEditCpp1 => PayrollDeductionCaps.HasCpp1Room(_cpp1Ytd, PayrollYear) || _cpp1 > 0;
+
+    public bool CanEditCpp2 => PayrollDeductionCaps.HasCpp2Room(_cpp2Ytd, PayrollYear) || _cpp2 > 0;
+
+    public bool CanEditEi => PayrollDeductionCaps.HasEiRoom(_eiYtd, PayrollYear) || _ei > 0;
 
     private decimal _otherDeduction;
     public decimal OtherDeduction
@@ -274,6 +304,10 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
         Vacation = selectedRecord.Vacation;
         _requiresRecalculate = false;
 
+        _cpp1Ytd = selectedRecord.Cpp1Ytd;
+        _cpp2Ytd = selectedRecord.Cpp2Ytd;
+        _eiYtd = selectedRecord.EiYtd;
+
         Tax1 = selectedRecord.Tax1;
         Cpp1 = selectedRecord.Cpp1;
         Cpp2 = selectedRecord.Cpp2;
@@ -284,6 +318,9 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
 
         EmployeeFound = true;
         EmployeeNotFound = false;
+        OnPropertyChanged(nameof(CanEditCpp1));
+        OnPropertyChanged(nameof(CanEditCpp2));
+        OnPropertyChanged(nameof(CanEditEi));
     }
 
     private async Task SaveChanges()
@@ -362,7 +399,31 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
             return false;
 
         field = value;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        OnPropertyChanged(propertyName);
         return true;
+    }
+
+    private void SetDeductionWithCap(
+        ref decimal field,
+        decimal requestedValue,
+        decimal currentYtd,
+        Func<decimal, decimal, int, decimal> capDeduction,
+        string propertyName,
+        string canEditPropertyName)
+    {
+        var cappedValue = capDeduction(requestedValue, currentYtd, PayrollYear);
+        var valueChanged = !EqualityComparer<decimal>.Default.Equals(field, cappedValue);
+
+        if (!valueChanged && requestedValue == cappedValue)
+            return;
+
+        field = cappedValue;
+        OnPropertyChanged(propertyName);
+        OnPropertyChanged(canEditPropertyName);
+    }
+
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

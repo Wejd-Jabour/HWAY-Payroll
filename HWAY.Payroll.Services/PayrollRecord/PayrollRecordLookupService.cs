@@ -1,4 +1,5 @@
 using HWAY.Payroll.Data.Context;
+using HWAY.Payroll.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace HWAY.Payroll.Services.PayrollRecord;
@@ -201,14 +202,18 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         record.Period = CalculatePeriod(record.Employer?.EmployerGroup, DateTime.Today);
         var salary = dto.Salary;
         var rate = salary > 0 ? 0 : dto.Rate;
+        var payrollYear = DateTime.Today.Year;
+        var cpp1 = PayrollDeductionCaps.ClampCpp1(dto.Cpp1, record.Cpp1Ytd, payrollYear);
+        var cpp2 = PayrollDeductionCaps.ClampCpp2(dto.Cpp2, record.Cpp2Ytd, payrollYear);
+        var ei = PayrollDeductionCaps.ClampEi(dto.Ei, record.EiYtd, payrollYear);
 
         var netPay = CalculateNetPay(
             dto.Gross,
             dto.Vacation,
             dto.Tax1,
-            dto.Cpp1,
-            dto.Cpp2,
-            dto.Ei,
+            cpp1,
+            cpp2,
+            ei,
             dto.OtherDeduction);
 
         record.Salary = salary;
@@ -220,9 +225,9 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         record.Gross = dto.Gross;
         record.Vacation = dto.Vacation;
         record.Tax1 = dto.Tax1;
-        record.Cpp1 = dto.Cpp1;
-        record.Cpp2 = dto.Cpp2;
-        record.Ei = dto.Ei;
+        record.Cpp1 = cpp1;
+        record.Cpp2 = cpp2;
+        record.Ei = ei;
         record.OtherDeduction = dto.OtherDeduction;
         record.NetPay = netPay;
         record.HireDate = dto.HireDate;
@@ -230,9 +235,9 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         record.GrossYtd += dto.Gross;
         record.NetYtd += netPay;
         record.TaxYtd += dto.Tax1;
-        record.Cpp1Ytd += dto.Cpp1;
-        record.Cpp2Ytd += dto.Cpp2;
-        record.EiYtd += dto.Ei;
+        record.Cpp1Ytd += cpp1;
+        record.Cpp2Ytd += cpp2;
+        record.EiYtd += ei;
         record.OtherDeductionYtd += dto.OtherDeduction;
 
 
