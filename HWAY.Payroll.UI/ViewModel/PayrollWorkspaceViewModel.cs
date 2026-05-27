@@ -580,19 +580,19 @@ public class PaystubTemplateBindingModel
 
         OvertimePaySalary = "";
         OvertimePayHours = FormatNumber(overtimeHours);
-        OvertimePayRate = FormatMoney(rate * 1.5m);
+        OvertimePayRate = FormatMoneyWhenHoursSet(rate * 1.5m, overtimeHours);
         OvertimePayCurrent = FormatMoney(overtimePay);
         OvertimePayYtd = "";
 
         PublicHolidaySalary = "";
         PublicHolidayHours = FormatNumber(publicHolidayHours);
-        PublicHolidayRate = FormatMoney(rate);
+        PublicHolidayRate = FormatMoneyWhenHoursSet(rate, publicHolidayHours);
         PublicHolidayCurrent = FormatMoney(publicHolidayPay);
         PublicHolidayYtd = "";
 
         StatHolidaySalary = "";
         StatHolidayHours = FormatNumber(statHolidayHours);
-        StatHolidayRate = FormatMoney(rate * 1.5m);
+        StatHolidayRate = FormatMoneyWhenHoursSet(rate * 1.5m, statHolidayHours);
         StatHolidayCurrent = FormatMoney(statHolidayPay);
         StatHolidayYtd = "";
 
@@ -788,6 +788,9 @@ public class PaystubTemplateBindingModel
     private static string FormatMoney(decimal value) => value == 0 ? "" : value.ToString("0.00");
 
     private static string FormatNumber(decimal value) => value == 0 ? "" : value.ToString("0.##");
+
+    private static string FormatMoneyWhenHoursSet(decimal value, decimal hours) =>
+        hours == 0 ? "" : FormatMoney(value);
 
     private static string BuildCityProvinceLine(string city, string province, string postalCode)
     {
