@@ -46,7 +46,11 @@ public static class MauiProgram
                 MultipleActiveResultSets=False;
                 Encrypt=True;
                 TrustServerCertificate=False;
-                Connection Timeout=30;");
+                Connection Timeout=30;",
+                sqlOptions => sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(10),
+                    errorNumbersToAdd: null));
         });
 
         builder.Services.AddScoped<IEmployerLookupService, EmployerLookupService>();

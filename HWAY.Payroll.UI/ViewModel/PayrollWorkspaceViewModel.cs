@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
 using HWAY.Payroll.Services;
+using HWAY.Payroll.Domain;
 using HWAY.Payroll.Services.Employers;
 using HWAY.Payroll.Services.PayrollRecord;
 
@@ -245,6 +246,7 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
         StatHolidayHours = 0;
         Gross = 0;
         Vacation = 0;
+        _vacationSetting = VacationSettings.Normalize(record.VacationSetting);
 
         VacationYtd = record.VacationYtd;
         VacationYtdUsed = record.VacationYtdUsed;
@@ -261,6 +263,7 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
     public int Id { get; }
     public string EmployeeNumber { get; }
     public string EmployeeName { get; }
+    public IReadOnlyList<string> VacationSettingOptions { get; } = VacationSettings.Options;
 
     private decimal _salary;
     public decimal Salary
@@ -327,8 +330,37 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
     public decimal Vacation
     {
         get => _vacation;
-        set => SetProperty(ref _vacation, value);
+        set
+        {
+            if (SetProperty(ref _vacation, value))
+            {
+                OnPropertyChanged(nameof(VacationUsed));
+                RefreshVacationTotalsPreview();
+            }
+        }
     }
+
+    private string _vacationSetting = VacationSettings.Accumulate;
+    public string VacationSetting
+    {
+        get => _vacationSetting;
+        set
+        {
+            var normalizedValue = VacationSettings.Normalize(value);
+
+            if (SetProperty(ref _vacationSetting, normalizedValue))
+            {
+                OnPropertyChanged(nameof(IsVacationPaidOut));
+                OnPropertyChanged(nameof(CanEditVacationUsed));
+                OnPropertyChanged(nameof(VacationUsed));
+                RefreshVacationTotalsPreview();
+            }
+        }
+    }
+
+    public bool IsVacationPaidOut => VacationSettings.IsPaidOut(VacationSetting);
+
+    public bool CanEditVacationUsed => !IsVacationPaidOut;
 
     private decimal _tax1;
     public decimal Tax1
@@ -406,7 +438,7 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
     private decimal _vacationUsed;
     public decimal VacationUsed
     {
-        get => _vacationUsed;
+        get => IsVacationPaidOut ? Vacation : _vacationUsed;
         set
         {
             if (SetProperty(ref _vacationUsed, value))
@@ -487,6 +519,7 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
             StatHolidayHours = StatHolidayHours,
             Gross = Gross,
             Vacation = Vacation,
+            VacationSetting = VacationSetting,
             VacationUsed = VacationUsed,
             Tax1 = Tax1,
             Cpp1 = Cpp1,
@@ -514,6 +547,8 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
             Cpp2,
             Ei,
             OtherDeduction,
+            VacationUsed,
+            VacationSetting,
             PayDate);
 
         IsPaystubVisible = true;
@@ -590,6 +625,8 @@ public class PaystubTemplateBindingModel
     decimal cpp2,
     decimal ei,
     decimal otherDeduction,
+    decimal vacationUsed,
+    string vacationSetting,
     DateTime payDate)
     {
         EmployerName = employer.EmployerName;
@@ -622,12 +659,25 @@ public class PaystubTemplateBindingModel
         var overtimePay = rate * 1.5m * overtimeHours;
         var publicHolidayPay = rate * publicHolidayHours;
         var statHolidayPay = rate * 1.5m * statHolidayHours;
+        var normalizedVacationSetting = VacationSettings.Normalize(vacationSetting);
+        var isVacationPaidOut = VacationSettings.IsPaidOut(normalizedVacationSetting);
+        var paidVacation = isVacationPaidOut ? vacation : 0m;
+        var currentVacationUsed = isVacationPaidOut ? vacation : vacationUsed;
+        var grossYtd = record.GrossYtd + gross;
+        var taxYtd = record.TaxYtd + tax1;
+        var cpp1Ytd = record.Cpp1Ytd + cpp1;
+        var cpp2Ytd = record.Cpp2Ytd + cpp2;
+        var eiYtd = record.EiYtd + ei;
+        var otherDeductionYtd = record.OtherDeductionYtd + otherDeduction;
+        var vacationYtd = record.VacationYtd + vacation;
+        var vacationYtdUsed = record.VacationYtdUsed + currentVacationUsed;
+        var vacationYtdBalance = vacationYtd - vacationYtdUsed;
 
         RegularPaySalary = FormatMoney(salary);
         RegularPayHours = FormatNumber(regularHours);
         RegularPayRate = FormatMoney(rate);
         RegularPayCurrent = FormatMoney(regularPay);
-        RegularPayYtd = FormatMoney(record.GrossYtd);
+        RegularPayYtd = FormatMoney(grossYtd);
 
         OvertimePaySalary = "";
         OvertimePayHours = FormatNumber(overtimeHours);
@@ -647,50 +697,52 @@ public class PaystubTemplateBindingModel
         StatHolidayCurrent = FormatMoney(statHolidayPay);
         StatHolidayYtd = "";
 
-        VacationPayCurrent = FormatMoney(vacation);
-        VacationPayYtd = FormatMoney(record.VacationYtd);
+        ShowVacationPay = isVacationPaidOut;
+        VacationPayCurrent = isVacationPaidOut ? FormatMoney(vacation) : "";
+        VacationPayYtd = isVacationPaidOut ? FormatMoney(vacationYtdUsed) : "";
 
-        TotalPayCurrent = FormatMoney(gross + vacation);
-        TotalPayYtd = FormatMoney(record.GrossYtd + record.VacationYtd);
+        TotalPayCurrent = FormatMoney(gross + paidVacation);
+        TotalPayYtd = FormatMoney(grossYtd + vacationYtdUsed);
 
         TaxCurrent = FormatMoney(tax1);
-        TaxYtd = FormatMoney(record.TaxYtd);
+        TaxYtd = FormatMoney(taxYtd);
 
         Cpp1Current = FormatMoney(cpp1);
-        Cpp1Ytd = FormatMoney(record.Cpp1Ytd);
+        Cpp1Ytd = FormatMoney(cpp1Ytd);
 
         Cpp2Current = FormatMoney(cpp2);
-        Cpp2Ytd = FormatMoney(record.Cpp2Ytd);
+        Cpp2Ytd = FormatMoney(cpp2Ytd);
 
         EiCurrent = FormatMoney(ei);
-        EiYtd = FormatMoney(record.EiYtd);
+        EiYtd = FormatMoney(eiYtd);
 
         OtherDeductionCurrent = FormatMoney(otherDeduction);
-        OtherDeductionYtd = FormatMoney(record.OtherDeductionYtd);
+        OtherDeductionYtd = FormatMoney(otherDeductionYtd);
 
-        var totalPay = gross + vacation;
-        var netPay = CalculateNetPay(gross, vacation, tax1, cpp1, cpp2, ei, otherDeduction);
+        var totalPay = gross + paidVacation;
+        var netPay = CalculateNetPay(gross, vacation, normalizedVacationSetting, tax1, cpp1, cpp2, ei, otherDeduction);
+        var netYtd = record.NetYtd + netPay;
 
         HeaderNetPay = FormatMoney(netPay);
         BenefitNetPay = FormatMoney(netPay);
 
         SummaryTotalPayCurrent = FormatMoney(totalPay);
-        SummaryTotalPayYtd = FormatMoney(record.GrossYtd + record.VacationYtd);
+        SummaryTotalPayYtd = FormatMoney(grossYtd + vacationYtdUsed);
 
         SummaryTaxesCurrent = FormatMoney(tax1);
-        SummaryTaxesYtd = FormatMoney(record.TaxYtd);
+        SummaryTaxesYtd = FormatMoney(taxYtd);
 
         SummaryDeductionsCurrent = FormatMoney(cpp1 + cpp2 + ei + otherDeduction);
         SummaryDeductionsYtd = FormatMoney(
-            record.Cpp1Ytd +
-            record.Cpp2Ytd +
-            record.EiYtd +
-            record.OtherDeductionYtd);
+            cpp1Ytd +
+            cpp2Ytd +
+            eiYtd +
+            otherDeductionYtd);
 
         SummaryNetPayCurrent = FormatMoney(netPay);
-        SummaryNetPayYtd = FormatMoney(record.NetYtd);
+        SummaryNetPayYtd = FormatMoney(netYtd);
 
-        VacationYtdBalance = FormatMoney(record.VacationYtdBalance);
+        VacationYtdBalance = FormatMoney(vacationYtdBalance);
         Memo = "";
     }
 
@@ -794,6 +846,7 @@ public class PaystubTemplateBindingModel
     public string StatHolidayCurrent { get; }
     public string StatHolidayYtd { get; }
 
+    public bool ShowVacationPay { get; }
     public string VacationPayCurrent { get; }
     public string VacationPayYtd { get; }
     public string TotalPayCurrent { get; }
@@ -822,6 +875,7 @@ public class PaystubTemplateBindingModel
     private static decimal CalculateNetPay(
         decimal gross,
         decimal vacation,
+        string vacationSetting,
         decimal tax1,
         decimal cpp1,
         decimal cpp2,
@@ -829,8 +883,9 @@ public class PaystubTemplateBindingModel
         decimal otherDeduction)
     {
         var totalDeductions = tax1 + cpp1 + cpp2 + ei + otherDeduction;
+        var paidVacation = VacationSettings.IsPaidOut(vacationSetting) ? vacation : 0m;
 
-        return gross + vacation - totalDeductions;
+        return gross + paidVacation - totalDeductions;
     }
 
     private static string FormatMoney(decimal value) => value == 0 ? "" : value.ToString("0.00");

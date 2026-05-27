@@ -300,6 +300,14 @@ namespace HWAY.Payroll.Data.Migrations
                     b.Property<decimal>("Vacation")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("VacationSetting")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Accumulate")
+                        .HasColumnName("vacation_setting");
+
                     b.Property<decimal>("VacationYtd")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("Vacation -YTD");

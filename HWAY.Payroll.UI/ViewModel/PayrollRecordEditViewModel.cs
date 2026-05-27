@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
+using HWAY.Payroll.Domain;
 using HWAY.Payroll.Services;
 using HWAY.Payroll.Services.PayrollRecord;
 using HWAY.Payroll.Services.PayrollRecordEdit;
@@ -143,6 +144,21 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
         set => SetProperty(ref _vacation, value);
     }
 
+    private string _vacationSetting = VacationSettings.Accumulate;
+    public string VacationSetting
+    {
+        get => _vacationSetting;
+        set
+        {
+            var normalizedValue = VacationSettings.Normalize(value);
+
+            if (SetProperty(ref _vacationSetting, normalizedValue))
+            {
+                NetPay = CalculateNetPay(Gross, Vacation, VacationSetting, Tax1, Cpp1, Cpp2, Ei, OtherDeduction);
+            }
+        }
+    }
+
     private decimal _tax1;
     public decimal Tax1
     {
@@ -243,6 +259,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
     public ICommand OpenCraWebsiteCommand { get; }
 
     public ObservableCollection<PayrollRecordLookupDto> SearchResults { get; }
+    public IReadOnlyList<string> VacationSettingOptions { get; } = VacationSettings.Options;
 
     public PayrollRecordLookupDto? SelectedPayrollRecord
     {
@@ -302,6 +319,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
 
         Gross = selectedRecord.Gross;
         Vacation = selectedRecord.Vacation;
+        VacationSetting = selectedRecord.VacationSetting;
         _requiresRecalculate = false;
 
         _cpp1Ytd = selectedRecord.Cpp1Ytd;
@@ -351,6 +369,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
                 OvertimeHours = OvertimeHours,
                 Gross = Gross,
                 Vacation = Vacation,
+                VacationSetting = VacationSetting,
                 Tax1 = Tax1,
                 Cpp1 = Cpp1,
                 Cpp2 = Cpp2,
@@ -377,7 +396,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
     {
         Gross = Salary + (Rate * RegularHours) + (Rate * 1.5m * OvertimeHours);
         Vacation = Gross * 0.04m;
-        NetPay = Gross - Tax1 - Cpp1 - Cpp2 - Ei - OtherDeduction;
+        NetPay = CalculateNetPay(Gross, Vacation, VacationSetting, Tax1, Cpp1, Cpp2, Ei, OtherDeduction);
         _requiresRecalculate = false;
         Message = "Gross and vacation recalculated. Opening CRA...";
         OpenCraWebsite();
@@ -386,6 +405,22 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
     private void OpenCraWebsite()
     {
         Launcher.OpenAsync("https://www.canada.ca/en/revenue-agency.html");
+    }
+
+    private static decimal CalculateNetPay(
+        decimal gross,
+        decimal vacation,
+        string vacationSetting,
+        decimal tax1,
+        decimal cpp1,
+        decimal cpp2,
+        decimal ei,
+        decimal otherDeduction)
+    {
+        var totalDeductions = tax1 + cpp1 + cpp2 + ei + otherDeduction;
+        var paidVacation = VacationSettings.IsPaidOut(vacationSetting) ? vacation : 0m;
+
+        return gross + paidVacation - totalDeductions;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
