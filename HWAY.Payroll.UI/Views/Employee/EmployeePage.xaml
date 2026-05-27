@@ -45,16 +45,21 @@
             <Entry Placeholder="Enter search term..."
                    Text="{Binding SearchText}"
                    ReturnCommand="{Binding SearchCommand}"/>
-            <Button Text="Search"
-                    Command="{Binding SearchCommand}"
-                    BackgroundColor="Blue"
-                    TextColor="White"/>
 
-            <!-- Add New Button -->
-            <Button Text="+ Add New Employee"
-                    Command="{Binding NewEmployeeCommand}"
-                    BackgroundColor="Green"
-                    TextColor="White"/>
+              <!-- Search and New Buttons -->
+            <HorizontalStackLayout Spacing="10">
+                <Button Text="Search"
+                        Command="{Binding SearchCommand}"
+                        BackgroundColor="Blue"
+                        TextColor="White"
+                        HorizontalOptions="Fill"/>
+                
+                <Button Text="+ Add New Employer"
+                        Command="{Binding NewEmployeeCommand}"
+                        BackgroundColor="Green"
+                        TextColor="White"
+                        HorizontalOptions="Fill"/>
+            </HorizontalStackLayout>
 
             <!-- Message -->
             <Label Text="{Binding Message}"
