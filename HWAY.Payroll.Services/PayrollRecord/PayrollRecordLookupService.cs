@@ -199,6 +199,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
             throw new InvalidOperationException($"Payroll record with Id {payrollRecordId} not found.");
 
         record.Period = CalculatePeriod(record.Employer?.EmployerGroup, DateTime.Today);
+        var salary = dto.Salary;
+        var rate = salary > 0 ? 0 : dto.Rate;
 
         var netPay = CalculateNetPay(
             dto.Gross,
@@ -209,8 +211,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
             dto.Ei,
             dto.OtherDeduction);
 
-        record.Salary = dto.Salary;
-        record.Rate = dto.Rate;
+        record.Salary = salary;
+        record.Rate = rate;
         record.RegularHours = dto.RegularHours;
         record.OvertimeHours = dto.OvertimeHours;
         record.PublicHolidayHours = dto.PublicHolidayHours;

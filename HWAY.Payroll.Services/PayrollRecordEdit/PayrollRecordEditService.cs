@@ -23,9 +23,11 @@ public class PayrollRecordEditService : IPayrollRecordEditService
             throw new InvalidOperationException($"Payroll record with Id {payrollRecordId} not found.");
 
         record.Period = CalculatePeriod(record.Employer?.EmployerGroup, DateTime.Today);
+        var salary = dto.Salary;
+        var rate = salary > 0 ? 0 : dto.Rate;
 
         var netPay = CalculateNetPay(
-            dto.Salary,
+            salary,
             dto.Gross,
             dto.Vacation,
             dto.Tax1,
@@ -36,8 +38,8 @@ public class PayrollRecordEditService : IPayrollRecordEditService
         record.EmployeeName = dto.EmployeeName;
         record.EmployeeNumber = dto.EmployeeNumber;
         record.RpNumber = dto.RpNumber;
-        record.Salary = dto.Salary;
-        record.Rate = dto.Rate;
+        record.Salary = salary;
+        record.Rate = rate;
         record.RegularHours = dto.RegularHours;
         record.Gross = dto.Gross;
         record.Vacation = dto.Vacation;
