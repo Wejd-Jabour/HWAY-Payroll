@@ -617,8 +617,6 @@ public class PaystubTemplateBindingModel
         OtherDeductionCurrent = FormatMoney(otherDeduction);
         OtherDeductionYtd = FormatMoney(record.OtherDeductionYtd);
 
-        var payrollDeductions = tax1 + cpp1 + cpp2 + ei;
-        var totalDeductions = payrollDeductions + otherDeduction;
         var totalPay = gross + vacation;
         var netPay = CalculateNetPay(gross, vacation, tax1, cpp1, cpp2, ei, otherDeduction);
 
@@ -631,9 +629,8 @@ public class PaystubTemplateBindingModel
         SummaryTaxesCurrent = FormatMoney(tax1);
         SummaryTaxesYtd = FormatMoney(record.TaxYtd);
 
-        SummaryDeductionsCurrent = FormatMoney(totalDeductions);
+        SummaryDeductionsCurrent = FormatMoney(cpp1 + cpp2 + ei + otherDeduction);
         SummaryDeductionsYtd = FormatMoney(
-            record.TaxYtd +
             record.Cpp1Ytd +
             record.Cpp2Ytd +
             record.EiYtd +
