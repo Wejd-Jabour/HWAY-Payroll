@@ -257,13 +257,13 @@
                                     <Entry Grid.Row="0" Grid.Column="1" Text="{Binding Tax1}" Keyboard="Numeric" />
 
                                     <Label Grid.Row="1" Grid.Column="0" Text="CPP1" VerticalOptions="Center" />
-                                    <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Cpp1}" Keyboard="Numeric" />
+                                    <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Cpp1}" Keyboard="Numeric" IsEnabled="{Binding CanEditCpp1}" />
 
                                     <Label Grid.Row="2" Grid.Column="0" Text="CPP2" VerticalOptions="Center" />
-                                    <Entry Grid.Row="2" Grid.Column="1" Text="{Binding Cpp2}" Keyboard="Numeric" />
+                                    <Entry Grid.Row="2" Grid.Column="1" Text="{Binding Cpp2}" Keyboard="Numeric" IsEnabled="{Binding CanEditCpp2}" />
 
                                     <Label Grid.Row="3" Grid.Column="0" Text="EI" VerticalOptions="Center" />
-                                    <Entry Grid.Row="3" Grid.Column="1" Text="{Binding Ei}" Keyboard="Numeric" />
+                                    <Entry Grid.Row="3" Grid.Column="1" Text="{Binding Ei}" Keyboard="Numeric" IsEnabled="{Binding CanEditEi}" />
 
                                     <Label Grid.Row="4" Grid.Column="0" Text="Other Deductions" VerticalOptions="Center" />
                                     <Entry Grid.Row="4" Grid.Column="1" Text="{Binding OtherDeduction}" Keyboard="Numeric" />

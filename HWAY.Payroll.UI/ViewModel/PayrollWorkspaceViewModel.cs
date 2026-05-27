@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
+using HWAY.Payroll.Services;
 using HWAY.Payroll.Services.Employers;
 using HWAY.Payroll.Services.PayrollRecord;
 
@@ -225,6 +226,8 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
     private readonly EmployerLookupDto _employer;
     private readonly PayrollRecordLookupDto _record;
 
+    private static int PayrollYear => DateTime.Today.Year;
+
     public EmployeePayrollRowViewModel(EmployerLookupDto employer, PayrollRecordLookupDto record)
     {
         _employer = employer;
@@ -338,22 +341,46 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
     public decimal Cpp1
     {
         get => _cpp1;
-        set => SetProperty(ref _cpp1, value);
+        set => SetDeductionWithCap(
+            ref _cpp1,
+            value,
+            _record.Cpp1Ytd,
+            PayrollDeductionCaps.ClampCpp1,
+            nameof(Cpp1),
+            nameof(CanEditCpp1));
     }
 
     private decimal _cpp2;
     public decimal Cpp2
     {
         get => _cpp2;
-        set => SetProperty(ref _cpp2, value);
+        set => SetDeductionWithCap(
+            ref _cpp2,
+            value,
+            _record.Cpp2Ytd,
+            PayrollDeductionCaps.ClampCpp2,
+            nameof(Cpp2),
+            nameof(CanEditCpp2));
     }
 
     private decimal _ei;
     public decimal Ei
     {
         get => _ei;
-        set => SetProperty(ref _ei, value);
+        set => SetDeductionWithCap(
+            ref _ei,
+            value,
+            _record.EiYtd,
+            PayrollDeductionCaps.ClampEi,
+            nameof(Ei),
+            nameof(CanEditEi));
     }
+
+    public bool CanEditCpp1 => PayrollDeductionCaps.HasCpp1Room(_record.Cpp1Ytd, PayrollYear) || _cpp1 > 0;
+
+    public bool CanEditCpp2 => PayrollDeductionCaps.HasCpp2Room(_record.Cpp2Ytd, PayrollYear) || _cpp2 > 0;
+
+    public bool CanEditEi => PayrollDeductionCaps.HasEiRoom(_record.EiYtd, PayrollYear) || _ei > 0;
 
     private decimal _otherDeduction;
     public decimal OtherDeduction
@@ -500,8 +527,32 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
             return false;
 
         field = value;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        OnPropertyChanged(name);
         return true;
+    }
+
+    private void SetDeductionWithCap(
+        ref decimal field,
+        decimal requestedValue,
+        decimal currentYtd,
+        Func<decimal, decimal, int, decimal> capDeduction,
+        string propertyName,
+        string canEditPropertyName)
+    {
+        var cappedValue = capDeduction(requestedValue, currentYtd, PayrollYear);
+        var valueChanged = !EqualityComparer<decimal>.Default.Equals(field, cappedValue);
+
+        if (!valueChanged && requestedValue == cappedValue)
+            return;
+
+        field = cappedValue;
+        OnPropertyChanged(propertyName);
+        OnPropertyChanged(canEditPropertyName);
+    }
+
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     private static decimal CalculateGross(

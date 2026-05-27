@@ -166,17 +166,20 @@
                     <Label Text="CPP1" />
                     <Entry Placeholder="CPP1"
                            Keyboard="Numeric"
-                           Text="{Binding Cpp1}" />
+                           Text="{Binding Cpp1}"
+                           IsEnabled="{Binding CanEditCpp1}" />
 
                     <Label Text="CPP2" />
                     <Entry Placeholder="CPP2"
                            Keyboard="Numeric"
-                           Text="{Binding Cpp2}" />
+                           Text="{Binding Cpp2}"
+                           IsEnabled="{Binding CanEditCpp2}" />
 
                     <Label Text="EI" />
                     <Entry Placeholder="EI"
                            Keyboard="Numeric"
-                           Text="{Binding Ei}" />
+                           Text="{Binding Ei}"
+                           IsEnabled="{Binding CanEditEi}" />
 
                     <Label Text="Other Deduction" />
                     <Entry Placeholder="Other Deduction"
