@@ -235,23 +235,24 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
         EmployeeName = record.EmployeeName;
 
         Salary = record.Salary;
-        Rate = record.Rate;
-        RegularHours = record.RegularHours;
-        OvertimeHours = record.OvertimeHours;
-        PublicHolidayHours = record.PublicHolidayHours;
-        StatHolidayHours = record.StatHolidayHours;
-        Gross = record.Gross;
-        Vacation = record.Vacation;
+        Rate = record.Salary > 0 ? 0 : record.Rate;
+        RegularHours = 0;
+        OvertimeHours = 0;
+        PublicHolidayHours = 0;
+        StatHolidayHours = 0;
+        Gross = 0;
+        Vacation = 0;
 
         VacationYtd = record.VacationYtd;
         VacationYtdUsed = record.VacationYtdUsed;
         VacationYtdBalance = record.VacationYtdBalance;
 
-        Tax1 = record.Tax1;
-        Cpp1 = record.Cpp1;
-        Cpp2 = record.Cpp2;
-        Ei = record.Ei;
-        OtherDeduction = record.OtherDeduction;
+        Tax1 = 0;
+        Cpp1 = 0;
+        Cpp2 = 0;
+        Ei = 0;
+        OtherDeduction = 0;
+        VacationUsed = 0;
     }
 
     public int Id { get; }
@@ -262,14 +263,26 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
     public decimal Salary
     {
         get => _salary;
-        set => SetProperty(ref _salary, value);
+        set
+        {
+            if (SetProperty(ref _salary, value) && value > 0)
+            {
+                SetProperty(ref _rate, 0m, nameof(Rate));
+            }
+        }
     }
 
     private decimal _rate;
     public decimal Rate
     {
         get => _rate;
-        set => SetProperty(ref _rate, value);
+        set
+        {
+            if (SetProperty(ref _rate, value) && value > 0)
+            {
+                SetProperty(ref _salary, 0m, nameof(Salary));
+            }
+        }
     }
 
     private decimal _regularHours;

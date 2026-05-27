@@ -72,7 +72,14 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
         set
         {
             if (SetProperty(ref _salary, value))
+            {
+                if (value > 0)
+                {
+                    SetProperty(ref _rate, 0m, nameof(Rate));
+                }
+
                 _requiresRecalculate = true;
+            }
         }
     }
 
@@ -83,7 +90,14 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
         set
         {
             if (SetProperty(ref _rate, value))
+            {
+                if (value > 0)
+                {
+                    SetProperty(ref _salary, 0m, nameof(Salary));
+                }
+
                 _requiresRecalculate = true;
+            }
         }
     }
 
@@ -102,7 +116,11 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
     public decimal OvertimeHours
     {
         get => _overtimeHours;
-        set => SetProperty(ref _overtimeHours, value);
+        set
+        {
+            if (SetProperty(ref _overtimeHours, value))
+                _requiresRecalculate = true;
+        }
     }
 
     private decimal _gross;
@@ -248,7 +266,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
         EmployerName = selectedRecord.EmployerName;
 
         Salary = selectedRecord.Salary;
-        Rate = selectedRecord.Rate;
+        Rate = selectedRecord.Salary > 0 ? 0 : selectedRecord.Rate;
         RegularHours = selectedRecord.RegularHours;
         OvertimeHours = selectedRecord.OvertimeHours;
 

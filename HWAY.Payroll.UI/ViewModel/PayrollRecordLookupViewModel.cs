@@ -64,14 +64,26 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
     public decimal Salary
     {
         get => _salary;
-        set => SetProperty(ref _salary, value);
+        set
+        {
+            if (SetProperty(ref _salary, value) && value > 0)
+            {
+                SetProperty(ref _rate, 0m, nameof(Rate));
+            }
+        }
     }
 
     private decimal _rate;
     public decimal Rate
     {
         get => _rate;
-        set => SetProperty(ref _rate, value);
+        set
+        {
+            if (SetProperty(ref _rate, value) && value > 0)
+            {
+                SetProperty(ref _salary, 0m, nameof(Salary));
+            }
+        }
     }
 
     private decimal _regularHours;
@@ -241,19 +253,19 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         RpNumber = selectedRecord.RpNumber;
 
         Salary = selectedRecord.Salary;
-        Rate = selectedRecord.Rate;
-        RegularHours = selectedRecord.RegularHours;
-        OvertimeHours = selectedRecord.OvertimeHours;
-        PublicHolidayHours = selectedRecord.PublicHolidayHours;
-        StatHolidayHours = selectedRecord.StatHolidayHours;
-        Gross = selectedRecord.Gross;
-        Vacation = selectedRecord.Vacation;
+        Rate = selectedRecord.Salary > 0 ? 0 : selectedRecord.Rate;
+        RegularHours = 0;
+        OvertimeHours = 0;
+        PublicHolidayHours = 0;
+        StatHolidayHours = 0;
+        Gross = 0;
+        Vacation = 0;
 
-        Tax1 = selectedRecord.Tax1;
-        Cpp1 = selectedRecord.Cpp1;
-        Cpp2 = selectedRecord.Cpp2;
-        Ei = selectedRecord.Ei;
-        OtherDeduction = selectedRecord.OtherDeduction;
+        Tax1 = 0;
+        Cpp1 = 0;
+        Cpp2 = 0;
+        Ei = 0;
+        OtherDeduction = 0;
         HireDate = selectedRecord.HireDate;
 
         EmployeeFound = true;
