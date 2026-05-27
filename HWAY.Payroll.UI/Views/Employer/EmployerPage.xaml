@@ -1,31 +1,131 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
+    x:Name="ThisPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="HWAY.Payroll.UI.Views.EmployerPage"
     Title="Employer Management">
 
-    <VerticalStackLayout Padding="30" Spacing="20">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="12">
+            
+            <!-- Title -->
+            <Label Text="Employers" FontSize="24" FontAttributes="Bold"/>
 
-        <Label Text="Employer Management"
-               FontSize="28"
-               FontAttributes="Bold"
-               HorizontalOptions="Center"/>
+            <!-- Search Bar -->
+            <Label Text="Search by RP number or Employer name" FontSize="14"/>
+            <Entry Placeholder="Enter search term..."
+                   Text="{Binding SearchText}"
+                   ReturnCommand="{Binding SearchCommand}"/>
+            
+            <!-- Search and New Buttons -->
+            <HorizontalStackLayout Spacing="10">
+                <Button Text="Search"
+                        Command="{Binding SearchCommand}"
+                        BackgroundColor="Blue"
+                        TextColor="White"
+                        HorizontalOptions="Fill"/>
+                
+                <Button Text="+ Add New Employer"
+                        Command="{Binding NewEmployerCommand}"
+                        BackgroundColor="Green"
+                        TextColor="White"
+                        HorizontalOptions="Fill"/>
+            </HorizontalStackLayout>
 
-        <Button Text="Add Employer"
-                Command="{Binding GoToAddEmployerCommand}"
-                BackgroundColor="Green"
-                TextColor="White"/>
+            <!-- Message -->
+            <Label Text="{Binding Message}"
+                   TextColor="Red"
+                   HorizontalOptions="Center"
+                   FontAttributes="Bold"/>
 
-        <Button Text="Update Employer"
-                Command="{Binding GoToSearchEmployerCommand}"
-                BackgroundColor="Blue"
-                TextColor="White"/>
+            <!-- Activity Indicator -->
+            <ActivityIndicator IsVisible="{Binding IsBusy}"
+                             IsRunning="{Binding IsBusy}"/>
 
-        <Button Text="Remove Employer"
-                Command="{Binding GoToRemoveEmployerCommand}"
-                BackgroundColor="Red"
-                TextColor="White"/>
+            <!-- Employer Results Box -->
+            <Border IsVisible="{Binding SearchResultsFound}"
+                    StrokeThickness="1"
+                    Padding="0"
+                    Margin="0,12,0,0">
+                <CollectionView ItemsSource="{Binding Employers}"
+                               SelectionMode="Single">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="12">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectEmployerCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Grid.GestureRecognizers>
 
-    </VerticalStackLayout>
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="{Binding EmployerName, StringFormat='Name: {0}'}"
+                                           FontAttributes="Bold"
+                                           FontSize="14"/>
+                                    <Label Text="{Binding RpNumber, StringFormat='RP #: {0}'}"
+                                           FontSize="12"/>
+                                    <Label Text="{Binding City, StringFormat='City: {0}'}"
+                                           FontSize="11"
+                                           Opacity="0.7"/>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Border>
+
+            <!-- Edit Form -->
+            <Border IsVisible="{Binding EmployerSelected}"
+                    StrokeThickness="1"
+                    Padding="16"
+                    Margin="0,12,0,0">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="{Binding IsEditMode, StringFormat='Edit Employer|New Employer'}"
+                           FontSize="18"
+                           FontAttributes="Bold"/>
+
+                    <Entry Placeholder="RP Number"
+                           Text="{Binding RpNumber}"
+                           IsReadOnly="{Binding IsEditMode}"/>
+
+                    <Entry Placeholder="Employer Name"
+                           Text="{Binding EmployerName}"/>
+
+                    <Entry Placeholder="Address"
+                           Text="{Binding Address}"/>
+
+                    <Entry Placeholder="City"
+                           Text="{Binding City}"/>
+
+                    <Entry Placeholder="Postal Code"
+                           Text="{Binding PostalCode}"/>
+
+                    <Entry Placeholder="Employer Group"
+                           Text="{Binding EmployerGroup}"/>
+
+                    <!-- Action Buttons -->
+                    <HorizontalStackLayout Spacing="10" Margin="0,20,0,0">
+                        <Button Text="Save"
+                                Command="{Binding SaveCommand}"
+                                BackgroundColor="Green"
+                                TextColor="White"
+                                HorizontalOptions="Fill"/>
+
+                        <Button Text="Delete"
+                                Command="{Binding DeleteCommand}"
+                                IsVisible="{Binding IsEditMode}"
+                                BackgroundColor="Red"
+                                TextColor="White"
+                                HorizontalOptions="Fill"/>
+                    </HorizontalStackLayout>
+
+                    <Button Text="Cancel"
+                            Command="{Binding ClearFormCommand}"
+                            BackgroundColor="Gray"
+                            TextColor="White"/>
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
