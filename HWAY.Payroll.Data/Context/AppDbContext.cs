@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<Employer> Employers => Set<Employer>();
     public DbSet<Employee> Employees => Set<Employee>();
     public DbSet<PayrollRecord> PayrollRecords => Set<PayrollRecord>();
+    public DbSet<PD7> PD7Records => Set<PD7>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -140,6 +141,25 @@ public class AppDbContext : DbContext
                 .WithMany(e => e.PayrollRecords)
                 .HasPrincipalKey(e => e.RpNumber)
                 .HasForeignKey(e => e.RpNumber);
+        });
+
+        modelBuilder.Entity<PD7>(entity =>
+        {
+            entity.ToTable("PD7");
+
+            entity.HasKey(e => new{e.RPNumber, e.Month, e.Year});
+
+            entity.Property(e => e.RPNumber).HasColumnName("RP#").HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Fee).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Gross).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.PD7Total).HasColumnName("PD7 Total").HasColumnType("decimal(18,2)");
+            entity.Property(e => e.ActiveEmployees).HasColumnName("Active Employees");
+            entity.Property(e => e.Period).HasColumnName("Period").IsRequired();
+            entity.Property(e => e.Transfer).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Received).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.FeeCheck).HasColumnName("Fee Check");
+            entity.Property(e => e.Month);
+            entity.Property(e => e.Year);
         });
     }
 }

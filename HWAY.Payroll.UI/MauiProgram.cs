@@ -11,6 +11,7 @@ using HWAY.Payroll.Services.EmployeeRemove;
 using HWAY.Payroll.Services.EmployerRemove;
 using HWAY.Payroll.Services.EmployerInsert;
 using HWAY.Payroll.Services.EmployerUpdate;
+using HWAY.Payroll.Services.PD7;
 using HWAY.Payroll.UI.ViewModels;
 using HWAY.Payroll.UI.Views;
 using HWAY.Payroll.UI.ViewModel;
@@ -59,6 +60,9 @@ public static class MauiProgram
         builder.Services.AddScoped<IEmployerRemoveService, EmployerRemoveService>();
         builder.Services.AddScoped<IEmployerUpdateService, EmployerUpdateService>();
 
+        // PD7 lookup service
+        builder.Services.AddScoped<IPD7LookupService, PD7LookupService>();
+
         builder.Services.AddTransient<EmployerLookupViewModel>();
         builder.Services.AddTransient<EmployerLookupPage>();
         builder.Services.AddTransient<PayrollRecordViewModel>();
@@ -102,6 +106,10 @@ public static class MauiProgram
 
         builder.Services.AddTransient<EmployerSearchViewModel>();
         builder.Services.AddTransient<EmployerSearchPage>();
+
+        // PD7 view
+        builder.Services.AddTransient<PD7ViewModel>();
+        builder.Services.AddTransient<PD7Page>();
 
 #if DEBUG
         builder.Logging.AddDebug();

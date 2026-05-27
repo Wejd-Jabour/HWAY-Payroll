@@ -133,6 +133,53 @@ namespace HWAY.Payroll.Data.Migrations
                     b.ToTable("Employers", (string)null);
                 });
 
+            modelBuilder.Entity("HWAY.Payroll.Data.Entities.PD7", b =>
+                {
+                    b.Property<string>("RPNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("RP#");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ActiveEmployees")
+                        .HasColumnType("int")
+                        .HasColumnName("Active Employees");
+
+                    b.Property<decimal>("Fee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("FeeCheck")
+                        .HasColumnType("bit")
+                        .HasColumnName("Fee Check");
+
+                    b.Property<decimal>("Gross")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PD7Total")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("PD7 Total");
+
+                    b.Property<string>("Period")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("Period");
+
+                    b.Property<decimal>("Received")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Transfer")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("RPNumber", "Month", "Year");
+
+                    b.ToTable("PD7", (string)null);
+                });
+
             modelBuilder.Entity("HWAY.Payroll.Data.Entities.PayrollRecord", b =>
                 {
                     b.Property<int>("Id")
