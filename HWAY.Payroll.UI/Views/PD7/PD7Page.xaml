@@ -8,36 +8,54 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="12">
-            <Label Text="PD7 Records" FontSize="24" FontAttributes="Bold"/>
+            <Label Text="PD7 Entry" FontSize="24" FontAttributes="Bold"/>
+            <Label Text="Enter the PD7 details below and save them to the database." FontSize="14"/>
 
-            <Entry Placeholder="Search by RP# or Period"
-                   Text="{Binding SearchText}"
-                   ReturnCommand="{Binding SearchCommand}"/>
+            <Entry Placeholder="RP Number" Text="{Binding RpNumber}"/>
+            <Entry Placeholder="Period" Text="{Binding Period}"/>
+
+            <Frame Padding="15">
+                <VerticalStackLayout Spacing="10">
+
+                    <Label Text = "Fee"/>
+                    <Entry Placeholder="Fee" Keyboard="Numeric" Text="{Binding Fee}" TextChanged="OnNonNegativeNumericTextChanged"/>
+
+                    <Label Text="Gross"/>
+                    <Entry Placeholder="Gross" Keyboard="Numeric" Text="{Binding Gross}" TextChanged="OnNonNegativeNumericTextChanged"/>
+
+                    <Label Text="PD7 Total"/>
+                    <Entry Placeholder="PD7 Total" Keyboard="Numeric" Text="{Binding PD7Total}" TextChanged="OnNonNegativeNumericTextChanged"/>
+
+                    <Label Text="Active Employees"/>
+                    <Entry Placeholder="Active Employees" Keyboard="Numeric" Text="{Binding ActiveEmployees}" TextChanged="OnNonNegativeNumericTextChanged"/>
+
+                    <Label Text="Transfer"/>
+                    <Entry Placeholder="Transfer" Keyboard="Numeric" Text="{Binding Transfer}" TextChanged="OnNonNegativeNumericTextChanged"/>
+
+                    <Label Text="Received"/>
+                    <Entry Placeholder="Received" Keyboard="Numeric" Text="{Binding Received}" TextChanged="OnNonNegativeNumericTextChanged"/>
+
+                    <Label Text="Month"/>
+                    <Entry Placeholder="Month" Keyboard="Numeric" Text="{Binding Month}" TextChanged="OnNonNegativeNumericTextChanged"/>
+
+                    <Label Text="Year"/>
+                    <Entry Placeholder="Year" Keyboard="Numeric" Text="{Binding Year}" TextChanged="OnNonNegativeNumericTextChanged"/>
+
+                </VerticalStackLayout>
+            </Frame>
 
             <HorizontalStackLayout Spacing="10">
-                <Button Text="Search" Command="{Binding SearchCommand}" BackgroundColor="Blue" TextColor="White" HorizontalOptions="Fill"/>
-                <Button Text="Refresh" Command="{Binding InitializeCommand}" BackgroundColor="Gray" TextColor="White" HorizontalOptions="Fill"/>
+                <CheckBox IsChecked="{Binding FeeCheck}"/>
+                <Label Text="Fee Check" VerticalOptions="Center"/>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="10">
+                <Button Text="Save PD7" Command="{Binding SaveCommand}" BackgroundColor="Green" TextColor="White" HorizontalOptions="Fill"/>
+                <Button Text="Clear" Command="{Binding ClearCommand}" BackgroundColor="Gray" TextColor="White" HorizontalOptions="Fill"/>
             </HorizontalStackLayout>
 
             <Label Text="{Binding Message}" TextColor="Red" HorizontalOptions="Center" FontAttributes="Bold"/>
-
             <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}"/>
-
-            <Border StrokeThickness="1" Padding="0" Margin="0,12,0,0">
-                <CollectionView ItemsSource="{Binding Records}" SelectionMode="None">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Padding="12">
-                                <VerticalStackLayout Spacing="4">
-                                    <Label Text="{Binding DisplayText}" FontAttributes="Bold" FontSize="14"/>
-                                    <Label Text="{Binding Fee, StringFormat='Fee: {0:C}'}" FontSize="12"/>
-                                    <Label Text="{Binding Gross, StringFormat='Gross: {0:C}'}" FontSize="12"/>
-                                </VerticalStackLayout>
-                            </Grid>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </Border>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

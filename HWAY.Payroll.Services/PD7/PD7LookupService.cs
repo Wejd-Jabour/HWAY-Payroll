@@ -1,4 +1,5 @@
 using HWAY.Payroll.Data.Context;
+using DataPD7 = HWAY.Payroll.Data.Entities.PD7;
 using Microsoft.EntityFrameworkCore;
 
 namespace HWAY.Payroll.Services.PD7;
@@ -65,5 +66,38 @@ public class PD7LookupService : IPD7LookupService
             Month = p.Month,
             Year = p.Year
         };
+    }
+
+    public async Task<bool> CreatePd7Async(PD7LookupDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.RPNumber))
+            throw new Exception("RP Number is required.");
+
+        if (string.IsNullOrWhiteSpace(dto.Period))
+            throw new Exception("Period is required.");
+
+        var exists = await _dbContext.PD7Records.AnyAsync(x => x.RPNumber == dto.RPNumber && x.Period == dto.Period);
+        if (exists)
+            throw new Exception("A PD7 record for this RP number and period already exists.");
+
+        var entity = new DataPD7
+        {
+            RPNumber = dto.RPNumber,
+            Fee = dto.Fee,
+            Gross = dto.Gross,
+            PD7Total = dto.PD7Total,
+            ActiveEmployees = dto.ActiveEmployees,
+            Period = dto.Period,
+            Transfer = dto.Transfer,
+            Received = dto.Received,
+            FeeCheck = dto.FeeCheck,
+            Month = dto.Month,
+            Year = dto.Year
+        };
+
+        _dbContext.PD7Records.Add(entity);
+        await _dbContext.SaveChangesAsync();
+
+        return true;
     }
 }

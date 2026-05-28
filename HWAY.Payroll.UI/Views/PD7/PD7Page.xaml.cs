@@ -13,9 +13,11 @@ public partial class PD7Page : ContentPage
         BindingContext = viewModel;
     }
 
-    protected override async void OnAppearing()
+    private void OnNonNegativeNumericTextChanged(object sender, TextChangedEventArgs e)
     {
-        base.OnAppearing();
-        await _viewModel.InitializeAsync();
+        if (sender is not Entry entry)
+            return;
+
+        entry.Text = e.NewTextValue?.Replace("-", string.Empty);
     }
 }
