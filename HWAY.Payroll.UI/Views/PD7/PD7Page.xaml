@@ -7,47 +7,141 @@
     Title="PD7 Records">
 
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="12">
+        <VerticalStackLayout Padding="20" Spacing="14">
             <Label Text="PD7 Entry" FontSize="24" FontAttributes="Bold"/>
-            <Label Text="Enter the PD7 details below and save them to the database." FontSize="14"/>
 
-            <Entry Placeholder="RP Number" Text="{Binding RpNumber}"/>
-            <Entry Placeholder="Period" Text="{Binding Period}"/>
+            <Label Text="Company"/>
+            <Entry
+                Placeholder="Enter RP number or employer name"
+                Text="{Binding SearchText}"
+                ReturnCommand="{Binding SearchCommand}" />
 
-            <Frame Padding="15">
-                <VerticalStackLayout Spacing="10">
+            <Border
+                IsVisible="{Binding IsDropdownVisible}"
+                StrokeThickness="1"
+                Padding="0"
+                HeightRequest="220">
 
-                    <Label Text = "Fee"/>
-                    <Entry Placeholder="Fee" Keyboard="Numeric" Text="{Binding Fee}" TextChanged="OnNonNegativeNumericTextChanged"/>
+                <CollectionView
+                    ItemsSource="{Binding Employers}"
+                    SelectionMode="None">
 
-                    <Label Text="Gross"/>
-                    <Entry Placeholder="Gross" Keyboard="Numeric" Text="{Binding Gross}" TextChanged="OnNonNegativeNumericTextChanged"/>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="12">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectEmployerCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Grid.GestureRecognizers>
 
-                    <Label Text="PD7 Total"/>
-                    <Entry Placeholder="PD7 Total" Keyboard="Numeric" Text="{Binding PD7Total}" TextChanged="OnNonNegativeNumericTextChanged"/>
+                                <VerticalStackLayout Spacing="2">
+                                    <Label
+                                        Text="{Binding RpNumber}"
+                                        FontAttributes="Bold"
+                                        FontSize="16" />
+                                    <Label
+                                        Text="{Binding EmployerName}"
+                                        FontSize="14" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Border>
 
-                    <Label Text="Active Employees"/>
-                    <Entry Placeholder="Active Employees" Keyboard="Numeric" Text="{Binding ActiveEmployees}" TextChanged="OnNonNegativeNumericTextChanged"/>
+            <Border
+                StrokeThickness="1"
+                Padding="14">
 
-                    <Label Text="Transfer"/>
-                    <Entry Placeholder="Transfer" Keyboard="Numeric" Text="{Binding Transfer}" TextChanged="OnNonNegativeNumericTextChanged"/>
+                <Grid
+                    ColumnDefinitions="140,*"
+                    RowDefinitions="Auto,Auto,Auto"
+                    RowSpacing="8">
 
-                    <Label Text="Received"/>
-                    <Entry Placeholder="Received" Keyboard="Numeric" Text="{Binding Received}" TextChanged="OnNonNegativeNumericTextChanged"/>
+                    <Label Grid.Row="0" Grid.Column="0" Text="RP Number:" FontAttributes="Bold" />
+                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding SelectedEmployer.RpNumber}" />
 
+                    <Label Grid.Row="1" Grid.Column="0" Text="Employer Name:" FontAttributes="Bold" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEmployer.EmployerName}" />
+
+                    <Label Grid.Row="2" Grid.Column="0" Text="Fee:" FontAttributes="Bold" />
+                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding Fee, StringFormat='{0:0.00}'}" />
+                </Grid>
+            </Border>
+
+            <Grid
+                ColumnDefinitions="*,160"
+                ColumnSpacing="12">
+
+                <VerticalStackLayout Grid.Column="0" Spacing="6">
                     <Label Text="Month"/>
-                    <Entry Placeholder="Month" Keyboard="Numeric" Text="{Binding Month}" TextChanged="OnNonNegativeNumericTextChanged"/>
-
-                    <Label Text="Year"/>
-                    <Entry Placeholder="Year" Keyboard="Numeric" Text="{Binding Year}" TextChanged="OnNonNegativeNumericTextChanged"/>
-
+                    <Picker
+                        Title="Month"
+                        ItemsSource="{Binding Months}"
+                        ItemDisplayBinding="{Binding DisplayText}"
+                        SelectedItem="{Binding SelectedMonth}" />
                 </VerticalStackLayout>
-            </Frame>
 
-            <HorizontalStackLayout Spacing="10">
-                <CheckBox IsChecked="{Binding FeeCheck}"/>
-                <Label Text="Fee Check" VerticalOptions="Center"/>
-            </HorizontalStackLayout>
+                <VerticalStackLayout Grid.Column="1" Spacing="6">
+                    <Label Text="Year"/>
+                    <Entry
+                        Placeholder="Year"
+                        Keyboard="Numeric"
+                        Text="{Binding Year}"
+                        TextChanged="OnNonNegativeNumericTextChanged" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <Border
+                StrokeThickness="1"
+                Padding="14">
+
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Periods" FontAttributes="Bold"/>
+                    <Label Text="{Binding PeriodSummary}"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border
+                StrokeThickness="1"
+                Padding="15">
+
+                <Grid
+                    ColumnDefinitions="170,*"
+                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                    RowSpacing="10"
+                    ColumnSpacing="12">
+
+                    <Label Grid.Row="0" Grid.Column="0" Text="Gross" FontAttributes="Bold"/>
+                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding Gross, StringFormat='{0:0.00}'}"/>
+
+                    <Label Grid.Row="1" Grid.Column="0" Text="Active Employees" FontAttributes="Bold"/>
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding ActiveEmployees}"/>
+
+                    <Label Grid.Row="2" Grid.Column="0" Text="PD7 Total" FontAttributes="Bold"/>
+                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding PD7Total, StringFormat='{0:0.00}'}"/>
+
+                    <Label Grid.Row="3" Grid.Column="0" Text="Fee" FontAttributes="Bold"/>
+                    <Label Grid.Row="3" Grid.Column="1" Text="{Binding Fee, StringFormat='{0:0.00}'}"/>
+
+                    <Label Grid.Row="4" Grid.Column="0" Text="Transfer" FontAttributes="Bold"/>
+                    <Label Grid.Row="4" Grid.Column="1" Text="{Binding Transfer, StringFormat='{0:0.00}'}"/>
+
+                    <Label Grid.Row="5" Grid.Column="0" Text="Received" FontAttributes="Bold" VerticalOptions="Center"/>
+                    <Entry
+                        Grid.Row="5"
+                        Grid.Column="1"
+                        Placeholder="Received"
+                        Keyboard="Numeric"
+                        Text="{Binding Received}"
+                        BackgroundColor="{Binding ReceivedStatusColor}"
+                        TextChanged="OnNonNegativeNumericTextChanged" />
+
+                    <Label Grid.Row="6" Grid.Column="0" Text="Fee Check" FontAttributes="Bold"/>
+                    <Label Grid.Row="6" Grid.Column="1" Text="{Binding FeeCheckStatusText}" />
+                </Grid>
+            </Border>
 
             <HorizontalStackLayout Spacing="10">
                 <Button Text="Save PD7" Command="{Binding SaveCommand}" BackgroundColor="Green" TextColor="White" HorizontalOptions="Fill"/>

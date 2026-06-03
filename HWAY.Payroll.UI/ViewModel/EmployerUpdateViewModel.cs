@@ -74,6 +74,13 @@ public class EmployerUpdateViewModel : INotifyPropertyChanged
         set => SetProperty(ref _employerGroup, value);
     }
 
+    private decimal _fee;
+    public decimal Fee
+    {
+        get => _fee;
+        set => SetProperty(ref _fee, value);
+    }
+
     // 🔹 UI state
     private string _message = "";
     public string Message
@@ -102,7 +109,8 @@ public class EmployerUpdateViewModel : INotifyPropertyChanged
                 Address = Address,
                 City = City,
                 PostalCode = PostalCode,
-                EmployerGroup = EmployerGroup
+                EmployerGroup = EmployerGroup,
+                Fee = Fee
             };
 
             var id = await _employerUpdateService.UpdateEmployerAsync(dto);
@@ -128,6 +136,7 @@ public class EmployerUpdateViewModel : INotifyPropertyChanged
         City = employer.City;
         PostalCode = employer.PostalCode;
         EmployerGroup = employer.EmployerGroup;
+        Fee = employer.Fee;
     }
 
     // 🔹 Property changed boilerplate

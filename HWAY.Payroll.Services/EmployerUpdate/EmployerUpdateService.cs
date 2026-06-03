@@ -40,7 +40,8 @@ public class EmployerUpdateService : IEmployerUpdateService
                 Address = employer.Address,
                 City = employer.City,
                 PostalCode = employer.PostalCode,
-                EmployerGroup = employer.EmployerGroup
+                EmployerGroup = employer.EmployerGroup,
+                Fee = employer.Fee
             })
             .ToListAsync();
     }
@@ -59,7 +60,8 @@ public class EmployerUpdateService : IEmployerUpdateService
                 Address = employer.Address,
                 City = employer.City,
                 PostalCode = employer.PostalCode,
-                EmployerGroup = employer.EmployerGroup
+                EmployerGroup = employer.EmployerGroup,
+                Fee = employer.Fee
             })
             .FirstOrDefaultAsync();
     }
@@ -79,6 +81,7 @@ public class EmployerUpdateService : IEmployerUpdateService
         employer.City = dto.City;
         employer.PostalCode = dto.PostalCode;
         employer.EmployerGroup = dto.EmployerGroup;
+        employer.Fee = dto.Fee;
 
         await _dbContext.SaveChangesAsync();
 

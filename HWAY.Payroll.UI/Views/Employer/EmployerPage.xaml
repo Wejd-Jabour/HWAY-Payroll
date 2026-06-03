@@ -104,6 +104,10 @@
                     <Entry Placeholder="Employer Group"
                            Text="{Binding EmployerGroup}"/>
 
+                    <Entry Placeholder="Fee"
+                           Keyboard="Numeric"
+                           Text="{Binding Fee}"/>
+
                     <!-- Action Buttons -->
                     <HorizontalStackLayout Spacing="10" Margin="0,20,0,0">
                         <Button Text="Save"

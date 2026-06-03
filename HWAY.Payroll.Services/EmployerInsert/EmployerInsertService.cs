@@ -31,7 +31,8 @@ public class EmployerInsertService : IEmployerInsertService
             Address = dto.Address,
             City = dto.City,
             PostalCode = dto.PostalCode,
-            EmployerGroup = dto.EmployerGroup
+            EmployerGroup = dto.EmployerGroup,
+            Fee = dto.Fee
         };
 
         _dbContext.Employers.Add(company);

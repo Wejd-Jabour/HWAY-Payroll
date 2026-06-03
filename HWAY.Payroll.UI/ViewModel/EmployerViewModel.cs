@@ -97,6 +97,13 @@ public class EmployerViewModel : INotifyPropertyChanged
         set => SetProperty(ref _employerGroup, value);
     }
 
+    private decimal _fee;
+    public decimal Fee
+    {
+        get => _fee;
+        set => SetProperty(ref _fee, value);
+    }
+
     // ===================== State Management =====================
     private bool _isBusy = false;
     public bool IsBusy
@@ -217,6 +224,7 @@ public class EmployerViewModel : INotifyPropertyChanged
             City = employer.City ?? "";
             PostalCode = employer.PostalCode ?? "";
             EmployerGroup = employer.EmployerGroup ?? "";
+            Fee = employer.Fee;
 
             IsEditMode = true;
             EmployerSelected = true;
@@ -274,7 +282,8 @@ public class EmployerViewModel : INotifyPropertyChanged
                     Address = Address,
                     City = City,
                     PostalCode = PostalCode,
-                    EmployerGroup = EmployerGroup
+                    EmployerGroup = EmployerGroup,
+                    Fee = Fee
                 };
 
                 await _employerUpdateService.UpdateEmployerAsync(dto);
@@ -290,7 +299,8 @@ public class EmployerViewModel : INotifyPropertyChanged
                     Address = Address,
                     City = City,
                     PostalCode = PostalCode,
-                    EmployerGroup = EmployerGroup
+                    EmployerGroup = EmployerGroup,
+                    Fee = Fee
                 };
 
                 await _employerInsertService.CreateEmployerAsync(dto);
@@ -378,6 +388,7 @@ public class EmployerViewModel : INotifyPropertyChanged
         City = "";
         PostalCode = "";
         EmployerGroup = "";
+        Fee = 0;
         SelectedEmployer = null;
     }
 
