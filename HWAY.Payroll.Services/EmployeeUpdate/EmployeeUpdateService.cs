@@ -22,12 +22,14 @@ public class EmployeeUpdateService : IEmployeeUpdateService
 
         if (!string.IsNullOrWhiteSpace(searchText))
         {
+            var normalizedSearchText = searchText.ToLowerInvariant();
+
             query = query.Where(employee =>
-                employee.RpNumber.Contains(searchText) ||
-                employee.EmployeeNumber.Contains(searchText) ||
-                employee.FirstName.Contains(searchText) ||
-                employee.LastName.Contains(searchText) ||
-                (employee.FirstName + " " + employee.LastName).Contains(searchText));
+                employee.RpNumber.ToLower().Contains(normalizedSearchText) ||
+                employee.EmployeeNumber.ToLower().Contains(normalizedSearchText) ||
+                employee.FirstName.ToLower().Contains(normalizedSearchText) ||
+                employee.LastName.ToLower().Contains(normalizedSearchText) ||
+                (employee.FirstName + " " + employee.LastName).ToLower().Contains(normalizedSearchText));
         }
 
         return await query

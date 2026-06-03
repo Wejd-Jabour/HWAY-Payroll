@@ -21,7 +21,11 @@ public class PD7LookupService : IPD7LookupService
 
         if (!string.IsNullOrWhiteSpace(searchText))
         {
-            query = query.Where(p => p.RPNumber.Contains(searchText) || p.Period.Contains(searchText));
+            var normalizedSearchText = searchText.ToLowerInvariant();
+
+            query = query.Where(p =>
+                p.RPNumber.ToLower().Contains(normalizedSearchText) ||
+                p.Period.ToLower().Contains(normalizedSearchText));
         }
 
         return await query

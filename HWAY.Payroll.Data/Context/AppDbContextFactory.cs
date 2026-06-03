@@ -9,20 +9,7 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
-        optionsBuilder.UseSqlServer(
-            @"Server=tcp:hway.database.windows.net,1433;
-        Initial Catalog=HWay_Payroll;
-        Persist Security Info=False;
-        User ID=jabourw;
-        Password=HwayPayroll1;
-        MultipleActiveResultSets=False;
-        Encrypt=True;
-        TrustServerCertificate=False;
-        Connection Timeout=30;",
-            sqlOptions => sqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(10),
-                errorNumbersToAdd: null));
+        DatabaseConfiguration.ConfigureSupabase(optionsBuilder);
 
         return new AppDbContext(optionsBuilder.Options);
     }

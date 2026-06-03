@@ -9,3 +9,6 @@ obj/
 *.lscache
 **/*.lscache
 **/Generated Files/
+.env
+*.env
+appsettings.Local.json
