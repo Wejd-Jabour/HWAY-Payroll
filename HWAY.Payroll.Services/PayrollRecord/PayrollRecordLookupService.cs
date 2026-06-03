@@ -23,12 +23,14 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
 
         if (!string.IsNullOrWhiteSpace(searchText))
         {
+            var normalizedSearchText = searchText.ToLowerInvariant();
+
             query = query.Where(record =>
-                record.EmployeeNumber.Contains(searchText) ||
-                record.EmployeeName.Contains(searchText) ||
-                record.RpNumber.Contains(searchText) ||
-                record.Employer!.EmployerName.Contains(searchText) ||
-                record.Employer.RpNumber.Contains(searchText));
+                record.EmployeeNumber.ToLower().Contains(normalizedSearchText) ||
+                record.EmployeeName.ToLower().Contains(normalizedSearchText) ||
+                record.RpNumber.ToLower().Contains(normalizedSearchText) ||
+                record.Employer!.EmployerName.ToLower().Contains(normalizedSearchText) ||
+                record.Employer.RpNumber.ToLower().Contains(normalizedSearchText));
         }
 
         return await query
