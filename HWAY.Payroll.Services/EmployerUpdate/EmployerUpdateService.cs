@@ -1,6 +1,7 @@
 using HWAY.Payroll.Data.Context;
 using HWAY.Payroll.Data.Entities;
 using HWAY.Payroll.Services.EmployerInsert;
+using HWAY.Payroll.Services.PayPeriods;
 using Microsoft.EntityFrameworkCore;
 
 namespace HWAY.Payroll.Services.EmployerUpdate;
@@ -41,6 +42,7 @@ public class EmployerUpdateService : IEmployerUpdateService
                 City = employer.City,
                 PostalCode = employer.PostalCode,
                 EmployerGroup = employer.EmployerGroup,
+                PaystubPeriod = employer.PaystubPeriod,
                 Fee = employer.Fee
             })
             .ToListAsync();
@@ -61,6 +63,7 @@ public class EmployerUpdateService : IEmployerUpdateService
                 City = employer.City,
                 PostalCode = employer.PostalCode,
                 EmployerGroup = employer.EmployerGroup,
+                PaystubPeriod = employer.PaystubPeriod,
                 Fee = employer.Fee
             })
             .FirstOrDefaultAsync();
@@ -81,6 +84,7 @@ public class EmployerUpdateService : IEmployerUpdateService
         employer.City = dto.City;
         employer.PostalCode = dto.PostalCode;
         employer.EmployerGroup = dto.EmployerGroup;
+        employer.PaystubPeriod = PayPeriodRules.NormalizePeriod(dto.EmployerGroup, dto.PaystubPeriod);
         employer.Fee = dto.Fee;
 
         await _dbContext.SaveChangesAsync();

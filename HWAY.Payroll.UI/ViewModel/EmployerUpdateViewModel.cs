@@ -81,6 +81,13 @@ public class EmployerUpdateViewModel : INotifyPropertyChanged
         set => SetProperty(ref _fee, value);
     }
 
+    private int _paystubPeriod = 1;
+    public int PaystubPeriod
+    {
+        get => _paystubPeriod;
+        set => SetProperty(ref _paystubPeriod, value);
+    }
+
     // 🔹 UI state
     private string _message = "";
     public string Message
@@ -110,6 +117,7 @@ public class EmployerUpdateViewModel : INotifyPropertyChanged
                 City = City,
                 PostalCode = PostalCode,
                 EmployerGroup = EmployerGroup,
+                PaystubPeriod = PaystubPeriod,
                 Fee = Fee
             };
 
@@ -136,6 +144,7 @@ public class EmployerUpdateViewModel : INotifyPropertyChanged
         City = employer.City;
         PostalCode = employer.PostalCode;
         EmployerGroup = employer.EmployerGroup;
+        PaystubPeriod = employer.PaystubPeriod;
         Fee = employer.Fee;
     }
 

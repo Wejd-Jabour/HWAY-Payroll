@@ -36,7 +36,7 @@
                             <Label Grid.Row="1" Grid.Column="0" Text="Period 1 beginning" FontAttributes="Bold" />
                             <Label Grid.Row="1" Grid.Column="1" Text="{Binding ScheduleA.FirstPeriodBeginningDisplay}" />
 
-                            <Label Grid.Row="2" Grid.Column="0" Text="Period endings" FontAttributes="Bold" />
+                            <Label Grid.Row="2" Grid.Column="0" Text="Period starts" FontAttributes="Bold" />
                             <Label Grid.Row="2" Grid.Column="1" Text="{Binding ScheduleA.ScheduleRange}" />
 
                             <Label Grid.Row="3" Grid.Column="0" Text="Three-period months" FontAttributes="Bold" />
@@ -107,7 +107,7 @@
                             <Label Grid.Row="1" Grid.Column="0" Text="Period 1 beginning" FontAttributes="Bold" />
                             <Label Grid.Row="1" Grid.Column="1" Text="{Binding ScheduleB.FirstPeriodBeginningDisplay}" />
 
-                            <Label Grid.Row="2" Grid.Column="0" Text="Period endings" FontAttributes="Bold" />
+                            <Label Grid.Row="2" Grid.Column="0" Text="Period starts" FontAttributes="Bold" />
                             <Label Grid.Row="2" Grid.Column="1" Text="{Binding ScheduleB.ScheduleRange}" />
 
                             <Label Grid.Row="3" Grid.Column="0" Text="Three-period months" FontAttributes="Bold" />

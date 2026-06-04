@@ -107,7 +107,7 @@ public sealed class BiWeeklyScheduleService : IBiWeeklyScheduleService
                 return null;
             }
 
-            var periodEndings = new List<DateTime>(PeriodCount);
+            var periodBeginnings = new List<DateTime>(PeriodCount);
 
             for (var index = 0; index < PeriodCount; index++)
             {
@@ -116,10 +116,10 @@ public sealed class BiWeeklyScheduleService : IBiWeeklyScheduleService
                     return null;
                 }
 
-                periodEndings.Add(reader.GetDateTime(index).Date);
+                periodBeginnings.Add(reader.GetDateTime(index).Date);
             }
 
-            var lastPeriodEnding = periodEndings[0].AddDays(-14);
+            var lastPeriodEnding = periodBeginnings[0].AddDays(-1);
             return GenerateSchedule(lastPeriodEnding);
         }
         finally
@@ -167,7 +167,7 @@ public sealed class BiWeeklyScheduleService : IBiWeeklyScheduleService
         {
             parameters.Add(new NpgsqlParameter($"p{period.Number}", NpgsqlDbType.Date)
             {
-                Value = period.Ending.Date
+                Value = period.Beginning.Date
             });
         }
 

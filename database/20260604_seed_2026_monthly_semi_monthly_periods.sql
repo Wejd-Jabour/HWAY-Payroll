@@ -1,4 +1,4 @@
--- Seed 2026 monthly and semi-monthly payroll period dates.
+-- Seed 2026 monthly and semi-monthly payroll period start dates.
 -- Rerunning this script updates row ID 1 instead of creating duplicate rows.
 
 begin;
@@ -20,18 +20,18 @@ insert into public."monthly" (
 )
 values (
     1,
-    date '2026-01-31',
-    date '2026-02-28',
-    date '2026-03-31',
-    date '2026-04-30',
-    date '2026-05-31',
-    date '2026-06-30',
-    date '2026-07-31',
-    date '2026-08-31',
-    date '2026-09-30',
-    date '2026-10-31',
-    date '2026-11-30',
-    date '2026-12-31'
+    date '2026-01-01',
+    date '2026-02-01',
+    date '2026-03-01',
+    date '2026-04-01',
+    date '2026-05-01',
+    date '2026-06-01',
+    date '2026-07-01',
+    date '2026-08-01',
+    date '2026-09-01',
+    date '2026-10-01',
+    date '2026-11-01',
+    date '2026-12-01'
 )
 on conflict ("ID") do update set
     "P1" = excluded."P1",
@@ -76,30 +76,30 @@ insert into public."semi-monthly" (
 )
 values (
     1,
-    date '2026-01-15',
-    date '2026-01-31',
-    date '2026-02-15',
-    date '2026-02-28',
-    date '2026-03-15',
-    date '2026-03-31',
-    date '2026-04-15',
-    date '2026-04-30',
-    date '2026-05-15',
-    date '2026-05-31',
-    date '2026-06-15',
-    date '2026-06-30',
-    date '2026-07-15',
-    date '2026-07-31',
-    date '2026-08-15',
-    date '2026-08-31',
-    date '2026-09-15',
-    date '2026-09-30',
-    date '2026-10-15',
-    date '2026-10-31',
-    date '2026-11-15',
-    date '2026-11-30',
-    date '2026-12-15',
-    date '2026-12-31'
+    date '2026-01-01',
+    date '2026-01-16',
+    date '2026-02-01',
+    date '2026-02-16',
+    date '2026-03-01',
+    date '2026-03-16',
+    date '2026-04-01',
+    date '2026-04-16',
+    date '2026-05-01',
+    date '2026-05-16',
+    date '2026-06-01',
+    date '2026-06-16',
+    date '2026-07-01',
+    date '2026-07-16',
+    date '2026-08-01',
+    date '2026-08-16',
+    date '2026-09-01',
+    date '2026-09-16',
+    date '2026-10-01',
+    date '2026-10-16',
+    date '2026-11-01',
+    date '2026-11-16',
+    date '2026-12-01',
+    date '2026-12-16'
 )
 on conflict ("ID") do update set
     "P1" = excluded."P1",

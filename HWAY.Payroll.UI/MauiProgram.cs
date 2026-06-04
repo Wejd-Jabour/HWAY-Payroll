@@ -52,6 +52,7 @@ public static class MauiProgram
         builder.Services.AddScoped<IEmployerRemoveService, EmployerRemoveService>();
         builder.Services.AddScoped<IEmployerUpdateService, EmployerUpdateService>();
         builder.Services.AddScoped<IBiWeeklyScheduleService, BiWeeklyScheduleService>();
+        builder.Services.AddScoped<IPayPeriodRangeService, PayPeriodRangeService>();
 
         // PD7 lookup service
         builder.Services.AddScoped<IPD7LookupService, PD7LookupService>();

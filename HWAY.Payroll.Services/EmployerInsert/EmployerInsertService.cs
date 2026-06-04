@@ -32,6 +32,7 @@ public class EmployerInsertService : IEmployerInsertService
             City = dto.City,
             PostalCode = dto.PostalCode,
             EmployerGroup = dto.EmployerGroup,
+            PaystubPeriod = 1,
             Fee = dto.Fee
         };
 
