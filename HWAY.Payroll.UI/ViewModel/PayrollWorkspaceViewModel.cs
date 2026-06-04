@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
@@ -234,7 +235,7 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
             SelectedEmployer.PaystubPeriod = result.NextPeriod;
             OnPropertyChanged(nameof(SelectedEmployer));
 
-            Message = $"Saved {result.UpdatedRecords} employees for period {result.SavedPeriod}. Next period is {result.NextPeriod}.";
+            Message = BuildSaveMessage(result);
 
             await LoadEmployeesForSelectedEmployerAsync();
         }
@@ -259,6 +260,23 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
     private void OpenCraWebsite()
     {
         Launcher.OpenAsync("https://apps.cra-arc.gc.ca/ebci/rhpd/beta/entry");
+    }
+
+    private static string BuildSaveMessage(EmployerPayrollSaveResult result)
+    {
+        var message = $"Saved {result.UpdatedRecords} employees for period {result.SavedPeriod}. Next period is {result.NextPeriod}.";
+
+        if (!result.PD7Month.HasValue || !result.PD7Year.HasValue)
+        {
+            return message;
+        }
+
+        var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(result.PD7Month.Value);
+        var periodText = string.IsNullOrWhiteSpace(result.PD7Period)
+            ? ""
+            : $" ({result.PD7Period})";
+
+        return $"{message} Auto-saved PD7 for {monthName} {result.PD7Year.Value}{periodText}.";
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

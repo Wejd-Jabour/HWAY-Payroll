@@ -331,6 +331,13 @@ public class PD7ViewModel : INotifyPropertyChanged
             IsBusy = true;
             Message = "";
 
+            var saved = await _pd7LookupService.GetByPeriodAsync(RpNumber, Month, Year);
+            if (saved != null)
+            {
+                ApplySavedFields(saved);
+                return;
+            }
+
             var calculated = await _pd7LookupService.CalculatePd7Async(RpNumber, Month, Year);
             ApplyCalculatedFields(calculated);
         }
@@ -379,8 +386,12 @@ public class PD7ViewModel : INotifyPropertyChanged
                 return;
             }
 
-            var calculated = await _pd7LookupService.CalculatePd7Async(RpNumber, Month, Year);
-            ApplyCalculatedFields(calculated);
+            var savedPd7 = await _pd7LookupService.GetByPeriodAsync(RpNumber, Month, Year);
+            if (savedPd7 == null)
+            {
+                var calculated = await _pd7LookupService.CalculatePd7Async(RpNumber, Month, Year);
+                ApplyCalculatedFields(calculated);
+            }
 
             var dto = new PD7LookupDto
             {
@@ -428,6 +439,21 @@ public class PD7ViewModel : INotifyPropertyChanged
         Transfer = calculated.Transfer;
 
         UpdateFeeCheck();
+    }
+
+    private void ApplySavedFields(PD7LookupDto saved)
+    {
+        Fee = saved.Fee;
+        Gross = saved.Gross;
+        PD7Total = saved.PD7Total;
+        ActiveEmployees = saved.ActiveEmployees;
+        Period = saved.Period;
+        Transfer = saved.Transfer;
+        Received = saved.Received;
+        FeeCheck = saved.FeeCheck;
+
+        OnPropertyChanged(nameof(ReceivedStatusColor));
+        OnPropertyChanged(nameof(FeeCheckStatusText));
     }
 
     private void ClearCalculatedFields()
