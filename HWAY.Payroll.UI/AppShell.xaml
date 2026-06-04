@@ -33,6 +33,11 @@
         Title="PD7 Records"
         ContentTemplate="{DataTemplate views:PD7Page}"
         Route="PD7Page" />
+
+        <ShellContent
+        Title="Settings"
+        ContentTemplate="{DataTemplate views:SettingsPage}"
+        Route="SettingsPage" />
         
     </TabBar>
 
