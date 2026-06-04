@@ -29,4 +29,7 @@ public class PayrollRecordBatchUpdateDto
 public sealed record EmployerPayrollSaveResult(
     int SavedPeriod,
     int NextPeriod,
-    int UpdatedRecords);
+    int UpdatedRecords,
+    int? PD7Month = null,
+    int? PD7Year = null,
+    string? PD7Period = null);

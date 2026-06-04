@@ -1,6 +1,7 @@
 using HWAY.Payroll.Data.Context;
 using HWAY.Payroll.Domain;
 using HWAY.Payroll.Services;
+using HWAY.Payroll.Services.PD7;
 using HWAY.Payroll.Services.PayPeriods;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,10 +10,17 @@ namespace HWAY.Payroll.Services.PayrollRecord;
 public class PayrollRecordLookupService : IPayrollRecordLookupService
 {
     private readonly AppDbContext _dbContext;
+    private readonly IPD7LookupService _pd7LookupService;
+    private readonly IPayPeriodRangeService _payPeriodRangeService;
 
-    public PayrollRecordLookupService(AppDbContext dbContext)
+    public PayrollRecordLookupService(
+        AppDbContext dbContext,
+        IPD7LookupService pd7LookupService,
+        IPayPeriodRangeService payPeriodRangeService)
     {
         _dbContext = dbContext;
+        _pd7LookupService = pd7LookupService;
+        _payPeriodRangeService = payPeriodRangeService;
     }
 
     public async Task<List<PayrollRecordLookupDto>> SearchPayrollRecordsAsync(string? searchText)
@@ -226,39 +234,75 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
             throw new InvalidOperationException("At least one payroll record is required.");
         }
 
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        var executionStrategy = _dbContext.Database.CreateExecutionStrategy();
 
-        var employer = await _dbContext.Employers
-            .Where(e => e.RpNumber == rpNumber)
-            .FirstOrDefaultAsync();
-
-        if (employer == null)
-            throw new InvalidOperationException($"Employer with RP number {rpNumber} not found.");
-
-        var savedPeriod = PayPeriodRules.NormalizePeriod(employer.EmployerGroup, employer.PaystubPeriod);
-        var recordIds = updates.Select(update => update.PayrollRecordId).Distinct().ToList();
-        var records = await _dbContext.PayrollRecords
-            .Where(record => record.RpNumber == rpNumber && recordIds.Contains(record.Id))
-            .ToDictionaryAsync(record => record.Id);
-
-        foreach (var update in updates)
+        return await executionStrategy.ExecuteAsync(async () =>
         {
-            if (!records.TryGetValue(update.PayrollRecordId, out var record))
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+            var employer = await _dbContext.Employers
+                .Where(e => e.RpNumber == rpNumber)
+                .FirstOrDefaultAsync();
+
+            if (employer == null)
+                throw new InvalidOperationException($"Employer with RP number {rpNumber} not found.");
+
+            var savedPeriod = PayPeriodRules.NormalizePeriod(employer.EmployerGroup, employer.PaystubPeriod);
+            var recordIds = updates.Select(update => update.PayrollRecordId).Distinct().ToList();
+            var records = await _dbContext.PayrollRecords
+                .Where(record => record.RpNumber == rpNumber && recordIds.Contains(record.Id))
+                .ToDictionaryAsync(record => record.Id);
+
+            foreach (var update in updates)
             {
-                throw new InvalidOperationException(
-                    $"Payroll record with Id {update.PayrollRecordId} was not found for RP number {rpNumber}.");
+                if (!records.TryGetValue(update.PayrollRecordId, out var record))
+                {
+                    throw new InvalidOperationException(
+                        $"Payroll record with Id {update.PayrollRecordId} was not found for RP number {rpNumber}.");
+                }
+
+                ApplyPayrollUpdate(record, update.PayrollRecord, savedPeriod);
             }
 
-            ApplyPayrollUpdate(record, update.PayrollRecord, savedPeriod);
+            var nextPeriod = PayPeriodRules.GetNextPeriod(employer.EmployerGroup, savedPeriod);
+            employer.PaystubPeriod = nextPeriod;
+
+            await _dbContext.SaveChangesAsync();
+            var pd7Result = await SaveAutomaticPd7IfClosingMonthAsync(
+                employer.RpNumber,
+                employer.EmployerGroup,
+                savedPeriod);
+            await transaction.CommitAsync();
+
+            return new EmployerPayrollSaveResult(
+                savedPeriod,
+                nextPeriod,
+                updates.Count,
+                pd7Result?.Month,
+                pd7Result?.Year,
+                pd7Result?.Period);
+        });
+    }
+
+    private async Task<PD7LookupDto?> SaveAutomaticPd7IfClosingMonthAsync(
+        string rpNumber,
+        string? employerGroup,
+        int savedPeriod)
+    {
+        var closingMonth = await _payPeriodRangeService.GetClosingMonthForPeriodAsync(
+            employerGroup,
+            savedPeriod,
+            DateTime.Today.Year);
+
+        if (closingMonth == null)
+        {
+            return null;
         }
 
-        var nextPeriod = PayPeriodRules.GetNextPeriod(employer.EmployerGroup, savedPeriod);
-        employer.PaystubPeriod = nextPeriod;
-
-        await _dbContext.SaveChangesAsync();
-        await transaction.CommitAsync();
-
-        return new EmployerPayrollSaveResult(savedPeriod, nextPeriod, updates.Count);
+        return await _pd7LookupService.SaveAutomaticPd7Async(
+            rpNumber,
+            closingMonth.Month,
+            closingMonth.Year);
     }
 
     private static void ApplyPayrollUpdate(
