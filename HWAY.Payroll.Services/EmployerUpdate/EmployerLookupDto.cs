@@ -6,6 +6,7 @@ public class EmployerLookupDto
 
     public string RpNumber { get; set; } = string.Empty;
     public string EmployerName { get; set; } = string.Empty;
+    public bool? IsActive { get; set; }
 
     public string? Address { get; set; }
     public string? City { get; set; }

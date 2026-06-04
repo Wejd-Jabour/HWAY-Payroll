@@ -13,7 +13,6 @@
         ContentTemplate="{DataTemplate views:PayrollWorkspacePage}"
         Route="PayrollWorkspacePage" />
 
-
         <ShellContent
         Title="Payroll Edit"
         ContentTemplate="{DataTemplate views:PayrollRecordEditPage}"

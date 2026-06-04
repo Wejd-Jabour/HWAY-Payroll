@@ -65,6 +65,7 @@ public class EmployeeUpdateService : IEmployeeUpdateService
                 EmployeeNumber = employee.EmployeeNumber,
                 FirstName = employee.FirstName,
                 LastName = employee.LastName,
+                IsActive = employee.isActive ?? true,
                 Sin = employee.Sin,
                 Address = employee.Address,
                 City = employee.City,
@@ -87,6 +88,7 @@ public class EmployeeUpdateService : IEmployeeUpdateService
 
         employee.FirstName = dto.FirstName;
         employee.LastName = dto.LastName;
+        employee.isActive = dto.IsActive;
         employee.Sin = dto.Sin;
         employee.Address = dto.Address;
         employee.City = dto.City;

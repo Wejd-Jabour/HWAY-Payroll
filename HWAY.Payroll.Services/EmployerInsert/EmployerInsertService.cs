@@ -28,6 +28,7 @@ public class EmployerInsertService : IEmployerInsertService
         {
             RpNumber = dto.RpNumber,
             EmployerName = dto.EmployerName,
+            isActive = dto.IsActive,
             Address = dto.Address,
             City = dto.City,
             PostalCode = dto.PostalCode,

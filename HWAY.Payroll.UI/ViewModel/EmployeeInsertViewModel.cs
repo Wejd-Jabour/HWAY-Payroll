@@ -23,6 +23,7 @@ public class EmployeeInsertViewModel : INotifyPropertyChanged
     public string EmployeeNumber { get; set; } = "";
     public string FirstName { get; set; } = "";
     public string LastName { get; set; } = "";
+    public bool? IsActive { get; set; } = true;
     public string? Sin { get; set; }
     public string? Address { get; set; }
     public string? City { get; set; }
@@ -99,6 +100,7 @@ public class EmployeeInsertViewModel : INotifyPropertyChanged
                 EmployeeNumber = EmployeeNumber,
                 FirstName = FirstName,
                 LastName = LastName,
+                IsActive = IsActive ?? true,
                 Sin = Sin,
                 Address = Address,
                 City = City,
@@ -130,12 +132,7 @@ public class EmployeeInsertViewModel : INotifyPropertyChanged
         EmployeeNumber = "";
         FirstName = "";
         LastName = "";
-        Sin = null;
-        Address = null;
-        City = null;
-        Province = null;
-        PostalCode = null;
-        EmailAddress = null;
+            IsActive = IsActive ?? true;
 
         OnPropertyChanged(nameof(RpNumber));
         OnPropertyChanged(nameof(EmployeeNumber));

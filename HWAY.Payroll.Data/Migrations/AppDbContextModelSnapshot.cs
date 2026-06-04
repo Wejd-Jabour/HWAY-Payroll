@@ -79,6 +79,10 @@ namespace HWAY.Payroll.Data.Migrations
                         .HasColumnType("nvarchar(20)")
                         .HasColumnName("SIN");
 
+                    b.Property<bool?>("isActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("Is Active");
+
                     b.HasKey("Id");
 
                     b.HasIndex("EmployeeNumber")
@@ -124,6 +128,10 @@ namespace HWAY.Payroll.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("RP#");
+
+                    b.Property<bool?>("isActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("Is Active");
 
                     b.HasKey("Id");
 
