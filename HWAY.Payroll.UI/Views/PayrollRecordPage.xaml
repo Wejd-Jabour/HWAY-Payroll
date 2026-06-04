@@ -86,6 +86,21 @@
                 <Entry Text="{Binding RegularHours}"
                        Keyboard="Numeric" />
 
+                <Label Text="Overtime Hours" />
+                <Entry Text="{Binding OvertimeHours}"
+                       Keyboard="Numeric" />
+
+                <Label Text="Public Holiday Hours" />
+                <Entry Text="{Binding PublicHolidayHours}"
+                       Keyboard="Numeric" />
+
+                <Label Text="Statutory Holiday Hours" />
+                <Entry Text="{Binding StatHolidayHours}"
+                       Keyboard="Numeric" />
+
+              <Label Text="Hire Date" /> 
+              <DatePicker Date="{Binding HireDateDisplay}" />
+
                 <!-- Calculate Button -->
                 <Button Text="Calculate Payroll &amp; Open CRA"
                         Command="{Binding CalculateAndOpenCraCommand}"
@@ -104,6 +119,11 @@
                 <Entry Text="{Binding Vacation}"
                        Keyboard="Numeric"
                        IsReadOnly="True" />
+
+                <Label Text="Vacation Setting" />
+                <Picker ItemsSource="{Binding VacationSettingOptions}"
+                        SelectedItem="{Binding VacationSetting}"
+                        Title="Vacation setting" />
 
                 <!-- Tax / Deductions -->
                 <Label Text="Tax1" />

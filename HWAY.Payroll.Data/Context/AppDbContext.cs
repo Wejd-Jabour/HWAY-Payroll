@@ -114,6 +114,11 @@ public class AppDbContext : DbContext
             entity.Property(e => e.PublicHolidayHours).HasColumnName("Public.H").HasColumnType("decimal(18,2)");
             entity.Property(e => e.StatHolidayHours).HasColumnName("S.H Hours").HasColumnType("decimal(18,2)");
             entity.Property(e => e.Vacation).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.VacationSetting)
+                .HasColumnName("vacation_setting")
+                .HasMaxLength(20)
+                .HasDefaultValue(HWAY.Payroll.Domain.VacationSettings.Accumulate)
+                .IsRequired();
             entity.Property(e => e.Gross).HasColumnType("decimal(18,2)");
 
             entity.Property(e => e.Tax1).HasColumnName("TAX1").HasColumnType("decimal(18,2)");
@@ -134,6 +139,7 @@ public class AppDbContext : DbContext
             entity.Property(e => e.VacationYtdUsed).HasColumnName("Vacation -YTD-Used").HasColumnType("decimal(18,2)");
             entity.Property(e => e.VacationYtdBalance).HasColumnName("Vacation -YTD- Balance").HasColumnType("decimal(18,2)");
             entity.Property(e => e.TotalPd7).HasColumnName("Total PD7").HasColumnType("decimal(18,2)");
+            entity.Property(e => e.HireDate).HasColumnName("Hire Date").HasColumnType("date");
 
             entity.HasOne(e => e.Employee)
                 .WithMany(e => e.PayrollRecords)

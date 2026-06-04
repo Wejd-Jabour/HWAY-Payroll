@@ -22,9 +22,11 @@ public class EmployerUpdateService : IEmployerUpdateService
 
         if (!string.IsNullOrWhiteSpace(searchText))
         {
+            var normalizedSearchText = searchText.ToLowerInvariant();
+
             query = query.Where(employer =>
-                employer.RpNumber.Contains(searchText) ||
-                employer.EmployerName.Contains(searchText));
+                employer.RpNumber.ToLower().Contains(normalizedSearchText) ||
+                employer.EmployerName.ToLower().Contains(normalizedSearchText));
         }
 
         return await query

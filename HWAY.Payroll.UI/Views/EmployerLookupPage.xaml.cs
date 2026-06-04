@@ -30,15 +30,15 @@ public partial class EmployerLookupPage : ContentPage
         }
     }
 
-    private async void ExportPaystubButton_Clicked(object sender, EventArgs e)
-    {
-        try
-        {
-            await _pdfService.ExportFromViewAsync(PaystubView);
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlert("Error", $"Failed to export PDF: {ex.Message}", "OK");
-        }
-    }
+    //private async void ExportPaystubButton_Clicked(object sender, EventArgs e)
+    //{
+    //    try
+    //    {
+    //        await _pdfService.ExportFromViewAsync(PaystubView);
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        await DisplayAlert("Error", $"Failed to export PDF: {ex.Message}", "OK");
+    //    }
+    //}
 }

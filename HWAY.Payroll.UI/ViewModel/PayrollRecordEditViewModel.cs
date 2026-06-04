@@ -4,6 +4,8 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
+using HWAY.Payroll.Domain;
+using HWAY.Payroll.Services;
 using HWAY.Payroll.Services.PayrollRecord;
 using HWAY.Payroll.Services.PayrollRecordEdit;
 
@@ -15,7 +17,12 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
     private readonly IPayrollRecordLookupService _lookupService;
 
     private int _currentPayrollRecordId;
+    private decimal _cpp1Ytd;
+    private decimal _cpp2Ytd;
+    private decimal _eiYtd;
     private bool _requiresRecalculate;
+
+    private static int PayrollYear => DateTime.Today.Year;
 
     public PayrollRecordEditViewModel(IPayrollRecordEditService service, IPayrollRecordLookupService lookupService)
     {
@@ -72,7 +79,14 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
         set
         {
             if (SetProperty(ref _salary, value))
+            {
+                if (value > 0)
+                {
+                    SetProperty(ref _rate, 0m, nameof(Rate));
+                }
+
                 _requiresRecalculate = true;
+            }
         }
     }
 
@@ -83,7 +97,14 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
         set
         {
             if (SetProperty(ref _rate, value))
+            {
+                if (value > 0)
+                {
+                    SetProperty(ref _salary, 0m, nameof(Salary));
+                }
+
                 _requiresRecalculate = true;
+            }
         }
     }
 
@@ -102,7 +123,11 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
     public decimal OvertimeHours
     {
         get => _overtimeHours;
-        set => SetProperty(ref _overtimeHours, value);
+        set
+        {
+            if (SetProperty(ref _overtimeHours, value))
+                _requiresRecalculate = true;
+        }
     }
 
     private decimal _gross;
@@ -119,6 +144,21 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
         set => SetProperty(ref _vacation, value);
     }
 
+    private string _vacationSetting = VacationSettings.Accumulate;
+    public string VacationSetting
+    {
+        get => _vacationSetting;
+        set
+        {
+            var normalizedValue = VacationSettings.Normalize(value);
+
+            if (SetProperty(ref _vacationSetting, normalizedValue))
+            {
+                NetPay = CalculateNetPay(Gross, Vacation, VacationSetting, Tax1, Cpp1, Cpp2, Ei, OtherDeduction);
+            }
+        }
+    }
+
     private decimal _tax1;
     public decimal Tax1
     {
@@ -130,22 +170,46 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
     public decimal Cpp1
     {
         get => _cpp1;
-        set => SetProperty(ref _cpp1, value);
+        set => SetDeductionWithCap(
+            ref _cpp1,
+            value,
+            _cpp1Ytd,
+            PayrollDeductionCaps.ClampCpp1,
+            nameof(Cpp1),
+            nameof(CanEditCpp1));
     }
 
     private decimal _cpp2;
     public decimal Cpp2
     {
         get => _cpp2;
-        set => SetProperty(ref _cpp2, value);
+        set => SetDeductionWithCap(
+            ref _cpp2,
+            value,
+            _cpp2Ytd,
+            PayrollDeductionCaps.ClampCpp2,
+            nameof(Cpp2),
+            nameof(CanEditCpp2));
     }
 
     private decimal _ei;
     public decimal Ei
     {
         get => _ei;
-        set => SetProperty(ref _ei, value);
+        set => SetDeductionWithCap(
+            ref _ei,
+            value,
+            _eiYtd,
+            PayrollDeductionCaps.ClampEi,
+            nameof(Ei),
+            nameof(CanEditEi));
     }
+
+    public bool CanEditCpp1 => PayrollDeductionCaps.HasCpp1Room(_cpp1Ytd, PayrollYear) || _cpp1 > 0;
+
+    public bool CanEditCpp2 => PayrollDeductionCaps.HasCpp2Room(_cpp2Ytd, PayrollYear) || _cpp2 > 0;
+
+    public bool CanEditEi => PayrollDeductionCaps.HasEiRoom(_eiYtd, PayrollYear) || _ei > 0;
 
     private decimal _otherDeduction;
     public decimal OtherDeduction
@@ -195,6 +259,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
     public ICommand OpenCraWebsiteCommand { get; }
 
     public ObservableCollection<PayrollRecordLookupDto> SearchResults { get; }
+    public IReadOnlyList<string> VacationSettingOptions { get; } = VacationSettings.Options;
 
     public PayrollRecordLookupDto? SelectedPayrollRecord
     {
@@ -248,13 +313,18 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
         EmployerName = selectedRecord.EmployerName;
 
         Salary = selectedRecord.Salary;
-        Rate = selectedRecord.Rate;
+        Rate = selectedRecord.Salary > 0 ? 0 : selectedRecord.Rate;
         RegularHours = selectedRecord.RegularHours;
         OvertimeHours = selectedRecord.OvertimeHours;
 
         Gross = selectedRecord.Gross;
         Vacation = selectedRecord.Vacation;
+        VacationSetting = selectedRecord.VacationSetting;
         _requiresRecalculate = false;
+
+        _cpp1Ytd = selectedRecord.Cpp1Ytd;
+        _cpp2Ytd = selectedRecord.Cpp2Ytd;
+        _eiYtd = selectedRecord.EiYtd;
 
         Tax1 = selectedRecord.Tax1;
         Cpp1 = selectedRecord.Cpp1;
@@ -266,6 +336,9 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
 
         EmployeeFound = true;
         EmployeeNotFound = false;
+        OnPropertyChanged(nameof(CanEditCpp1));
+        OnPropertyChanged(nameof(CanEditCpp2));
+        OnPropertyChanged(nameof(CanEditEi));
     }
 
     private async Task SaveChanges()
@@ -296,6 +369,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
                 OvertimeHours = OvertimeHours,
                 Gross = Gross,
                 Vacation = Vacation,
+                VacationSetting = VacationSetting,
                 Tax1 = Tax1,
                 Cpp1 = Cpp1,
                 Cpp2 = Cpp2,
@@ -322,7 +396,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
     {
         Gross = Salary + (Rate * RegularHours) + (Rate * 1.5m * OvertimeHours);
         Vacation = Gross * 0.04m;
-        NetPay = Gross - Tax1 - Cpp1 - Cpp2 - Ei - OtherDeduction;
+        NetPay = CalculateNetPay(Gross, Vacation, VacationSetting, Tax1, Cpp1, Cpp2, Ei, OtherDeduction);
         _requiresRecalculate = false;
         Message = "Gross and vacation recalculated. Opening CRA...";
         OpenCraWebsite();
@@ -331,6 +405,22 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
     private void OpenCraWebsite()
     {
         Launcher.OpenAsync("https://www.canada.ca/en/revenue-agency.html");
+    }
+
+    private static decimal CalculateNetPay(
+        decimal gross,
+        decimal vacation,
+        string vacationSetting,
+        decimal tax1,
+        decimal cpp1,
+        decimal cpp2,
+        decimal ei,
+        decimal otherDeduction)
+    {
+        var totalDeductions = tax1 + cpp1 + cpp2 + ei + otherDeduction;
+        var paidVacation = VacationSettings.IsPaidOut(vacationSetting) ? vacation : 0m;
+
+        return gross + paidVacation - totalDeductions;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -344,7 +434,31 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
             return false;
 
         field = value;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        OnPropertyChanged(propertyName);
         return true;
+    }
+
+    private void SetDeductionWithCap(
+        ref decimal field,
+        decimal requestedValue,
+        decimal currentYtd,
+        Func<decimal, decimal, int, decimal> capDeduction,
+        string propertyName,
+        string canEditPropertyName)
+    {
+        var cappedValue = capDeduction(requestedValue, currentYtd, PayrollYear);
+        var valueChanged = !EqualityComparer<decimal>.Default.Equals(field, cappedValue);
+
+        if (!valueChanged && requestedValue == cappedValue)
+            return;
+
+        field = cappedValue;
+        OnPropertyChanged(propertyName);
+        OnPropertyChanged(canEditPropertyName);
+    }
+
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

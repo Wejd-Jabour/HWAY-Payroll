@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
+using HWAY.Payroll.Services;
+using HWAY.Payroll.Domain;
 using HWAY.Payroll.Services.Employers;
 using HWAY.Payroll.Services.PayrollRecord;
 
@@ -13,17 +15,12 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
     private readonly IEmployerLookupService _employerLookupService;
     private readonly IPayrollRecordLookupService _payrollRecordService;
 
-    private int _currentPayrollRecordId;
     private string _searchText = string.Empty;
     private EmployerLookupDto? _selectedEmployer;
-    private PayrollRecordLookupDto? _selectedPayrollRecord;
     private bool _isDropdownVisible;
     private bool _isBusy;
     private bool _searchResultsFound;
-    private bool _employeeFound;
     private bool _employeeNotFound;
-    private bool _isPaystubVisible;
-    private object? _previewPaystub;
     private bool _suppressSearchTextChanged;
 
     public PayrollWorkspaceViewModel(
@@ -34,26 +31,29 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         _payrollRecordService = payrollRecordService;
 
         Employers = new ObservableCollection<EmployerLookupDto>();
-        SearchResults = new ObservableCollection<PayrollRecordLookupDto>();
+        EmployeePayrollRows = new ObservableCollection<EmployeePayrollRowViewModel>();
 
         SearchCommand = new Command(async () => await SearchEmployersAsync());
         SelectEmployerCommand = new Command<EmployerLookupDto>(async employer => await SelectEmployerAsync(employer));
-        CalculateAndOpenCraCommand = new Command(CalculateAndOpenCra);
-        SaveCommand = new Command(async () => await SaveChanges());
-        PreviewPaystubCommand = new Command(ShowPreviewPaystub);
+
+        CalculateRowCommand = new Command<EmployeePayrollRowViewModel>(CalculateRow);
+        SaveRowCommand = new Command<EmployeePayrollRowViewModel>(async row => await SaveRowAsync(row));
+        PreviewRowPaystubCommand = new Command<EmployeePayrollRowViewModel>(PreviewRowPaystub);
         OpenCraWebsiteCommand = new Command(OpenCraWebsite);
 
         _ = LoadInitialEmployersAsync();
     }
 
     public ObservableCollection<EmployerLookupDto> Employers { get; }
-    public ObservableCollection<PayrollRecordLookupDto> SearchResults { get; }
+
+    public ObservableCollection<EmployeePayrollRowViewModel> EmployeePayrollRows { get; }
 
     public ICommand SearchCommand { get; }
     public ICommand SelectEmployerCommand { get; }
-    public ICommand CalculateAndOpenCraCommand { get; }
-    public ICommand SaveCommand { get; }
-    public ICommand PreviewPaystubCommand { get; }
+
+    public ICommand CalculateRowCommand { get; }
+    public ICommand SaveRowCommand { get; }
+    public ICommand PreviewRowPaystubCommand { get; }
     public ICommand OpenCraWebsiteCommand { get; }
 
     public string SearchText
@@ -77,18 +77,6 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         set => SetProperty(ref _selectedEmployer, value);
     }
 
-    public PayrollRecordLookupDto? SelectedPayrollRecord
-    {
-        get => _selectedPayrollRecord;
-        set
-        {
-            if (SetProperty(ref _selectedPayrollRecord, value))
-            {
-                LoadSelectedPayrollRecord(value);
-            }
-        }
-    }
-
     public bool IsDropdownVisible
     {
         get => _isDropdownVisible;
@@ -107,105 +95,10 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         set => SetProperty(ref _searchResultsFound, value);
     }
 
-    public bool EmployeeFound
-    {
-        get => _employeeFound;
-        set => SetProperty(ref _employeeFound, value);
-    }
-
     public bool EmployeeNotFound
     {
         get => _employeeNotFound;
         set => SetProperty(ref _employeeNotFound, value);
-    }
-
-    public bool IsPaystubVisible
-    {
-        get => _isPaystubVisible;
-        set => SetProperty(ref _isPaystubVisible, value);
-    }
-
-    public object? PreviewPaystub
-    {
-        get => _previewPaystub;
-        set => SetProperty(ref _previewPaystub, value);
-    }
-
-    private string _employeeID = "";
-    public string EmployeeID
-    {
-        get => _employeeID;
-        set => SetProperty(ref _employeeID, value);
-    }
-
-    private decimal _gross;
-    public decimal Gross
-    {
-        get => _gross;
-        set => SetProperty(ref _gross, value);
-    }
-
-    private decimal _vacation;
-    public decimal Vacation
-    {
-        get => _vacation;
-        set => SetProperty(ref _vacation, value);
-    }
-
-    private decimal _salary;
-    public decimal Salary
-    {
-        get => _salary;
-        set => SetProperty(ref _salary, value);
-    }
-
-    private decimal _rate;
-    public decimal Rate
-    {
-        get => _rate;
-        set => SetProperty(ref _rate, value);
-    }
-
-    private decimal _regularHours;
-    public decimal RegularHours
-    {
-        get => _regularHours;
-        set => SetProperty(ref _regularHours, value);
-    }
-
-    private decimal _tax1;
-    public decimal Tax1
-    {
-        get => _tax1;
-        set => SetProperty(ref _tax1, value);
-    }
-
-    private decimal _cpp1;
-    public decimal Cpp1
-    {
-        get => _cpp1;
-        set => SetProperty(ref _cpp1, value);
-    }
-
-    private decimal _cpp2;
-    public decimal Cpp2
-    {
-        get => _cpp2;
-        set => SetProperty(ref _cpp2, value);
-    }
-
-    private decimal _ei;
-    public decimal Ei
-    {
-        get => _ei;
-        set => SetProperty(ref _ei, value);
-    }
-
-    private decimal _otherDeduction;
-    public decimal OtherDeduction
-    {
-        get => _otherDeduction;
-        set => SetProperty(ref _otherDeduction, value);
     }
 
     private async Task LoadInitialEmployersAsync()
@@ -254,10 +147,6 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
             _suppressSearchTextChanged = false;
 
             await LoadEmployeesForSelectedEmployerAsync();
-
-            EmployeeFound = false;
-            IsPaystubVisible = false;
-            PreviewPaystub = null;
         }
         finally
         {
@@ -268,138 +157,56 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
 
     private async Task LoadEmployeesForSelectedEmployerAsync()
     {
-        SearchResults.Clear();
+        EmployeePayrollRows.Clear();
 
         if (SelectedEmployer is null)
+        {
+            SearchResultsFound = false;
+            EmployeeNotFound = true;
             return;
+        }
 
         var results = await _payrollRecordService.SearchPayrollRecordsByRpNumberAsync(SelectedEmployer.RpNumber);
 
-        foreach (var item in results)
-            SearchResults.Add(item);
+        foreach (var record in results)
+        {
+            EmployeePayrollRows.Add(new EmployeePayrollRowViewModel(SelectedEmployer, record));
+        }
 
-        SearchResultsFound = SearchResults.Count > 0;
+        SearchResultsFound = EmployeePayrollRows.Count > 0;
         EmployeeNotFound = !SearchResultsFound;
     }
 
-    private void LoadSelectedPayrollRecord(PayrollRecordLookupDto? selectedRecord)
+    private void CalculateRow(EmployeePayrollRowViewModel? row)
     {
-        if (selectedRecord == null)
+        if (row is null)
             return;
 
-        _currentPayrollRecordId = selectedRecord.Id;
-        EmployeeID = selectedRecord.EmployeeNumber;
-
-        Salary = selectedRecord.Salary;
-        Rate = selectedRecord.Rate;
-        RegularHours = selectedRecord.RegularHours;
-        Gross = selectedRecord.Gross;
-        Vacation = selectedRecord.Vacation;
-
-        Tax1 = selectedRecord.Tax1;
-        Cpp1 = selectedRecord.Cpp1;
-        Cpp2 = selectedRecord.Cpp2;
-        Ei = selectedRecord.Ei;
-        OtherDeduction = selectedRecord.OtherDeduction;
-
-        EmployeeFound = true;
-        EmployeeNotFound = false;
-        IsPaystubVisible = false;
-        PreviewPaystub = null;
-    }
-
-    private async Task SaveChanges()
-    {
-        if (_currentPayrollRecordId <= 0 || SelectedPayrollRecord is null)
-            return;
-
-        var selectedPayrollRecordId = _currentPayrollRecordId;
-
-        var dto = new PayrollRecordUpdateDto
-        {
-            Salary = Salary,
-            Rate = Rate,
-            RegularHours = RegularHours,
-            Gross = Gross,
-            Vacation = Vacation,
-            Tax1 = Tax1,
-            Cpp1 = Cpp1,
-            Cpp2 = Cpp2,
-            Ei = Ei,
-            OtherDeduction = OtherDeduction
-        };
-
-        await _payrollRecordService.UpdatePayrollRecordAsync(_currentPayrollRecordId, dto);
-
-        await RefreshEmployeesAndKeepSelectionAsync(selectedPayrollRecordId);
-
-        ShowPreviewPaystub();
-    }
-
-    private async Task RefreshEmployeesAndKeepSelectionAsync(int payrollRecordId)
-    {
-        if (SelectedEmployer is null)
-            return;
-
-        SearchResults.Clear();
-
-        var results = await _payrollRecordService.SearchPayrollRecordsByRpNumberAsync(SelectedEmployer.RpNumber);
-
-        PayrollRecordLookupDto? refreshedSelectedRecord = null;
-
-        foreach (var item in results)
-        {
-            SearchResults.Add(item);
-
-            if (item.Id == payrollRecordId)
-            {
-                refreshedSelectedRecord = item;
-            }
-        }
-
-        SearchResultsFound = SearchResults.Count > 0;
-        EmployeeNotFound = !SearchResultsFound;
-
-        if (refreshedSelectedRecord is not null)
-        {
-            SelectedPayrollRecord = refreshedSelectedRecord;
-            LoadSelectedPayrollRecord(refreshedSelectedRecord);
-        }
-    }
-
-    private void CalculateAndOpenCra()
-    {
-        Gross = Salary + (Rate * RegularHours);
-        Vacation = Gross * 0.04m;
-
+        row.CalculatePayroll();
         OpenCraWebsite();
+    }
+
+    private async Task SaveRowAsync(EmployeePayrollRowViewModel? row)
+    {
+        if (row is null)
+            return;
+
+        await _payrollRecordService.UpdatePayrollRecordAsync(row.Id, row.ToUpdateDto());
+
+        row.ShowPreviewPaystub();
+    }
+
+    private void PreviewRowPaystub(EmployeePayrollRowViewModel? row)
+    {
+        if (row is null)
+            return;
+
+        row.ShowPreviewPaystub();
     }
 
     private void OpenCraWebsite()
     {
         Launcher.OpenAsync("https://apps.cra-arc.gc.ca/ebci/rhpd/beta/entry");
-    }
-
-    private void ShowPreviewPaystub()
-    {
-        if (SelectedEmployer is null || SelectedPayrollRecord is null)
-            return;
-
-        PreviewPaystub = new PaystubTemplateBindingModel(
-            SelectedEmployer,
-            SelectedPayrollRecord,
-            Salary,
-            Rate,
-            RegularHours,
-            Gross,
-            Vacation,
-            Tax1,
-            Cpp1,
-            Cpp2,
-            Ei,
-            OtherDeduction);
-
-        IsPaystubVisible = true;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -415,21 +222,412 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
     }
 }
 
-public class PaystubTemplateBindingModel
+public class EmployeePayrollRowViewModel : INotifyPropertyChanged
 {
-    public PaystubTemplateBindingModel(
-        EmployerLookupDto employer,
-        PayrollRecordLookupDto record,
+    private readonly EmployerLookupDto _employer;
+    private readonly PayrollRecordLookupDto _record;
+
+    private static int PayrollYear => DateTime.Today.Year;
+
+    public EmployeePayrollRowViewModel(EmployerLookupDto employer, PayrollRecordLookupDto record)
+    {
+        _employer = employer;
+        _record = record;
+
+        Id = record.Id;
+        EmployeeNumber = record.EmployeeNumber;
+        EmployeeName = record.EmployeeName;
+
+        Salary = record.Salary;
+        Rate = record.Salary > 0 ? 0 : record.Rate;
+        RegularHours = 0;
+        OvertimeHours = 0;
+        PublicHolidayHours = 0;
+        StatHolidayHours = 0;
+        Gross = 0;
+        Vacation = 0;
+        _vacationSetting = VacationSettings.Normalize(record.VacationSetting);
+
+        VacationYtd = record.VacationYtd;
+        VacationYtdUsed = record.VacationYtdUsed;
+        VacationYtdBalance = record.VacationYtdBalance;
+
+        Tax1 = 0;
+        Cpp1 = 0;
+        Cpp2 = 0;
+        Ei = 0;
+        OtherDeduction = 0;
+        VacationUsed = 0;
+    }
+
+    public int Id { get; }
+    public string EmployeeNumber { get; }
+    public string EmployeeName { get; }
+    public IReadOnlyList<string> VacationSettingOptions { get; } = VacationSettings.Options;
+
+    private decimal _salary;
+    public decimal Salary
+    {
+        get => _salary;
+        set
+        {
+            if (SetProperty(ref _salary, value) && value > 0)
+            {
+                SetProperty(ref _rate, 0m, nameof(Rate));
+            }
+        }
+    }
+
+    private decimal _rate;
+    public decimal Rate
+    {
+        get => _rate;
+        set
+        {
+            if (SetProperty(ref _rate, value) && value > 0)
+            {
+                SetProperty(ref _salary, 0m, nameof(Salary));
+            }
+        }
+    }
+
+    private decimal _regularHours;
+    public decimal RegularHours
+    {
+        get => _regularHours;
+        set => SetProperty(ref _regularHours, value);
+    }
+
+    private decimal _overtimeHours;
+    public decimal OvertimeHours
+    {
+        get => _overtimeHours;
+        set => SetProperty(ref _overtimeHours, value);
+    }
+
+    private decimal _publicHolidayHours;
+    public decimal PublicHolidayHours
+    {
+        get => _publicHolidayHours;
+        set => SetProperty(ref _publicHolidayHours, value);
+    }
+
+    private decimal _statHolidayHours;
+    public decimal StatHolidayHours
+    {
+        get => _statHolidayHours;
+        set => SetProperty(ref _statHolidayHours, value);
+    }
+
+    private decimal _gross;
+    public decimal Gross
+    {
+        get => _gross;
+        set => SetProperty(ref _gross, value);
+    }
+
+    private decimal _vacation;
+    public decimal Vacation
+    {
+        get => _vacation;
+        set
+        {
+            if (SetProperty(ref _vacation, value))
+            {
+                OnPropertyChanged(nameof(VacationUsed));
+                RefreshVacationTotalsPreview();
+            }
+        }
+    }
+
+    private string _vacationSetting = VacationSettings.Accumulate;
+    public string VacationSetting
+    {
+        get => _vacationSetting;
+        set
+        {
+            var normalizedValue = VacationSettings.Normalize(value);
+
+            if (SetProperty(ref _vacationSetting, normalizedValue))
+            {
+                OnPropertyChanged(nameof(IsVacationPaidOut));
+                OnPropertyChanged(nameof(CanEditVacationUsed));
+                OnPropertyChanged(nameof(VacationUsed));
+                RefreshVacationTotalsPreview();
+            }
+        }
+    }
+
+    public bool IsVacationPaidOut => VacationSettings.IsPaidOut(VacationSetting);
+
+    public bool CanEditVacationUsed => !IsVacationPaidOut;
+
+    private decimal _tax1;
+    public decimal Tax1
+    {
+        get => _tax1;
+        set => SetProperty(ref _tax1, value);
+    }
+
+    private decimal _cpp1;
+    public decimal Cpp1
+    {
+        get => _cpp1;
+        set => SetDeductionWithCap(
+            ref _cpp1,
+            value,
+            _record.Cpp1Ytd,
+            PayrollDeductionCaps.ClampCpp1,
+            nameof(Cpp1),
+            nameof(CanEditCpp1));
+    }
+
+    private decimal _cpp2;
+    public decimal Cpp2
+    {
+        get => _cpp2;
+        set => SetDeductionWithCap(
+            ref _cpp2,
+            value,
+            _record.Cpp2Ytd,
+            PayrollDeductionCaps.ClampCpp2,
+            nameof(Cpp2),
+            nameof(CanEditCpp2));
+    }
+
+    private decimal _ei;
+    public decimal Ei
+    {
+        get => _ei;
+        set => SetDeductionWithCap(
+            ref _ei,
+            value,
+            _record.EiYtd,
+            PayrollDeductionCaps.ClampEi,
+            nameof(Ei),
+            nameof(CanEditEi));
+    }
+
+    public bool CanEditCpp1 => PayrollDeductionCaps.HasCpp1Room(_record.Cpp1Ytd, PayrollYear) || _cpp1 > 0;
+
+    public bool CanEditCpp2 => PayrollDeductionCaps.HasCpp2Room(_record.Cpp2Ytd, PayrollYear) || _cpp2 > 0;
+
+    public bool CanEditEi => PayrollDeductionCaps.HasEiRoom(_record.EiYtd, PayrollYear) || _ei > 0;
+
+    private decimal _otherDeduction;
+    public decimal OtherDeduction
+    {
+        get => _otherDeduction;
+        set => SetProperty(ref _otherDeduction, value);
+    }
+
+    private bool _isPaystubVisible;
+    public bool IsPaystubVisible
+    {
+        get => _isPaystubVisible;
+        set => SetProperty(ref _isPaystubVisible, value);
+    }
+
+    private object? _previewPaystub;
+    public object? PreviewPaystub
+    {
+        get => _previewPaystub;
+        set => SetProperty(ref _previewPaystub, value);
+    }
+
+    private decimal _vacationUsed;
+    public decimal VacationUsed
+    {
+        get => IsVacationPaidOut ? Vacation : _vacationUsed;
+        set
+        {
+            if (SetProperty(ref _vacationUsed, value))
+            {
+                RefreshVacationTotalsPreview();
+            }
+        }
+    }
+
+    private decimal _vacationYtd;
+    public decimal VacationYtd
+    {
+        get => _vacationYtd;
+        set => SetProperty(ref _vacationYtd, value);
+    }
+
+    private decimal _vacationYtdUsed;
+    public decimal VacationYtdUsed
+    {
+        get => _vacationYtdUsed;
+        set => SetProperty(ref _vacationYtdUsed, value);
+    }
+
+    private decimal _vacationYtdBalance;
+    public decimal VacationYtdBalance
+    {
+        get => _vacationYtdBalance;
+        set => SetProperty(ref _vacationYtdBalance, value);
+    }
+
+    private DateTime _payDate = DateTime.Today;
+    public DateTime PayDate
+    {
+        get => _payDate;
+        set
+        {
+            if (SetProperty(ref _payDate, value))
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PayDateDisplay)));
+            }
+        }
+    }
+
+    public DateTime PayDateDisplay
+    {
+        get => PayDate;
+        set => PayDate = value;
+    }
+
+
+    public void CalculatePayroll()
+    {
+        Gross = CalculateGross(Salary, Rate, RegularHours, OvertimeHours, PublicHolidayHours, StatHolidayHours);
+
+        Vacation = Gross * 0.04m;
+
+        VacationYtd = _record.VacationYtd + Vacation;
+        VacationYtdUsed = _record.VacationYtdUsed + VacationUsed;
+        VacationYtdBalance = VacationYtd - VacationYtdUsed;
+    }
+
+    private void RefreshVacationTotalsPreview()
+    {
+        VacationYtd = _record.VacationYtd + Vacation;
+        VacationYtdUsed = _record.VacationYtdUsed + VacationUsed;
+        VacationYtdBalance = VacationYtd - VacationYtdUsed;
+    }
+
+    public PayrollRecordUpdateDto ToUpdateDto()
+    {
+        return new PayrollRecordUpdateDto
+        {
+            Salary = Salary,
+            Rate = Rate,
+            RegularHours = RegularHours,
+            OvertimeHours = OvertimeHours,
+            PublicHolidayHours = PublicHolidayHours,
+            StatHolidayHours = StatHolidayHours,
+            Gross = Gross,
+            Vacation = Vacation,
+            VacationSetting = VacationSetting,
+            VacationUsed = VacationUsed,
+            Tax1 = Tax1,
+            Cpp1 = Cpp1,
+            Cpp2 = Cpp2,
+            Ei = Ei,
+            OtherDeduction = OtherDeduction
+        };
+    }
+
+    public void ShowPreviewPaystub()
+    {
+        PreviewPaystub = new PaystubTemplateBindingModel(
+            _employer,
+            _record,
+            Salary,
+            Rate,
+            RegularHours,
+            OvertimeHours,
+            PublicHolidayHours,
+            StatHolidayHours,
+            Gross,
+            Vacation,
+            Tax1,
+            Cpp1,
+            Cpp2,
+            Ei,
+            OtherDeduction,
+            VacationUsed,
+            VacationSetting,
+            PayDate);
+
+        IsPaystubVisible = true;
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string name = "")
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value))
+            return false;
+
+        field = value;
+        OnPropertyChanged(name);
+        return true;
+    }
+
+    private void SetDeductionWithCap(
+        ref decimal field,
+        decimal requestedValue,
+        decimal currentYtd,
+        Func<decimal, decimal, int, decimal> capDeduction,
+        string propertyName,
+        string canEditPropertyName)
+    {
+        var cappedValue = capDeduction(requestedValue, currentYtd, PayrollYear);
+        var valueChanged = !EqualityComparer<decimal>.Default.Equals(field, cappedValue);
+
+        if (!valueChanged && requestedValue == cappedValue)
+            return;
+
+        field = cappedValue;
+        OnPropertyChanged(propertyName);
+        OnPropertyChanged(canEditPropertyName);
+    }
+
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    private static decimal CalculateGross(
         decimal salary,
         decimal rate,
         decimal regularHours,
-        decimal gross,
-        decimal vacation,
-        decimal tax1,
-        decimal cpp1,
-        decimal cpp2,
-        decimal ei,
-        decimal otherDeduction)
+        decimal overtimeHours,
+        decimal publicHolidayHours,
+        decimal statHolidayHours)
+    {
+        var regularPay = rate * regularHours;
+        var overtimePay = rate * 1.5m * overtimeHours;
+        var publicHolidayPay = rate * publicHolidayHours;
+        var statHolidayPay = rate * 1.5m * statHolidayHours;
+
+        return salary + regularPay + overtimePay + publicHolidayPay + statHolidayPay;
+    }
+}
+
+public class PaystubTemplateBindingModel
+{
+    public PaystubTemplateBindingModel(
+    EmployerLookupDto employer,
+    PayrollRecordLookupDto record,
+    decimal salary,
+    decimal rate,
+    decimal regularHours,
+    decimal overtimeHours,
+    decimal publicHolidayHours,
+    decimal statHolidayHours,
+    decimal gross,
+    decimal vacation,
+    decimal tax1,
+    decimal cpp1,
+    decimal cpp2,
+    decimal ei,
+    decimal otherDeduction,
+    decimal vacationUsed,
+    string vacationSetting,
+    DateTime payDate)
     {
         EmployerName = employer.EmployerName;
         Address = employer.Address ?? "";
@@ -439,9 +637,16 @@ public class PaystubTemplateBindingModel
 
         EmployeeNumber = record.EmployeeNumber;
         EmployeeName = record.EmployeeName;
-        EmployeeAddressLine = "";
 
-        PayDate = DateTime.Today.ToString("yyyy-MM-dd");
+        EmployeeAddressLine = record.EmployeeAddress;
+        EmployeeCityProvinceLine = BuildCityProvinceLine(
+            record.EmployeeCity,
+            record.EmployeeProvince,
+            record.EmployeePostalCode);
+
+        EmployeeEmailLine = record.EmployeeEmailAddress;
+
+        PayDate = payDate.ToString("yyyy-MM-dd");
         Period = record.Period.ToString();
         PayPeriod = record.Period.ToString();
 
@@ -450,77 +655,94 @@ public class PaystubTemplateBindingModel
             record.Period,
             DateTime.Today.Year);
 
+        var regularPay = salary + rate * regularHours;
+        var overtimePay = rate * 1.5m * overtimeHours;
+        var publicHolidayPay = rate * publicHolidayHours;
+        var statHolidayPay = rate * 1.5m * statHolidayHours;
+        var normalizedVacationSetting = VacationSettings.Normalize(vacationSetting);
+        var isVacationPaidOut = VacationSettings.IsPaidOut(normalizedVacationSetting);
+        var paidVacation = isVacationPaidOut ? vacation : 0m;
+        var currentVacationUsed = isVacationPaidOut ? vacation : vacationUsed;
+        var grossYtd = record.GrossYtd + gross;
+        var taxYtd = record.TaxYtd + tax1;
+        var cpp1Ytd = record.Cpp1Ytd + cpp1;
+        var cpp2Ytd = record.Cpp2Ytd + cpp2;
+        var eiYtd = record.EiYtd + ei;
+        var otherDeductionYtd = record.OtherDeductionYtd + otherDeduction;
+        var vacationYtd = record.VacationYtd + vacation;
+        var vacationYtdUsed = record.VacationYtdUsed + currentVacationUsed;
+        var vacationYtdBalance = vacationYtd - vacationYtdUsed;
+
         RegularPaySalary = FormatMoney(salary);
         RegularPayHours = FormatNumber(regularHours);
         RegularPayRate = FormatMoney(rate);
-        RegularPayCurrent = FormatMoney(gross);
-        RegularPayYtd = FormatMoney(record.GrossYtd);
+        RegularPayCurrent = FormatMoney(regularPay);
+        RegularPayYtd = FormatMoney(grossYtd);
 
         OvertimePaySalary = "";
-        OvertimePayHours = FormatNumber(record.OvertimeHours);
-        OvertimePayRate = "";
-        OvertimePayCurrent = "";
+        OvertimePayHours = FormatNumber(overtimeHours);
+        OvertimePayRate = FormatMoneyWhenHoursSet(rate * 1.5m, overtimeHours);
+        OvertimePayCurrent = FormatMoney(overtimePay);
         OvertimePayYtd = "";
 
         PublicHolidaySalary = "";
-        PublicHolidayHours = FormatNumber(record.PublicHolidayHours);
-        PublicHolidayRate = "";
-        PublicHolidayCurrent = "";
+        PublicHolidayHours = FormatNumber(publicHolidayHours);
+        PublicHolidayRate = FormatMoneyWhenHoursSet(rate, publicHolidayHours);
+        PublicHolidayCurrent = FormatMoney(publicHolidayPay);
         PublicHolidayYtd = "";
 
         StatHolidaySalary = "";
-        StatHolidayHours = FormatNumber(record.StatHolidayHours);
-        StatHolidayRate = "";
-        StatHolidayCurrent = "";
+        StatHolidayHours = FormatNumber(statHolidayHours);
+        StatHolidayRate = FormatMoneyWhenHoursSet(rate * 1.5m, statHolidayHours);
+        StatHolidayCurrent = FormatMoney(statHolidayPay);
         StatHolidayYtd = "";
 
-        VacationPayCurrent = FormatMoney(vacation);
-        VacationPayYtd = FormatMoney(record.VacationYtd);
+        ShowVacationPay = isVacationPaidOut;
+        VacationPayCurrent = isVacationPaidOut ? FormatMoney(vacation) : "";
+        VacationPayYtd = isVacationPaidOut ? FormatMoney(vacationYtdUsed) : "";
 
-        TotalPayCurrent = FormatMoney(gross + vacation);
-        TotalPayYtd = FormatMoney(record.GrossYtd + record.VacationYtd);
+        TotalPayCurrent = FormatMoney(gross + paidVacation);
+        TotalPayYtd = FormatMoney(grossYtd + vacationYtdUsed);
 
         TaxCurrent = FormatMoney(tax1);
-        TaxYtd = FormatMoney(record.TaxYtd);
+        TaxYtd = FormatMoney(taxYtd);
 
         Cpp1Current = FormatMoney(cpp1);
-        Cpp1Ytd = FormatMoney(record.Cpp1Ytd);
+        Cpp1Ytd = FormatMoney(cpp1Ytd);
 
         Cpp2Current = FormatMoney(cpp2);
-        Cpp2Ytd = FormatMoney(record.Cpp2Ytd);
+        Cpp2Ytd = FormatMoney(cpp2Ytd);
 
         EiCurrent = FormatMoney(ei);
-        EiYtd = FormatMoney(record.EiYtd);
+        EiYtd = FormatMoney(eiYtd);
 
         OtherDeductionCurrent = FormatMoney(otherDeduction);
-        OtherDeductionYtd = FormatMoney(record.OtherDeductionYtd);
+        OtherDeductionYtd = FormatMoney(otherDeductionYtd);
 
-        var payrollDeductions = tax1 + cpp1 + cpp2 + ei;
-        var totalDeductions = payrollDeductions + otherDeduction;
-        var totalPay = salary > 0 ? salary : gross + vacation;
-        var netPay = CalculateNetPay(salary, gross, vacation, tax1, cpp1, cpp2, ei);
+        var totalPay = gross + paidVacation;
+        var netPay = CalculateNetPay(gross, vacation, normalizedVacationSetting, tax1, cpp1, cpp2, ei, otherDeduction);
+        var netYtd = record.NetYtd + netPay;
 
         HeaderNetPay = FormatMoney(netPay);
         BenefitNetPay = FormatMoney(netPay);
 
         SummaryTotalPayCurrent = FormatMoney(totalPay);
-        SummaryTotalPayYtd = FormatMoney(record.GrossYtd + record.VacationYtd);
+        SummaryTotalPayYtd = FormatMoney(grossYtd + vacationYtdUsed);
 
         SummaryTaxesCurrent = FormatMoney(tax1);
-        SummaryTaxesYtd = FormatMoney(record.TaxYtd);
+        SummaryTaxesYtd = FormatMoney(taxYtd);
 
-        SummaryDeductionsCurrent = FormatMoney(totalDeductions);
+        SummaryDeductionsCurrent = FormatMoney(cpp1 + cpp2 + ei + otherDeduction);
         SummaryDeductionsYtd = FormatMoney(
-            record.TaxYtd +
-            record.Cpp1Ytd +
-            record.Cpp2Ytd +
-            record.EiYtd +
-            record.OtherDeductionYtd);
+            cpp1Ytd +
+            cpp2Ytd +
+            eiYtd +
+            otherDeductionYtd);
 
         SummaryNetPayCurrent = FormatMoney(netPay);
-        SummaryNetPayYtd = FormatMoney(record.NetYtd);
+        SummaryNetPayYtd = FormatMoney(netYtd);
 
-        VacationYtdBalance = FormatMoney(record.VacationYtdBalance);
+        VacationYtdBalance = FormatMoney(vacationYtdBalance);
         Memo = "";
     }
 
@@ -586,6 +808,8 @@ public class PaystubTemplateBindingModel
     public string EmployeeNumber { get; }
     public string EmployeeName { get; }
     public string EmployeeAddressLine { get; }
+    public string EmployeeCityProvinceLine { get; }
+    public string EmployeeEmailLine { get; }
 
     public string PayDate { get; }
     public string Period { get; }
@@ -622,6 +846,7 @@ public class PaystubTemplateBindingModel
     public string StatHolidayCurrent { get; }
     public string StatHolidayYtd { get; }
 
+    public bool ShowVacationPay { get; }
     public string VacationPayCurrent { get; }
     public string VacationPayYtd { get; }
     public string TotalPayCurrent { get; }
@@ -648,21 +873,34 @@ public class PaystubTemplateBindingModel
     public string SummaryNetPayYtd { get; }
 
     private static decimal CalculateNetPay(
-        decimal salary,
         decimal gross,
         decimal vacation,
+        string vacationSetting,
         decimal tax1,
         decimal cpp1,
         decimal cpp2,
-        decimal ei)
+        decimal ei,
+        decimal otherDeduction)
     {
-        var payrollDeductions = tax1 + cpp1 + cpp2 + ei;
+        var totalDeductions = tax1 + cpp1 + cpp2 + ei + otherDeduction;
+        var paidVacation = VacationSettings.IsPaidOut(vacationSetting) ? vacation : 0m;
 
-        return salary > 0
-            ? salary - payrollDeductions
-            : gross + vacation - payrollDeductions;
+        return gross + paidVacation - totalDeductions;
     }
 
     private static string FormatMoney(decimal value) => value == 0 ? "" : value.ToString("0.00");
+
     private static string FormatNumber(decimal value) => value == 0 ? "" : value.ToString("0.##");
+
+    private static string FormatMoneyWhenHoursSet(decimal value, decimal hours) =>
+        hours == 0 ? "" : FormatMoney(value);
+
+    private static string BuildCityProvinceLine(string city, string province, string postalCode)
+    {
+        var cityProvince = string.Join(", ",
+            new[] { city, province }.Where(value => !string.IsNullOrWhiteSpace(value)));
+
+        return string.Join(" ",
+            new[] { cityProvince, postalCode }.Where(value => !string.IsNullOrWhiteSpace(value)));
+    }
 }

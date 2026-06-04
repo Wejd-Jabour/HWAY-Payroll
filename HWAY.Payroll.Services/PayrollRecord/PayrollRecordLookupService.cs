@@ -1,4 +1,6 @@
 using HWAY.Payroll.Data.Context;
+using HWAY.Payroll.Domain;
+using HWAY.Payroll.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace HWAY.Payroll.Services.PayrollRecord;
@@ -21,12 +23,14 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
 
         if (!string.IsNullOrWhiteSpace(searchText))
         {
+            var normalizedSearchText = searchText.ToLowerInvariant();
+
             query = query.Where(record =>
-                record.EmployeeNumber.Contains(searchText) ||
-                record.EmployeeName.Contains(searchText) ||
-                record.RpNumber.Contains(searchText) ||
-                record.Employer!.EmployerName.Contains(searchText) ||
-                record.Employer.RpNumber.Contains(searchText));
+                record.EmployeeNumber.ToLower().Contains(normalizedSearchText) ||
+                record.EmployeeName.ToLower().Contains(normalizedSearchText) ||
+                record.RpNumber.ToLower().Contains(normalizedSearchText) ||
+                record.Employer!.EmployerName.ToLower().Contains(normalizedSearchText) ||
+                record.Employer.RpNumber.ToLower().Contains(normalizedSearchText));
         }
 
         return await query
@@ -41,6 +45,12 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 EmployerName = record.Employer!.EmployerName,
                 Period = record.Period,
 
+                EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
+                EmployeeCity = record.Employee != null ? record.Employee.City ?? "" : "",
+                EmployeeProvince = record.Employee != null ? record.Employee.Province ?? "" : "",
+                EmployeePostalCode = record.Employee != null ? record.Employee.PostalCode ?? "" : "",
+                EmployeeEmailAddress = record.Employee != null ? record.Employee.EmailAddress ?? "" : "",
+
                 Salary = record.Salary,
                 Rate = record.Rate,
                 RegularHours = record.RegularHours,
@@ -48,6 +58,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 PublicHolidayHours = record.PublicHolidayHours,
                 StatHolidayHours = record.StatHolidayHours,
                 Vacation = record.Vacation,
+                VacationSetting = record.VacationSetting,
                 Gross = record.Gross,
 
                 Tax1 = record.Tax1,
@@ -67,7 +78,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 VacationYtd = record.VacationYtd,
                 VacationYtdUsed = record.VacationYtdUsed,
                 VacationYtdBalance = record.VacationYtdBalance,
-                TotalPd7 = record.TotalPd7
+                TotalPd7 = record.TotalPd7,
+                HireDate = record.HireDate
             })
             .ToListAsync();
     }
@@ -89,6 +101,12 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 EmployerName = record.Employer!.EmployerName,
                 Period = record.Period,
 
+                EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
+                EmployeeCity = record.Employee != null ? record.Employee.City ?? "" : "",
+                EmployeeProvince = record.Employee != null ? record.Employee.Province ?? "" : "",
+                EmployeePostalCode = record.Employee != null ? record.Employee.PostalCode ?? "" : "",
+                EmployeeEmailAddress = record.Employee != null ? record.Employee.EmailAddress ?? "" : "",
+
                 Salary = record.Salary,
                 Rate = record.Rate,
                 RegularHours = record.RegularHours,
@@ -96,6 +114,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 PublicHolidayHours = record.PublicHolidayHours,
                 StatHolidayHours = record.StatHolidayHours,
                 Vacation = record.Vacation,
+                VacationSetting = record.VacationSetting,
                 Gross = record.Gross,
 
                 Tax1 = record.Tax1,
@@ -115,7 +134,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 VacationYtd = record.VacationYtd,
                 VacationYtdUsed = record.VacationYtdUsed,
                 VacationYtdBalance = record.VacationYtdBalance,
-                TotalPd7 = record.TotalPd7
+                TotalPd7 = record.TotalPd7,
+                HireDate = record.HireDate
             })
             .ToListAsync();
     }
@@ -136,6 +156,12 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 EmployerName = record.Employer!.EmployerName,
                 Period = record.Period,
 
+                EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
+                EmployeeCity = record.Employee != null ? record.Employee.City ?? "" : "",
+                EmployeeProvince = record.Employee != null ? record.Employee.Province ?? "" : "",
+                EmployeePostalCode = record.Employee != null ? record.Employee.PostalCode ?? "" : "",
+                EmployeeEmailAddress = record.Employee != null ? record.Employee.EmailAddress ?? "" : "",
+
                 Salary = record.Salary,
                 Rate = record.Rate,
                 RegularHours = record.RegularHours,
@@ -143,6 +169,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 PublicHolidayHours = record.PublicHolidayHours,
                 StatHolidayHours = record.StatHolidayHours,
                 Vacation = record.Vacation,
+                VacationSetting = record.VacationSetting,
                 Gross = record.Gross,
 
                 Tax1 = record.Tax1,
@@ -162,7 +189,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 VacationYtd = record.VacationYtd,
                 VacationYtdUsed = record.VacationYtdUsed,
                 VacationYtdBalance = record.VacationYtdBalance,
-                TotalPd7 = record.TotalPd7
+                TotalPd7 = record.TotalPd7,
+                HireDate = record.HireDate
             })
             .FirstOrDefaultAsync();
     }
@@ -178,36 +206,59 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
             throw new InvalidOperationException($"Payroll record with Id {payrollRecordId} not found.");
 
         record.Period = CalculatePeriod(record.Employer?.EmployerGroup, DateTime.Today);
+        var salary = dto.Salary;
+        var rate = salary > 0 ? 0 : dto.Rate;
+        var payrollYear = DateTime.Today.Year;
+        var cpp1 = PayrollDeductionCaps.ClampCpp1(dto.Cpp1, record.Cpp1Ytd, payrollYear);
+        var cpp2 = PayrollDeductionCaps.ClampCpp2(dto.Cpp2, record.Cpp2Ytd, payrollYear);
+        var ei = PayrollDeductionCaps.ClampEi(dto.Ei, record.EiYtd, payrollYear);
+        var vacationSetting = VacationSettings.Normalize(dto.VacationSetting);
+        var vacationUsed = VacationSettings.IsPaidOut(vacationSetting)
+            ? dto.Vacation
+            : dto.VacationUsed;
 
         var netPay = CalculateNetPay(
-            dto.Salary,
             dto.Gross,
             dto.Vacation,
+            vacationSetting,
             dto.Tax1,
-            dto.Cpp1,
-            dto.Cpp2,
-            dto.Ei);
+            cpp1,
+            cpp2,
+            ei,
+            dto.OtherDeduction);
 
-        record.Salary = dto.Salary;
-        record.Rate = dto.Rate;
+        record.Salary = salary;
+        record.Rate = rate;
         record.RegularHours = dto.RegularHours;
+        record.OvertimeHours = dto.OvertimeHours;
+        record.PublicHolidayHours = dto.PublicHolidayHours;
+        record.StatHolidayHours = dto.StatHolidayHours;
         record.Gross = dto.Gross;
         record.Vacation = dto.Vacation;
+        record.VacationSetting = vacationSetting;
         record.Tax1 = dto.Tax1;
-        record.Cpp1 = dto.Cpp1;
-        record.Cpp2 = dto.Cpp2;
-        record.Ei = dto.Ei;
+        record.Cpp1 = cpp1;
+        record.Cpp2 = cpp2;
+        record.Ei = ei;
         record.OtherDeduction = dto.OtherDeduction;
         record.NetPay = netPay;
+        record.HireDate = dto.HireDate;
 
         record.GrossYtd += dto.Gross;
         record.NetYtd += netPay;
         record.TaxYtd += dto.Tax1;
-        record.Cpp1Ytd += dto.Cpp1;
-        record.Cpp2Ytd += dto.Cpp2;
-        record.EiYtd += dto.Ei;
+        record.Cpp1Ytd += cpp1;
+        record.Cpp2Ytd += cpp2;
+        record.EiYtd += ei;
         record.OtherDeductionYtd += dto.OtherDeduction;
-        record.VacationYtd += dto.Vacation;
+
+
+        var updatedVacationYtd = record.VacationYtd + dto.Vacation;
+        var updatedVacationYtdUsed = record.VacationYtdUsed + vacationUsed;
+
+        record.VacationYtd = updatedVacationYtd;
+        record.VacationYtdUsed = updatedVacationYtdUsed;
+        record.VacationYtdBalance = updatedVacationYtd - updatedVacationYtdUsed;
 
         await _dbContext.SaveChangesAsync();
     }
@@ -228,18 +279,18 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
     }
 
     private static decimal CalculateNetPay(
-        decimal salary,
         decimal gross,
         decimal vacation,
+        string vacationSetting,
         decimal tax1,
         decimal cpp1,
         decimal cpp2,
-        decimal ei)
+        decimal ei,
+        decimal otherDeduction)
     {
-        var totalDeductions = tax1 + cpp1 + cpp2 + ei;
+        var totalDeductions = tax1 + cpp1 + cpp2 + ei + otherDeduction;
+        var paidVacation = VacationSettings.IsPaidOut(vacationSetting) ? vacation : 0m;
 
-        return salary > 0
-            ? salary - totalDeductions
-            : gross + vacation - totalDeductions;
+        return gross + paidVacation - totalDeductions;
     }
 }

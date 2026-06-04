@@ -239,6 +239,10 @@ namespace HWAY.Payroll.Data.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("Gross-YTD");
 
+                    b.Property<DateTime?>("HireDate")
+                        .HasColumnType("date")
+                        .HasColumnName("Hire Date");
+
                     b.Property<decimal>("NetPay")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("NET PAY");
@@ -303,6 +307,14 @@ namespace HWAY.Payroll.Data.Migrations
 
                     b.Property<decimal>("Vacation")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("VacationSetting")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Accumulate")
+                        .HasColumnName("vacation_setting");
 
                     b.Property<decimal>("VacationYtd")
                         .HasColumnType("decimal(18,2)")

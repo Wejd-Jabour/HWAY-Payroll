@@ -16,6 +16,7 @@ public class PayrollRecord
     public decimal PublicHolidayHours { get; set; }
     public decimal StatHolidayHours { get; set; }
     public decimal Vacation { get; set; }
+    public string VacationSetting { get; set; } = HWAY.Payroll.Domain.VacationSettings.Accumulate;
     public decimal Gross { get; set; }
 
     public decimal Tax1 { get; set; }
@@ -36,6 +37,8 @@ public class PayrollRecord
     public decimal VacationYtdUsed { get; set; }
     public decimal VacationYtdBalance { get; set; }
     public decimal TotalPd7 { get; set; }
+
+    public DateTime? HireDate { get; set; }
 
     public Employee? Employee { get; set; }
     public Employer? Employer { get; set; }

@@ -1,7 +1,7 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
+using Microsoft.Maui;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -10,22 +10,24 @@ namespace HWAY.Payroll.Services.Paystub;
 
 public class PaystubPDFService : IPaystubPDFService
 {
-    public async Task ExportFromViewAsync(View paystubView)
+    public async Task ExportFromViewAsync(View paystubView, string fileName)
     {
-        // STEP 1: ensure layout is ready
+        // Force the paystub to its intended printable size.
         paystubView.Measure(850, 1100);
         paystubView.Layout(new Rect(0, 0, 850, 1100));
 
-        await Task.Delay(100); // safety for rendering
+        await Task.Delay(150);
 
-        // STEP 2: capture screenshot of the current page
-        var screenshot = await Screenshot.CaptureAsync();
+        // Important: this captures ONLY the paystub view, not the whole app screen.
+        var screenshot = await paystubView.CaptureAsync();
 
-        // STEP 3: get image stream
-        var imageStream = await screenshot.OpenReadAsync(ScreenshotFormat.Png);
+        if (screenshot is null)
+            return;
 
-        // STEP 4: save PDF
-        var filePath = Path.Combine(FileSystem.AppDataDirectory, $"paystub_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+        await using var imageStream = await screenshot.OpenReadAsync(ScreenshotFormat.Png);
+
+        var safeFileName = MakeSafeFileName(fileName);
+        var filePath = Path.Combine(FileSystem.AppDataDirectory, safeFileName);
 
         Document.Create(container =>
         {
@@ -33,15 +35,25 @@ public class PaystubPDFService : IPaystubPDFService
             {
                 page.Size(PageSizes.Letter);
                 page.Margin(0);
-                page.Content().Image(imageStream).FitWidth();
+
+                page.Content()
+                    .Image(imageStream)
+                    .FitArea();
             });
         })
         .GeneratePdf(filePath);
 
-        // STEP 5: open file
         await Launcher.OpenAsync(new OpenFileRequest
         {
             File = new ReadOnlyFile(filePath)
         });
+    }
+
+    private static string MakeSafeFileName(string fileName)
+    {
+        foreach (var invalidChar in Path.GetInvalidFileNameChars())
+            fileName = fileName.Replace(invalidChar, '_');
+
+        return fileName;
     }
 }
