@@ -355,7 +355,9 @@ insert into public."bi-weekly A" (
     "P23",
     "P24",
     "P25",
-    "P26"
+    "P26",
+    "M1",
+    "M2"
 )
 values (
     1,
@@ -384,7 +386,9 @@ values (
     date '2026-11-08',
     date '2026-11-22',
     date '2026-12-06',
-    date '2026-12-20'
+    date '2026-12-20',
+    3,
+    8
 )
 on conflict ("ID") do update set
     "P1" = excluded."P1",
@@ -412,7 +416,9 @@ on conflict ("ID") do update set
     "P23" = excluded."P23",
     "P24" = excluded."P24",
     "P25" = excluded."P25",
-    "P26" = excluded."P26";
+    "P26" = excluded."P26",
+    "M1" = excluded."M1",
+    "M2" = excluded."M2";
 
 insert into public."bi-weekly B" (
     "ID",
@@ -441,7 +447,9 @@ insert into public."bi-weekly B" (
     "P23",
     "P24",
     "P25",
-    "P26"
+    "P26",
+    "M1",
+    "M2"
 )
 values (
     1,
@@ -470,7 +478,9 @@ values (
     date '2026-11-27',
     date '2026-12-11',
     date '2026-12-25',
-    date '2027-01-08'
+    date '2027-01-08',
+    5,
+    10
 )
 on conflict ("ID") do update set
     "P1" = excluded."P1",
@@ -498,7 +508,9 @@ on conflict ("ID") do update set
     "P23" = excluded."P23",
     "P24" = excluded."P24",
     "P25" = excluded."P25",
-    "P26" = excluded."P26";
+    "P26" = excluded."P26",
+    "M1" = excluded."M1",
+    "M2" = excluded."M2";
 
 select setval(
     pg_get_serial_sequence('public."bi-weekly A"', 'ID'),

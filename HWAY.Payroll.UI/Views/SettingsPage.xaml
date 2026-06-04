@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="HWAY.Payroll.UI.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Settings">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+            <Label
+                Text="Bi-weekly Settings"
+                FontSize="24"
+                FontAttributes="Bold" />
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                <Border
+                    Grid.Column="0"
+                    StrokeThickness="1"
+                    Padding="16">
+
+                    <VerticalStackLayout Spacing="12">
+                        <Label
+                            Text="{Binding ScheduleA.Name}"
+                            FontSize="20"
+                            FontAttributes="Bold" />
+
+                        <Grid
+                            ColumnDefinitions="170,*"
+                            RowDefinitions="Auto,Auto,Auto,Auto"
+                            RowSpacing="10"
+                            ColumnSpacing="12">
+
+                            <Label Grid.Row="0" Grid.Column="0" Text="Last period ending" VerticalOptions="Center" />
+                            <DatePicker Grid.Row="0" Grid.Column="1" Date="{Binding ScheduleA.LastPeriodEnding}" />
+
+                            <Label Grid.Row="1" Grid.Column="0" Text="Period 1 beginning" FontAttributes="Bold" />
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding ScheduleA.FirstPeriodBeginningDisplay}" />
+
+                            <Label Grid.Row="2" Grid.Column="0" Text="Period endings" FontAttributes="Bold" />
+                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding ScheduleA.ScheduleRange}" />
+
+                            <Label Grid.Row="3" Grid.Column="0" Text="Three-period months" FontAttributes="Bold" />
+                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding ScheduleA.ThreePeriodMonths}" />
+                        </Grid>
+
+                        <Button
+                            Text="Save Bi-weekly A"
+                            Command="{Binding SaveACommand}"
+                            HorizontalOptions="Start"
+                            WidthRequest="180" />
+
+                        <Grid
+                            ColumnDefinitions="60,*,*,120"
+                            RowDefinitions="Auto"
+                            Padding="0,6,0,0"
+                            ColumnSpacing="8">
+
+                            <Label Grid.Column="0" Text="Period" FontAttributes="Bold" />
+                            <Label Grid.Column="1" Text="Beginning" FontAttributes="Bold" />
+                            <Label Grid.Column="2" Text="Ending" FontAttributes="Bold" />
+                            <Label Grid.Column="3" Text="3-period" FontAttributes="Bold" />
+                        </Grid>
+
+                        <CollectionView
+                            ItemsSource="{Binding ScheduleA.Periods}"
+                            HeightRequest="520"
+                            SelectionMode="None">
+
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid
+                                        ColumnDefinitions="60,*,*,120"
+                                        Padding="0,4"
+                                        ColumnSpacing="8">
+
+                                        <Label Grid.Column="0" Text="{Binding PeriodDisplay}" />
+                                        <Label Grid.Column="1" Text="{Binding BeginningDisplay}" />
+                                        <Label Grid.Column="2" Text="{Binding EndingDisplay}" />
+                                        <Label Grid.Column="3" Text="{Binding ThreePeriodMonthDisplay}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border
+                    Grid.Column="1"
+                    StrokeThickness="1"
+                    Padding="16">
+
+                    <VerticalStackLayout Spacing="12">
+                        <Label
+                            Text="{Binding ScheduleB.Name}"
+                            FontSize="20"
+                            FontAttributes="Bold" />
+
+                        <Grid
+                            ColumnDefinitions="170,*"
+                            RowDefinitions="Auto,Auto,Auto,Auto"
+                            RowSpacing="10"
+                            ColumnSpacing="12">
+
+                            <Label Grid.Row="0" Grid.Column="0" Text="Last period ending" VerticalOptions="Center" />
+                            <DatePicker Grid.Row="0" Grid.Column="1" Date="{Binding ScheduleB.LastPeriodEnding}" />
+
+                            <Label Grid.Row="1" Grid.Column="0" Text="Period 1 beginning" FontAttributes="Bold" />
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding ScheduleB.FirstPeriodBeginningDisplay}" />
+
+                            <Label Grid.Row="2" Grid.Column="0" Text="Period endings" FontAttributes="Bold" />
+                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding ScheduleB.ScheduleRange}" />
+
+                            <Label Grid.Row="3" Grid.Column="0" Text="Three-period months" FontAttributes="Bold" />
+                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding ScheduleB.ThreePeriodMonths}" />
+                        </Grid>
+
+                        <Button
+                            Text="Save Bi-weekly B"
+                            Command="{Binding SaveBCommand}"
+                            HorizontalOptions="Start"
+                            WidthRequest="180" />
+
+                        <Grid
+                            ColumnDefinitions="60,*,*,120"
+                            RowDefinitions="Auto"
+                            Padding="0,6,0,0"
+                            ColumnSpacing="8">
+
+                            <Label Grid.Column="0" Text="Period" FontAttributes="Bold" />
+                            <Label Grid.Column="1" Text="Beginning" FontAttributes="Bold" />
+                            <Label Grid.Column="2" Text="Ending" FontAttributes="Bold" />
+                            <Label Grid.Column="3" Text="3-period" FontAttributes="Bold" />
+                        </Grid>
+
+                        <CollectionView
+                            ItemsSource="{Binding ScheduleB.Periods}"
+                            HeightRequest="520"
+                            SelectionMode="None">
+
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid
+                                        ColumnDefinitions="60,*,*,120"
+                                        Padding="0,4"
+                                        ColumnSpacing="8">
+
+                                        <Label Grid.Column="0" Text="{Binding PeriodDisplay}" />
+                                        <Label Grid.Column="1" Text="{Binding BeginningDisplay}" />
+                                        <Label Grid.Column="2" Text="{Binding EndingDisplay}" />
+                                        <Label Grid.Column="3" Text="{Binding ThreePeriodMonthDisplay}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <HorizontalStackLayout Spacing="10">
+                <Button
+                    Text="Save Both"
+                    Command="{Binding SaveBothCommand}"
+                    BackgroundColor="Green"
+                    TextColor="White"
+                    WidthRequest="140" />
+
+                <Button
+                    Text="Reload Saved"
+                    Command="{Binding ReloadCommand}"
+                    BackgroundColor="Gray"
+                    TextColor="White"
+                    WidthRequest="140" />
+            </HorizontalStackLayout>
+
+            <Label
+                Text="{Binding Message}"
+                TextColor="Red"
+                FontAttributes="Bold" />
+
+            <ActivityIndicator
+                IsVisible="{Binding IsBusy}"
+                IsRunning="{Binding IsBusy}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
