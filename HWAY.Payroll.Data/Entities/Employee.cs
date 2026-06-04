@@ -7,6 +7,7 @@ public class Employee
     public string EmployeeNumber { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
+    public bool? isActive { get; set; }
     public string? Sin { get; set; }
     public string? Address { get; set; }
     public string? City { get; set; }

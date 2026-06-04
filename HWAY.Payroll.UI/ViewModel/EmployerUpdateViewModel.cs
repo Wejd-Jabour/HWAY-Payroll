@@ -74,6 +74,13 @@ public class EmployerUpdateViewModel : INotifyPropertyChanged
         set => SetProperty(ref _employerGroup, value);
     }
 
+    private bool? _isActive = true;
+    public bool? IsActive
+    {
+        get => _isActive;
+        set => SetProperty(ref _isActive, value);
+    }
+
     // 🔹 UI state
     private string _message = "";
     public string Message
@@ -99,6 +106,7 @@ public class EmployerUpdateViewModel : INotifyPropertyChanged
             {
                 RpNumber = RpNumber,
                 EmployerName = EmployerName,
+                IsActive = IsActive,
                 Address = Address,
                 City = City,
                 PostalCode = PostalCode,
@@ -124,6 +132,7 @@ public class EmployerUpdateViewModel : INotifyPropertyChanged
 
         RpNumber = employer.RpNumber;
         EmployerName = employer.EmployerName;
+        IsActive = employer.IsActive ?? true;
         Address = employer.Address;
         City = employer.City;
         PostalCode = employer.PostalCode;

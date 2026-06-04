@@ -46,6 +46,8 @@ public class AppDbContext : DbContext
                 .HasColumnName("Employer Group")
                 .HasMaxLength(100);
 
+            entity.Property(e => e.isActive).HasColumnName("Is Active");
+
             entity.HasIndex(e => e.RpNumber).IsUnique();
         });
 
@@ -85,6 +87,8 @@ public class AppDbContext : DbContext
             entity.Property(e => e.EmailAddress)
                 .HasColumnName("E-Mail Address")
                 .HasMaxLength(200);
+
+            entity.Property(e => e.isActive).HasColumnName("Is Active");
 
             entity.HasIndex(e => e.EmployeeNumber).IsUnique();
         });

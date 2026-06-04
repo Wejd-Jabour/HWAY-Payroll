@@ -97,6 +97,13 @@ public class EmployerViewModel : INotifyPropertyChanged
         set => SetProperty(ref _employerGroup, value);
     }
 
+    private bool? _isActive = true;
+    public bool? IsActive
+    {
+        get => _isActive;
+        set => SetProperty(ref _isActive, value);
+    }
+
     // ===================== State Management =====================
     private bool _isBusy = false;
     public bool IsBusy
@@ -213,6 +220,7 @@ public class EmployerViewModel : INotifyPropertyChanged
             // Populate form
             RpNumber = employer.RpNumber;
             EmployerName = employer.EmployerName;
+            IsActive = employer.IsActive ?? true;
             Address = employer.Address ?? "";
             City = employer.City ?? "";
             PostalCode = employer.PostalCode ?? "";
@@ -271,6 +279,7 @@ public class EmployerViewModel : INotifyPropertyChanged
                 {
                     RpNumber = RpNumber,
                     EmployerName = EmployerName,
+                    IsActive = IsActive,
                     Address = Address,
                     City = City,
                     PostalCode = PostalCode,
@@ -287,6 +296,7 @@ public class EmployerViewModel : INotifyPropertyChanged
                 {
                     RpNumber = RpNumber,
                     EmployerName = EmployerName,
+                    IsActive = IsActive,
                     Address = Address,
                     City = City,
                     PostalCode = PostalCode,
@@ -374,6 +384,7 @@ public class EmployerViewModel : INotifyPropertyChanged
     {
         RpNumber = "";
         EmployerName = "";
+        IsActive = true;
         Address = "";
         City = "";
         PostalCode = "";

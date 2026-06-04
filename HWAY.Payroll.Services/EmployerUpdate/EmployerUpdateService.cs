@@ -35,6 +35,7 @@ public class EmployerUpdateService : IEmployerUpdateService
             {
                 RpNumber = employer.RpNumber,
                 EmployerName = employer.EmployerName,
+                IsActive = employer.isActive ?? true,
                 Address = employer.Address,
                 City = employer.City,
                 PostalCode = employer.PostalCode,
@@ -54,6 +55,7 @@ public class EmployerUpdateService : IEmployerUpdateService
             {
                 RpNumber = employer.RpNumber,
                 EmployerName = employer.EmployerName,
+                IsActive = employer.isActive ?? true,
                 Address = employer.Address,
                 City = employer.City,
                 PostalCode = employer.PostalCode,
@@ -73,6 +75,7 @@ public class EmployerUpdateService : IEmployerUpdateService
 
         employer.RpNumber = dto.RpNumber;
         employer.EmployerName = dto.EmployerName;
+        employer.isActive = dto.IsActive;
         employer.Address = dto.Address;
         employer.City = dto.City;
         employer.PostalCode = dto.PostalCode;

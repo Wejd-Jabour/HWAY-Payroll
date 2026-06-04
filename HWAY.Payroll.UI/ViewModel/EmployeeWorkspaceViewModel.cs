@@ -139,6 +139,13 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
         set => SetProperty(ref _emailAddress, value);
     }
 
+    private bool? _isActive = true;
+    public bool? IsActive
+    {
+        get => _isActive;
+        set => SetProperty(ref _isActive, value);
+    }
+
     // ===================== State Management =====================
     private bool _isBusy = false;
     public bool IsBusy
@@ -270,6 +277,7 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
             EmployeeNumber = employee.EmployeeNumber;
             FirstName = employee.FirstName;
             LastName = employee.LastName;
+            IsActive = employee.IsActive ?? true;
             Sin = employee.Sin ?? "";
             Address = employee.Address ?? "";
             City = employee.City ?? "";
@@ -344,6 +352,7 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
                     EmployeeNumber = EmployeeNumber,
                     FirstName = FirstName,
                     LastName = LastName,
+                    IsActive = IsActive ?? true,
                     Sin = Sin,
                     Address = Address,
                     City = City,
@@ -364,6 +373,7 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
                     EmployeeNumber = EmployeeNumber,
                     FirstName = FirstName,
                     LastName = LastName,
+                    IsActive = IsActive ?? true,
                     Sin = Sin,
                     Address = Address,
                     City = City,
@@ -463,6 +473,7 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
         EmployeeNumber = "";
         FirstName = "";
         LastName = "";
+        IsActive = IsActive ?? true;
         Sin = "";
         Address = "";
         City = "";

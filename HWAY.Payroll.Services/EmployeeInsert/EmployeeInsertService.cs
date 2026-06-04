@@ -30,6 +30,7 @@ public class EmployeeInsertService : IEmployeeInsertService
             EmployeeNumber = dto.EmployeeNumber,
             FirstName = dto.FirstName,
             LastName = dto.LastName,
+            isActive = dto.IsActive,
             Sin = dto.Sin,
             Address = dto.Address,
             City = dto.City,

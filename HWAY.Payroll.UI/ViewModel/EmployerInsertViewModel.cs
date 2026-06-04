@@ -21,6 +21,7 @@ public class EmployerInsertViewModel : INotifyPropertyChanged
 
     public string RpNumber { get; set; } = string.Empty;
     public string EmployerName { get; set; } = string.Empty;
+    public bool? IsActive { get; set; } = true;
 
     public string? Address { get; set; }
     public string? City { get; set; }
@@ -86,6 +87,7 @@ public class EmployerInsertViewModel : INotifyPropertyChanged
             {
                 RpNumber = RpNumber,
                 EmployerName = EmployerName,
+                IsActive = IsActive ?? true,
                 Address = Address,
                 City = City,
                 PostalCode = PostalCode,
@@ -113,10 +115,7 @@ public class EmployerInsertViewModel : INotifyPropertyChanged
     {
         RpNumber = "";
         EmployerName = "";
-        Address = null;
-        City = null;
-        PostalCode = null;
-        EmployerGroup = null;
+        IsActive = IsActive ?? true;
 
         OnPropertyChanged(nameof(RpNumber));
         OnPropertyChanged(nameof(EmployerName));

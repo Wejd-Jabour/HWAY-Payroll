@@ -14,16 +14,6 @@
         Route="PayrollWorkspacePage" />
 
         <ShellContent
-        Title="Employer Lookup"
-        ContentTemplate="{DataTemplate views:EmployerLookupPage}"
-        Route="EmployerLookupPage" />
-
-        <ShellContent
-        Title="Payroll Record"
-        ContentTemplate="{DataTemplate views:PayrollRecordPage}"
-        Route="PayrollRecordPage" />
-
-        <ShellContent
         Title="Payroll Edit"
         ContentTemplate="{DataTemplate views:PayrollRecordEditPage}"
         Route="PayrollRecordEditPage" />

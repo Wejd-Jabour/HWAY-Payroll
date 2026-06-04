@@ -102,6 +102,13 @@ public class EmployeeUpdateViewModel : INotifyPropertyChanged
         set => SetProperty(ref _emailAddress, value);
     }
 
+    private bool? _isActive = true;
+    public bool? IsActive
+    {
+        get => _isActive;
+        set => SetProperty(ref _isActive, value);
+    }
+
     // 🔹 UI state
     private string _message = "";
     public string Message
@@ -129,6 +136,7 @@ public class EmployeeUpdateViewModel : INotifyPropertyChanged
                 EmployeeNumber = EmployeeNumber,
                 FirstName = FirstName,
                 LastName = LastName,
+                IsActive = IsActive ?? true,
                 Sin = Sin,
                 Address = Address,
                 City = City,
@@ -158,6 +166,7 @@ public class EmployeeUpdateViewModel : INotifyPropertyChanged
         EmployeeNumber = employee.EmployeeNumber;
         FirstName = employee.FirstName;
         LastName = employee.LastName;
+        IsActive = employee.IsActive;
         Sin = employee.Sin;
         Address = employee.Address;
         City = employee.City;
