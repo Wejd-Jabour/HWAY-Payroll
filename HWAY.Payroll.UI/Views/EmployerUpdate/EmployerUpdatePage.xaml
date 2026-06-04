@@ -31,6 +31,10 @@
             <Entry Placeholder="Employer Group"
                    Text="{Binding EmployerGroup}" />
 
+            <Entry Placeholder="Period #"
+                   Keyboard="Numeric"
+                   Text="{Binding PaystubPeriod}" />
+
             <Entry Placeholder="Fee"
                    Keyboard="Numeric"
                    Text="{Binding Fee}" />

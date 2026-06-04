@@ -10,6 +10,7 @@ public class Employer
     public string? City { get; set; }
     public string? PostalCode { get; set; }
     public string? EmployerGroup { get; set; }
+    public int PaystubPeriod { get; set; } = 1;
     public decimal Fee { get; set; }
 
     public ICollection<PayrollRecord> PayrollRecords { get; set; } = new List<PayrollRecord>();

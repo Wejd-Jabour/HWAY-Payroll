@@ -69,7 +69,7 @@
 
                     <Grid
                         ColumnDefinitions="140,*"
-                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                         RowSpacing="8">
 
                         <Label Grid.Row="0" Grid.Column="0" Text="RP Number:" FontAttributes="Bold" />
@@ -89,9 +89,17 @@
 
                         <Label Grid.Row="5" Grid.Column="0" Text="Group:" FontAttributes="Bold" />
                         <Label Grid.Row="5" Grid.Column="1" Text="{Binding SelectedEmployer.EmployerGroup}" />
+
+                        <Label Grid.Row="6" Grid.Column="0" Text="Period #:" FontAttributes="Bold" />
+                        <Label Grid.Row="6" Grid.Column="1" Text="{Binding SelectedEmployer.PaystubPeriod}" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>
+
+            <Label
+                Text="{Binding Message}"
+                FontAttributes="Bold"
+                TextColor="Green" />
 
             <Label
                 IsVisible="{Binding EmployeeNotFound}"
@@ -101,16 +109,19 @@
 
             <VerticalStackLayout
                 IsVisible="{Binding SearchResultsFound}"
-                BindableLayout.ItemsSource="{Binding EmployeePayrollRows}"
                 Spacing="14">
 
-                <BindableLayout.ItemTemplate>
-                    <DataTemplate>
-                        <Border
-                            Stroke="Red"
-                            StrokeThickness="1"
-                            Padding="16"
-                            Margin="0,10,0,0">
+                <VerticalStackLayout
+                    BindableLayout.ItemsSource="{Binding EmployeePayrollRows}"
+                    Spacing="14">
+
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Border
+                                Stroke="Red"
+                                StrokeThickness="1"
+                                Padding="16"
+                                Margin="0,10,0,0">
 
                             <VerticalStackLayout Spacing="14">
 
@@ -285,11 +296,6 @@
                                         VerticalOptions="Start">
 
                                         <Button
-                                            Text="Save"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SaveRowCommand}"
-                                            CommandParameter="{Binding .}" />
-
-                                        <Button
                                             Text="Preview Paystub"
                                             Clicked="PreviewPaystubButton_Clicked" />
 
@@ -300,9 +306,19 @@
                                     </VerticalStackLayout>
                                 </Grid>
                             </VerticalStackLayout>
-                        </Border>
-                    </DataTemplate>
-                </BindableLayout.ItemTemplate>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <Button
+                    Text="Save All Employees"
+                    Command="{Binding SaveAllRowsCommand}"
+                    BackgroundColor="Green"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    HorizontalOptions="Fill"
+                    Margin="0,8,0,0" />
             </VerticalStackLayout>
         </VerticalStackLayout>
     </ScrollView>

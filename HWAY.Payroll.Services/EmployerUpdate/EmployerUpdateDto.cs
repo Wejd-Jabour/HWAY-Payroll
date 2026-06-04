@@ -11,6 +11,7 @@ public class EmployerUpdateDto
     public string? City { get; set; }
     public string? PostalCode { get; set; }
     public string? EmployerGroup { get; set; }
+    public int PaystubPeriod { get; set; } = 1;
     public decimal Fee { get; set; }
 
     public string DisplayText => $"{RpNumber} - {EmployerName}";

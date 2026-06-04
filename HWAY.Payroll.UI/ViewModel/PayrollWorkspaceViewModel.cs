@@ -6,6 +6,7 @@ using Microsoft.Maui.ApplicationModel;
 using HWAY.Payroll.Services;
 using HWAY.Payroll.Domain;
 using HWAY.Payroll.Services.Employers;
+using HWAY.Payroll.Services.PayPeriods;
 using HWAY.Payroll.Services.PayrollRecord;
 
 namespace HWAY.Payroll.UI.ViewModels;
@@ -14,6 +15,7 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
 {
     private readonly IEmployerLookupService _employerLookupService;
     private readonly IPayrollRecordLookupService _payrollRecordService;
+    private readonly IPayPeriodRangeService _payPeriodRangeService;
 
     private string _searchText = string.Empty;
     private EmployerLookupDto? _selectedEmployer;
@@ -22,13 +24,16 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
     private bool _searchResultsFound;
     private bool _employeeNotFound;
     private bool _suppressSearchTextChanged;
+    private string _message = string.Empty;
 
     public PayrollWorkspaceViewModel(
         IEmployerLookupService employerLookupService,
-        IPayrollRecordLookupService payrollRecordService)
+        IPayrollRecordLookupService payrollRecordService,
+        IPayPeriodRangeService payPeriodRangeService)
     {
         _employerLookupService = employerLookupService;
         _payrollRecordService = payrollRecordService;
+        _payPeriodRangeService = payPeriodRangeService;
 
         Employers = new ObservableCollection<EmployerLookupDto>();
         EmployeePayrollRows = new ObservableCollection<EmployeePayrollRowViewModel>();
@@ -37,7 +42,7 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         SelectEmployerCommand = new Command<EmployerLookupDto>(async employer => await SelectEmployerAsync(employer));
 
         CalculateRowCommand = new Command<EmployeePayrollRowViewModel>(CalculateRow);
-        SaveRowCommand = new Command<EmployeePayrollRowViewModel>(async row => await SaveRowAsync(row));
+        SaveAllRowsCommand = new Command(async () => await SaveAllRowsAsync());
         PreviewRowPaystubCommand = new Command<EmployeePayrollRowViewModel>(PreviewRowPaystub);
         OpenCraWebsiteCommand = new Command(OpenCraWebsite);
 
@@ -52,7 +57,7 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
     public ICommand SelectEmployerCommand { get; }
 
     public ICommand CalculateRowCommand { get; }
-    public ICommand SaveRowCommand { get; }
+    public ICommand SaveAllRowsCommand { get; }
     public ICommand PreviewRowPaystubCommand { get; }
     public ICommand OpenCraWebsiteCommand { get; }
 
@@ -101,6 +106,12 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         set => SetProperty(ref _employeeNotFound, value);
     }
 
+    public string Message
+    {
+        get => _message;
+        set => SetProperty(ref _message, value);
+    }
+
     private async Task LoadInitialEmployersAsync()
     {
         await SearchEmployersAsync();
@@ -141,6 +152,7 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
             IsDropdownVisible = false;
 
             SelectedEmployer = await _employerLookupService.GetEmployerByRpNumberAsync(employer.RpNumber);
+            Message = string.Empty;
 
             _suppressSearchTextChanged = true;
             SearchText = employer.RpNumber;
@@ -166,11 +178,22 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
             return;
         }
 
+        var currentPeriod = PayPeriodRules.NormalizePeriod(
+            SelectedEmployer.EmployerGroup,
+            SelectedEmployer.PaystubPeriod);
+        var payPeriodRange = await _payPeriodRangeService.GetPayPeriodRangeAsync(
+            SelectedEmployer.EmployerGroup,
+            currentPeriod);
         var results = await _payrollRecordService.SearchPayrollRecordsByRpNumberAsync(SelectedEmployer.RpNumber);
 
         foreach (var record in results)
         {
-            EmployeePayrollRows.Add(new EmployeePayrollRowViewModel(SelectedEmployer, record));
+            EmployeePayrollRows.Add(new EmployeePayrollRowViewModel(
+                SelectedEmployer,
+                record,
+                currentPeriod,
+                payPeriodRange.Beginning,
+                payPeriodRange.Ending));
         }
 
         SearchResultsFound = EmployeePayrollRows.Count > 0;
@@ -186,14 +209,43 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         OpenCraWebsite();
     }
 
-    private async Task SaveRowAsync(EmployeePayrollRowViewModel? row)
+    private async Task SaveAllRowsAsync()
     {
-        if (row is null)
+        if (IsBusy || SelectedEmployer is null || EmployeePayrollRows.Count == 0)
             return;
 
-        await _payrollRecordService.UpdatePayrollRecordAsync(row.Id, row.ToUpdateDto());
+        try
+        {
+            IsBusy = true;
+            Message = string.Empty;
 
-        row.ShowPreviewPaystub();
+            var updates = EmployeePayrollRows
+                .Select(row => new PayrollRecordBatchUpdateDto
+                {
+                    PayrollRecordId = row.Id,
+                    PayrollRecord = row.ToUpdateDto()
+                })
+                .ToList();
+
+            var result = await _payrollRecordService.UpdatePayrollRecordsForEmployerAsync(
+                SelectedEmployer.RpNumber,
+                updates);
+
+            SelectedEmployer.PaystubPeriod = result.NextPeriod;
+            OnPropertyChanged(nameof(SelectedEmployer));
+
+            Message = $"Saved {result.UpdatedRecords} employees for period {result.SavedPeriod}. Next period is {result.NextPeriod}.";
+
+            await LoadEmployeesForSelectedEmployerAsync();
+        }
+        catch (Exception ex)
+        {
+            Message = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private void PreviewRowPaystub(EmployeePayrollRowViewModel? row)
@@ -217,8 +269,13 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
             return false;
 
         field = value;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        OnPropertyChanged(name);
         return true;
+    }
+
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
 
@@ -229,7 +286,12 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
 
     private static int PayrollYear => DateTime.Today.Year;
 
-    public EmployeePayrollRowViewModel(EmployerLookupDto employer, PayrollRecordLookupDto record)
+    public EmployeePayrollRowViewModel(
+        EmployerLookupDto employer,
+        PayrollRecordLookupDto record,
+        int period,
+        DateTime periodBeginning,
+        DateTime periodEnding)
     {
         _employer = employer;
         _record = record;
@@ -237,6 +299,9 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
         Id = record.Id;
         EmployeeNumber = record.EmployeeNumber;
         EmployeeName = record.EmployeeName;
+        Period = period;
+        PeriodBeginning = periodBeginning.Date;
+        PeriodEnding = periodEnding.Date;
 
         Salary = record.Salary;
         Rate = record.Salary > 0 ? 0 : record.Rate;
@@ -264,6 +329,10 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
     public string EmployeeNumber { get; }
     public string EmployeeName { get; }
     public IReadOnlyList<string> VacationSettingOptions { get; } = VacationSettings.Options;
+
+    public int Period { get; private set; }
+    public DateTime PeriodBeginning { get; private set; }
+    public DateTime PeriodEnding { get; private set; }
 
     private decimal _salary;
     public decimal Salary
@@ -549,6 +618,9 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
             OtherDeduction,
             VacationUsed,
             VacationSetting,
+            Period,
+            PeriodBeginning,
+            PeriodEnding,
             PayDate);
 
         IsPaystubVisible = true;
@@ -627,6 +699,9 @@ public class PaystubTemplateBindingModel
     decimal otherDeduction,
     decimal vacationUsed,
     string vacationSetting,
+    int period,
+    DateTime periodBeginning,
+    DateTime periodEnding,
     DateTime payDate)
     {
         EmployerName = employer.EmployerName;
@@ -647,13 +722,10 @@ public class PaystubTemplateBindingModel
         EmployeeEmailLine = record.EmployeeEmailAddress;
 
         PayDate = payDate.ToString("yyyy-MM-dd");
-        Period = record.Period.ToString();
-        PayPeriod = record.Period.ToString();
-
-        (PeriodBeginning, PeriodEnding) = CalculatePeriodRange(
-            employer.EmployerGroup ?? string.Empty,
-            record.Period,
-            DateTime.Today.Year);
+        Period = period.ToString();
+        PayPeriod = period.ToString();
+        PeriodBeginning = periodBeginning.ToString("yyyy-MM-dd");
+        PeriodEnding = periodEnding.ToString("yyyy-MM-dd");
 
         var regularPay = salary + rate * regularHours;
         var overtimePay = rate * 1.5m * overtimeHours;
@@ -744,59 +816,6 @@ public class PaystubTemplateBindingModel
 
         VacationYtdBalance = FormatMoney(vacationYtdBalance);
         Memo = "";
-    }
-
-    private static (string Beginning, string Ending) CalculatePeriodRange(string employerGroup, int period, int year)
-    {
-        var group = (employerGroup ?? "A").Trim().ToUpperInvariant();
-
-        return group switch
-        {
-            "B" => GetSemiMonthlyRange(period, year),
-            "C" or "D" => GetBiWeeklyRange(period, year),
-            _ => GetMonthlyRange(period, year),
-        };
-    }
-
-    private static (string Beginning, string Ending) GetMonthlyRange(int period, int year)
-    {
-        var month = period;  // period is now just 1-12
-        var start = new DateTime(year, month, 1);
-        var end = start.AddMonths(1).AddDays(-1);
-        return (start.ToString("yyyy-MM-dd"), end.ToString("yyyy-MM-dd"));
-    }
-
-    private static (string Beginning, string Ending) GetSemiMonthlyRange(int period, int year)
-    {
-        var periodNumber = period;  // 1-24 for the year
-        
-        // Calculate which month and half: periodNumber 1-2 = Jan, 3-4 = Feb, etc.
-        var month = (periodNumber - 1) / 2 + 1;
-        var half = (periodNumber - 1) % 2 + 1;  // 1 = first half, 2 = second half
-        var daysInMonth = DateTime.DaysInMonth(year, month);
-
-        var start = half == 2
-            ? new DateTime(year, month, 16)
-            : new DateTime(year, month, 1);
-        var end = half == 2
-            ? new DateTime(year, month, daysInMonth)
-            : new DateTime(year, month, Math.Min(15, daysInMonth));
-
-        return (start.ToString("yyyy-MM-dd"), end.ToString("yyyy-MM-dd"));
-    }
-
-    private static (string Beginning, string Ending) GetBiWeeklyRange(int period, int year)
-    {
-        var periodIndex = period;  // 1-26 for the year
-        var start = new DateTime(year, 1, 1).AddDays((periodIndex - 1) * 14);
-        var end = start.AddDays(13);
-
-        if (end.Year != year)
-        {
-            end = new DateTime(year, 12, 31);
-        }
-
-        return (start.ToString("yyyy-MM-dd"), end.ToString("yyyy-MM-dd"));
     }
 
     public string EmployerGroup { get; }

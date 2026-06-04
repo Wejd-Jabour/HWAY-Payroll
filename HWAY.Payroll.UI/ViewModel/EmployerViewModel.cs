@@ -104,6 +104,13 @@ public class EmployerViewModel : INotifyPropertyChanged
         set => SetProperty(ref _fee, value);
     }
 
+    private int _paystubPeriod = 1;
+    public int PaystubPeriod
+    {
+        get => _paystubPeriod;
+        set => SetProperty(ref _paystubPeriod, value);
+    }
+
     // ===================== State Management =====================
     private bool _isBusy = false;
     public bool IsBusy
@@ -123,8 +130,16 @@ public class EmployerViewModel : INotifyPropertyChanged
     public bool IsEditMode
     {
         get => _isEditMode;
-        set => SetProperty(ref _isEditMode, value);
+        set
+        {
+            if (SetProperty(ref _isEditMode, value))
+            {
+                OnPropertyChanged(nameof(CanEditPaystubPeriod));
+            }
+        }
     }
+
+    public bool CanEditPaystubPeriod => IsEditMode;
 
     private bool _searchResultsFound = false;
     public bool SearchResultsFound
@@ -224,6 +239,7 @@ public class EmployerViewModel : INotifyPropertyChanged
             City = employer.City ?? "";
             PostalCode = employer.PostalCode ?? "";
             EmployerGroup = employer.EmployerGroup ?? "";
+            PaystubPeriod = employer.PaystubPeriod;
             Fee = employer.Fee;
 
             IsEditMode = true;
@@ -283,6 +299,7 @@ public class EmployerViewModel : INotifyPropertyChanged
                     City = City,
                     PostalCode = PostalCode,
                     EmployerGroup = EmployerGroup,
+                    PaystubPeriod = PaystubPeriod,
                     Fee = Fee
                 };
 
@@ -300,6 +317,7 @@ public class EmployerViewModel : INotifyPropertyChanged
                     City = City,
                     PostalCode = PostalCode,
                     EmployerGroup = EmployerGroup,
+                    PaystubPeriod = 1,
                     Fee = Fee
                 };
 
@@ -388,6 +406,7 @@ public class EmployerViewModel : INotifyPropertyChanged
         City = "";
         PostalCode = "";
         EmployerGroup = "";
+        PaystubPeriod = 1;
         Fee = 0;
         SelectedEmployer = null;
     }
@@ -400,7 +419,12 @@ public class EmployerViewModel : INotifyPropertyChanged
         if (Equals(field, value)) return false;
 
         field = value;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        OnPropertyChanged(name);
         return true;
+    }
+
+    private void OnPropertyChanged(string name)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }

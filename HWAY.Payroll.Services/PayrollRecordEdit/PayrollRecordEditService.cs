@@ -1,6 +1,7 @@
 using HWAY.Payroll.Data.Context;
 using HWAY.Payroll.Domain;
 using HWAY.Payroll.Services;
+using HWAY.Payroll.Services.PayPeriods;
 using Microsoft.EntityFrameworkCore;
 
 namespace HWAY.Payroll.Services.PayrollRecordEdit;
@@ -24,7 +25,9 @@ public class PayrollRecordEditService : IPayrollRecordEditService
         if (record == null)
             throw new InvalidOperationException($"Payroll record with Id {payrollRecordId} not found.");
 
-        record.Period = CalculatePeriod(record.Employer?.EmployerGroup, DateTime.Today);
+        record.Period = PayPeriodRules.NormalizePeriod(
+            record.Employer?.EmployerGroup,
+            record.Employer?.PaystubPeriod ?? record.Period);
         var salary = dto.Salary;
         var rate = salary > 0 ? 0 : dto.Rate;
         var payrollYear = DateTime.Today.Year;
@@ -76,21 +79,6 @@ public class PayrollRecordEditService : IPayrollRecordEditService
         record.VacationYtdBalance = updatedVacationYtd - updatedVacationYtdUsed;
 
         await _dbContext.SaveChangesAsync();
-    }
-
-    private static int CalculatePeriod(string? employerGroup, DateTime currentDate)
-    {
-        var group = (employerGroup ?? "A").Trim().ToUpperInvariant();
-
-        return group switch
-        {
-            // Semi-monthly: 2 periods per month (01-24 per year)
-            "B" => (currentDate.Month - 1) * 2 + (currentDate.Day <= 15 ? 1 : 2),
-            // Biweekly: ~26 periods per year
-            "C" or "D" => ((currentDate.DayOfYear - 1) / 14) + 1,
-            // Monthly: 12 periods per year (01-12 per year)
-            _ => currentDate.Month,
-        };
     }
 
     private static decimal CalculateNetPay(

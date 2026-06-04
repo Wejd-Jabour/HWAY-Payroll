@@ -46,6 +46,11 @@ public class AppDbContext : DbContext
                 .HasColumnName("Employer Group")
                 .HasMaxLength(100);
 
+            entity.Property(e => e.PaystubPeriod)
+                .HasColumnName("Period #")
+                .IsRequired()
+                .HasDefaultValue(1);
+
             entity.Property(e => e.Fee).HasColumnType("decimal(18,2)");
 
             entity.HasIndex(e => e.RpNumber).IsUnique();

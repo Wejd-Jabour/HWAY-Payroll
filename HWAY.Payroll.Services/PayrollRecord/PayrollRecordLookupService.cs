@@ -1,6 +1,7 @@
 using HWAY.Payroll.Data.Context;
 using HWAY.Payroll.Domain;
 using HWAY.Payroll.Services;
+using HWAY.Payroll.Services.PayPeriods;
 using Microsoft.EntityFrameworkCore;
 
 namespace HWAY.Payroll.Services.PayrollRecord;
@@ -205,7 +206,67 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         if (record == null)
             throw new InvalidOperationException($"Payroll record with Id {payrollRecordId} not found.");
 
-        record.Period = CalculatePeriod(record.Employer?.EmployerGroup, DateTime.Today);
+        var period = PayPeriodRules.NormalizePeriod(
+            record.Employer?.EmployerGroup,
+            record.Employer?.PaystubPeriod ?? record.Period);
+
+        ApplyPayrollUpdate(record, dto, period);
+
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<EmployerPayrollSaveResult> UpdatePayrollRecordsForEmployerAsync(
+        string rpNumber,
+        IReadOnlyCollection<PayrollRecordBatchUpdateDto> updates)
+    {
+        rpNumber = rpNumber.Trim();
+
+        if (updates.Count == 0)
+        {
+            throw new InvalidOperationException("At least one payroll record is required.");
+        }
+
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+        var employer = await _dbContext.Employers
+            .Where(e => e.RpNumber == rpNumber)
+            .FirstOrDefaultAsync();
+
+        if (employer == null)
+            throw new InvalidOperationException($"Employer with RP number {rpNumber} not found.");
+
+        var savedPeriod = PayPeriodRules.NormalizePeriod(employer.EmployerGroup, employer.PaystubPeriod);
+        var recordIds = updates.Select(update => update.PayrollRecordId).Distinct().ToList();
+        var records = await _dbContext.PayrollRecords
+            .Where(record => record.RpNumber == rpNumber && recordIds.Contains(record.Id))
+            .ToDictionaryAsync(record => record.Id);
+
+        foreach (var update in updates)
+        {
+            if (!records.TryGetValue(update.PayrollRecordId, out var record))
+            {
+                throw new InvalidOperationException(
+                    $"Payroll record with Id {update.PayrollRecordId} was not found for RP number {rpNumber}.");
+            }
+
+            ApplyPayrollUpdate(record, update.PayrollRecord, savedPeriod);
+        }
+
+        var nextPeriod = PayPeriodRules.GetNextPeriod(employer.EmployerGroup, savedPeriod);
+        employer.PaystubPeriod = nextPeriod;
+
+        await _dbContext.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        return new EmployerPayrollSaveResult(savedPeriod, nextPeriod, updates.Count);
+    }
+
+    private static void ApplyPayrollUpdate(
+        HWAY.Payroll.Data.Entities.PayrollRecord record,
+        PayrollRecordUpdateDto dto,
+        int period)
+    {
+        record.Period = period;
         var salary = dto.Salary;
         var rate = salary > 0 ? 0 : dto.Rate;
         var payrollYear = DateTime.Today.Year;
@@ -242,7 +303,11 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         record.Ei = ei;
         record.OtherDeduction = dto.OtherDeduction;
         record.NetPay = netPay;
-        record.HireDate = dto.HireDate;
+
+        if (dto.HireDate.HasValue)
+        {
+            record.HireDate = dto.HireDate;
+        }
 
         record.GrossYtd += dto.Gross;
         record.NetYtd += netPay;
@@ -252,30 +317,12 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         record.EiYtd += ei;
         record.OtherDeductionYtd += dto.OtherDeduction;
 
-
         var updatedVacationYtd = record.VacationYtd + dto.Vacation;
         var updatedVacationYtdUsed = record.VacationYtdUsed + vacationUsed;
 
         record.VacationYtd = updatedVacationYtd;
         record.VacationYtdUsed = updatedVacationYtdUsed;
         record.VacationYtdBalance = updatedVacationYtd - updatedVacationYtdUsed;
-
-        await _dbContext.SaveChangesAsync();
-    }
-
-    private static int CalculatePeriod(string? employerGroup, DateTime currentDate)
-    {
-        var group = (employerGroup ?? "A").Trim().ToUpperInvariant();
-
-        return group switch
-        {
-            // Semi-monthly: 2 periods per month (01-24 per year)
-            "B" => (currentDate.Month - 1) * 2 + (currentDate.Day <= 15 ? 1 : 2),
-            // Biweekly: ~26 periods per year
-            "C" or "D" => ((currentDate.DayOfYear - 1) / 14) + 1,
-            // Monthly: 12 periods per year (01-12 per year)
-            _ => currentDate.Month,
-        };
     }
 
     private static decimal CalculateNetPay(

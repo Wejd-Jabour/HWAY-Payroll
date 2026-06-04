@@ -19,3 +19,14 @@ public class PayrollRecordUpdateDto
     public decimal OtherDeduction { get; set; }
     public DateTime? HireDate { get; set; }
 }
+
+public class PayrollRecordBatchUpdateDto
+{
+    public int PayrollRecordId { get; set; }
+    public PayrollRecordUpdateDto PayrollRecord { get; set; } = new();
+}
+
+public sealed record EmployerPayrollSaveResult(
+    int SavedPeriod,
+    int NextPeriod,
+    int UpdatedRecords);
