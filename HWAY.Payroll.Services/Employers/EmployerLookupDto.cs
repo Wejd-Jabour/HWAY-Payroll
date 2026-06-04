@@ -11,6 +11,7 @@ public class EmployerLookupDto
     public string? City { get; set; }
     public string? PostalCode { get; set; }
     public string? EmployerGroup { get; set; }
+    public decimal Fee { get; set; }
 
     public string DisplayText => $"{RpNumber} - {EmployerName}";
 }

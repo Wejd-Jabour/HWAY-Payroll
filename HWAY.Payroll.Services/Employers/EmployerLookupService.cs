@@ -40,7 +40,8 @@ public class EmployerLookupService : IEmployerLookupService
                 Address = employer.Address,
                 City = employer.City,
                 PostalCode = employer.PostalCode,
-                EmployerGroup = employer.EmployerGroup
+                EmployerGroup = employer.EmployerGroup,
+                Fee = employer.Fee
             })
             .ToListAsync();
     }
@@ -60,7 +61,8 @@ public class EmployerLookupService : IEmployerLookupService
                 Address = employer.Address,
                 City = employer.City,
                 PostalCode = employer.PostalCode,
-                EmployerGroup = employer.EmployerGroup
+                EmployerGroup = employer.EmployerGroup,
+                Fee = employer.Fee
             })
             .FirstOrDefaultAsync();
     }

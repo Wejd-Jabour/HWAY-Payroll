@@ -26,6 +26,7 @@ public class EmployerInsertViewModel : INotifyPropertyChanged
     public string? City { get; set; }
     public string? PostalCode { get; set; }
     public string? EmployerGroup { get; set; }
+    public decimal Fee { get; set; }
     
 
     // 🔹 UI state
@@ -89,7 +90,8 @@ public class EmployerInsertViewModel : INotifyPropertyChanged
                 Address = Address,
                 City = City,
                 PostalCode = PostalCode,
-                EmployerGroup = EmployerGroup
+                EmployerGroup = EmployerGroup,
+                Fee = Fee
             };
 
             var id = await _employerInsertService.CreateEmployerAsync(dto);
@@ -117,6 +119,7 @@ public class EmployerInsertViewModel : INotifyPropertyChanged
         City = null;
         PostalCode = null;
         EmployerGroup = null;
+        Fee = 0;
 
         OnPropertyChanged(nameof(RpNumber));
         OnPropertyChanged(nameof(EmployerName));
@@ -124,6 +127,7 @@ public class EmployerInsertViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(City));
         OnPropertyChanged(nameof(PostalCode));
         OnPropertyChanged(nameof(EmployerGroup));
+        OnPropertyChanged(nameof(Fee));
     }
 
     // 🔹 Property change boilerplate

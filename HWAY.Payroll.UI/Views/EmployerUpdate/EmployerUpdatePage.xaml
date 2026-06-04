@@ -31,6 +31,10 @@
             <Entry Placeholder="Employer Group"
                    Text="{Binding EmployerGroup}" />
 
+            <Entry Placeholder="Fee"
+                   Keyboard="Numeric"
+                   Text="{Binding Fee}" />
+
             <Button Text="Save Changes"
                     Command="{Binding SaveCommand}"
                     BackgroundColor="Green"
