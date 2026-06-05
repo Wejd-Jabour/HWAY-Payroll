@@ -13,6 +13,9 @@ public class Employee
     public string? Province { get; set; }
     public string? PostalCode { get; set; }
     public string? EmailAddress { get; set; }
+    public DateTime? HireDate { get; set; }
+    public DateTime? DateOfBirth { get; set; }
+    public bool EiExempt { get; set; }
 
     public ICollection<PayrollRecord> PayrollRecords { get; set; } = new List<PayrollRecord>();
 }

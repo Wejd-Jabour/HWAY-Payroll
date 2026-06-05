@@ -47,7 +47,10 @@ public class EmployeeUpdateService : IEmployeeUpdateService
                 City = employee.City,
                 Province = employee.Province,
                 PostalCode = employee.PostalCode,
-                EmailAddress = employee.EmailAddress
+                EmailAddress = employee.EmailAddress,
+                HireDate = employee.HireDate,
+                DateOfBirth = employee.DateOfBirth,
+                EiExempt = employee.EiExempt
             })
             .ToListAsync();
     }
@@ -70,7 +73,10 @@ public class EmployeeUpdateService : IEmployeeUpdateService
                 City = employee.City,
                 Province = employee.Province,
                 PostalCode = employee.PostalCode,
-                EmailAddress = employee.EmailAddress
+                EmailAddress = employee.EmailAddress,
+                HireDate = employee.HireDate,
+                DateOfBirth = employee.DateOfBirth,
+                EiExempt = employee.EiExempt
             })
             .FirstOrDefaultAsync();
     }
@@ -93,6 +99,9 @@ public class EmployeeUpdateService : IEmployeeUpdateService
         employee.Province = dto.Province;
         employee.PostalCode = dto.PostalCode;
         employee.EmailAddress = dto.EmailAddress;
+        employee.HireDate = dto.HireDate?.Date;
+        employee.DateOfBirth = dto.DateOfBirth?.Date;
+        employee.EiExempt = dto.EiExempt;
 
         await _dbContext.SaveChangesAsync();
 

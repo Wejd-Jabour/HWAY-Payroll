@@ -45,4 +45,6 @@ public class PayrollRecordLookupDto
     public decimal VacationYtdBalance { get; set; }
     public decimal TotalPd7 { get; set; }
     public DateTime? HireDate { get; set; }
+    public DateTime? DateOfBirth { get; set; }
+    public bool EiExempt { get; set; }
 }

@@ -15,6 +15,9 @@ create table if not exists public."Employees" (
     "Province" character varying(50),
     "Postal Code" character varying(20),
     "E-Mail Address" character varying(200),
+    "Hire Date" date,
+    "Date of Birth" date,
+    "EI_Exempt" boolean not null default false,
     "RpNumber" text not null,
     constraint "PK_Employees" primary key ("Id")
 );
@@ -64,7 +67,6 @@ create table if not exists public."PayrollRecords" (
     "Vacation -YTD-Used" numeric(18,2) not null,
     "Vacation -YTD- Balance" numeric(18,2) not null,
     "Total PD7" numeric(18,2) not null,
-    "Hire Date" date,
     constraint "PK_PayrollRecords" primary key ("Id")
 );
 

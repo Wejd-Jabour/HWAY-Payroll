@@ -98,8 +98,8 @@
                 <Entry Text="{Binding StatHolidayHours}"
                        Keyboard="Numeric" />
 
-              <Label Text="Hire Date" /> 
-              <DatePicker Date="{Binding HireDateDisplay}" />
+                <Label Text="Hire Date" /> 
+                <Label Text="{Binding HireDateText}" />
 
                 <!-- Calculate Button -->
                 <Button Text="Calculate Payroll &amp; Open CRA"
@@ -132,15 +132,18 @@
 
                 <Label Text="CPP1" />
                 <Entry Text="{Binding Cpp1}"
-                       Keyboard="Numeric" />
+                       Keyboard="Numeric"
+                       IsEnabled="{Binding CanEditCpp}" />
 
                 <Label Text="CPP2" />
                 <Entry Text="{Binding Cpp2}"
-                       Keyboard="Numeric" />
+                       Keyboard="Numeric"
+                       IsEnabled="{Binding CanEditCpp}" />
 
                 <Label Text="EI" />
                 <Entry Text="{Binding Ei}"
-                       Keyboard="Numeric" />
+                       Keyboard="Numeric"
+                       IsEnabled="{Binding CanEditEi}" />
 
                 <Label Text="Other Deduction" />
                 <Entry Text="{Binding OtherDeduction}"

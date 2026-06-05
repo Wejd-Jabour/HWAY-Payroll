@@ -20,6 +20,8 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
     private decimal _cpp1Ytd;
     private decimal _cpp2Ytd;
     private decimal _eiYtd;
+    private DateTime? _dateOfBirth;
+    private bool _eiExempt;
     private bool _requiresRecalculate;
 
     private static int PayrollYear => DateTime.Today.Year;
@@ -175,6 +177,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
             value,
             _cpp1Ytd,
             PayrollDeductionCaps.ClampCpp1,
+            CanContributeCpp,
             nameof(Cpp1),
             nameof(CanEditCpp1));
     }
@@ -188,6 +191,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
             value,
             _cpp2Ytd,
             PayrollDeductionCaps.ClampCpp2,
+            CanContributeCpp,
             nameof(Cpp2),
             nameof(CanEditCpp2));
     }
@@ -201,15 +205,20 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
             value,
             _eiYtd,
             PayrollDeductionCaps.ClampEi,
+            CanContributeEi,
             nameof(Ei),
             nameof(CanEditEi));
     }
 
-    public bool CanEditCpp1 => PayrollDeductionCaps.HasCpp1Room(_cpp1Ytd, PayrollYear) || _cpp1 > 0;
+    public bool CanContributeCpp => EmployeePayrollEligibility.CanContributeCpp(_dateOfBirth, DateTime.Today);
 
-    public bool CanEditCpp2 => PayrollDeductionCaps.HasCpp2Room(_cpp2Ytd, PayrollYear) || _cpp2 > 0;
+    public bool CanContributeEi => EmployeePayrollEligibility.CanContributeEi(_eiExempt);
 
-    public bool CanEditEi => PayrollDeductionCaps.HasEiRoom(_eiYtd, PayrollYear) || _ei > 0;
+    public bool CanEditCpp1 => CanContributeCpp && (PayrollDeductionCaps.HasCpp1Room(_cpp1Ytd, PayrollYear) || _cpp1 > 0);
+
+    public bool CanEditCpp2 => CanContributeCpp && (PayrollDeductionCaps.HasCpp2Room(_cpp2Ytd, PayrollYear) || _cpp2 > 0);
+
+    public bool CanEditEi => CanContributeEi && (PayrollDeductionCaps.HasEiRoom(_eiYtd, PayrollYear) || _ei > 0);
 
     private decimal _otherDeduction;
     public decimal OtherDeduction
@@ -325,6 +334,8 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
         _cpp1Ytd = selectedRecord.Cpp1Ytd;
         _cpp2Ytd = selectedRecord.Cpp2Ytd;
         _eiYtd = selectedRecord.EiYtd;
+        _dateOfBirth = selectedRecord.DateOfBirth;
+        _eiExempt = selectedRecord.EiExempt;
 
         Tax1 = selectedRecord.Tax1;
         Cpp1 = selectedRecord.Cpp1;
@@ -336,6 +347,8 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
 
         EmployeeFound = true;
         EmployeeNotFound = false;
+        OnPropertyChanged(nameof(CanContributeCpp));
+        OnPropertyChanged(nameof(CanContributeEi));
         OnPropertyChanged(nameof(CanEditCpp1));
         OnPropertyChanged(nameof(CanEditCpp2));
         OnPropertyChanged(nameof(CanEditEi));
@@ -443,10 +456,13 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
         decimal requestedValue,
         decimal currentYtd,
         Func<decimal, decimal, int, decimal> capDeduction,
+        bool canContributeDeduction,
         string propertyName,
         string canEditPropertyName)
     {
-        var cappedValue = capDeduction(requestedValue, currentYtd, PayrollYear);
+        var cappedValue = canContributeDeduction
+            ? capDeduction(requestedValue, currentYtd, PayrollYear)
+            : 0m;
         var valueChanged = !EqualityComparer<decimal>.Default.Equals(field, cappedValue);
 
         if (!valueChanged && requestedValue == cappedValue)
