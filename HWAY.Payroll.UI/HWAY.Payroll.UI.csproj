@@ -68,17 +68,10 @@
 		<PackageReference Include="QuestPDF" Version="2026.2.4" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<NativeReference Include="/Users/nartmachfj/.nuget/packages/questpdf/2026.2.4/runtimes/osx-arm64/native/libQuestPdfSkia.dylib">
-			<Kind>Dynamic</Kind>
-			<ForceLoad>false</ForceLoad>
-		</NativeReference>
-	</ItemGroup>
-
 	<!-- Exclude QuestPDF font files from app bundle to suppress warnings -->
 	<ItemGroup>
-		<Content Include="$(NuGetPackageRoot)questpdf\**\LatoFont\*.ttf" CopyToOutputDirectory="Never" />
-		<Content Include="$(NuGetPackageRoot)questpdf\**\LatoFont\*.txt" CopyToOutputDirectory="Never" />
+		<Content Remove="$(NuGetPackageRoot)questpdf\**\LatoFont\*.ttf" />
+		<Content Remove="$(NuGetPackageRoot)questpdf\**\LatoFont\*.txt" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\HWAY.Payroll.Domain\HWAY.Payroll.Domain.csproj" />
