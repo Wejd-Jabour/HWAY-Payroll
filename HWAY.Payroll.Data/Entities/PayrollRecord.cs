@@ -38,8 +38,6 @@ public class PayrollRecord
     public decimal VacationYtdBalance { get; set; }
     public decimal TotalPd7 { get; set; }
 
-    public DateTime? HireDate { get; set; }
-
     public Employee? Employee { get; set; }
     public Employer? Employer { get; set; }
 }

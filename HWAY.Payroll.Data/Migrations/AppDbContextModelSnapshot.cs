@@ -43,6 +43,16 @@ namespace HWAY.Payroll.Data.Migrations
                         .HasColumnType("nvarchar(200)")
                         .HasColumnName("E-Mail Address");
 
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("date")
+                        .HasColumnName("Date of Birth");
+
+                    b.Property<bool>("EiExempt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("EI_Exempt");
+
                     b.Property<string>("EmployeeNumber")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -54,6 +64,10 @@ namespace HWAY.Payroll.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("First Name");
+
+                    b.Property<DateTime?>("HireDate")
+                        .HasColumnType("date")
+                        .HasColumnName("Hire Date");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -230,10 +244,6 @@ namespace HWAY.Payroll.Data.Migrations
                     b.Property<decimal>("GrossYtd")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("Gross-YTD");
-
-                    b.Property<DateTime?>("HireDate")
-                        .HasColumnType("date")
-                        .HasColumnName("Hire Date");
 
                     b.Property<decimal>("NetPay")
                         .HasColumnType("decimal(18,2)")

@@ -88,7 +88,9 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 VacationYtdUsed = record.VacationYtdUsed,
                 VacationYtdBalance = record.VacationYtdBalance,
                 TotalPd7 = record.TotalPd7,
-                HireDate = record.HireDate
+                HireDate = record.Employee != null ? record.Employee.HireDate : null,
+                DateOfBirth = record.Employee != null ? record.Employee.DateOfBirth : null,
+                EiExempt = record.Employee != null && record.Employee.EiExempt
             })
             .ToListAsync();
     }
@@ -144,7 +146,9 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 VacationYtdUsed = record.VacationYtdUsed,
                 VacationYtdBalance = record.VacationYtdBalance,
                 TotalPd7 = record.TotalPd7,
-                HireDate = record.HireDate
+                HireDate = record.Employee != null ? record.Employee.HireDate : null,
+                DateOfBirth = record.Employee != null ? record.Employee.DateOfBirth : null,
+                EiExempt = record.Employee != null && record.Employee.EiExempt
             })
             .ToListAsync();
     }
@@ -199,7 +203,9 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 VacationYtdUsed = record.VacationYtdUsed,
                 VacationYtdBalance = record.VacationYtdBalance,
                 TotalPd7 = record.TotalPd7,
-                HireDate = record.HireDate
+                HireDate = record.Employee != null ? record.Employee.HireDate : null,
+                DateOfBirth = record.Employee != null ? record.Employee.DateOfBirth : null,
+                EiExempt = record.Employee != null && record.Employee.EiExempt
             })
             .FirstOrDefaultAsync();
     }
@@ -208,6 +214,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
     {
         var record = await _dbContext.PayrollRecords
             .Include(r => r.Employer)
+            .Include(r => r.Employee)
             .Where(r => r.Id == payrollRecordId)
             .FirstOrDefaultAsync();
 
@@ -250,6 +257,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
             var savedPeriod = PayPeriodRules.NormalizePeriod(employer.EmployerGroup, employer.PaystubPeriod);
             var recordIds = updates.Select(update => update.PayrollRecordId).Distinct().ToList();
             var records = await _dbContext.PayrollRecords
+                .Include(record => record.Employee)
                 .Where(record => record.RpNumber == rpNumber && recordIds.Contains(record.Id))
                 .ToDictionaryAsync(record => record.Id);
 
@@ -313,10 +321,20 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         record.Period = period;
         var salary = dto.Salary;
         var rate = salary > 0 ? 0 : dto.Rate;
-        var payrollYear = DateTime.Today.Year;
-        var cpp1 = PayrollDeductionCaps.ClampCpp1(dto.Cpp1, record.Cpp1Ytd, payrollYear);
-        var cpp2 = PayrollDeductionCaps.ClampCpp2(dto.Cpp2, record.Cpp2Ytd, payrollYear);
-        var ei = PayrollDeductionCaps.ClampEi(dto.Ei, record.EiYtd, payrollYear);
+        var eligibilityDate = (dto.PayDate ?? DateTime.Today).Date;
+        var payrollYear = eligibilityDate.Year;
+        var canContributeCpp = EmployeePayrollEligibility.CanContributeCpp(
+            record.Employee?.DateOfBirth,
+            eligibilityDate);
+        var cpp1 = canContributeCpp
+            ? PayrollDeductionCaps.ClampCpp1(dto.Cpp1, record.Cpp1Ytd, payrollYear)
+            : 0m;
+        var cpp2 = canContributeCpp
+            ? PayrollDeductionCaps.ClampCpp2(dto.Cpp2, record.Cpp2Ytd, payrollYear)
+            : 0m;
+        var ei = EmployeePayrollEligibility.CanContributeEi(record.Employee?.EiExempt == true)
+            ? PayrollDeductionCaps.ClampEi(dto.Ei, record.EiYtd, payrollYear)
+            : 0m;
         var vacationSetting = VacationSettings.Normalize(dto.VacationSetting);
         var vacationUsed = VacationSettings.IsPaidOut(vacationSetting)
             ? dto.Vacation
@@ -347,11 +365,6 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         record.Ei = ei;
         record.OtherDeduction = dto.OtherDeduction;
         record.NetPay = netPay;
-
-        if (dto.HireDate.HasValue)
-        {
-            record.HireDate = dto.HireDate;
-        }
 
         record.GrossYtd += dto.Gross;
         record.NetYtd += netPay;

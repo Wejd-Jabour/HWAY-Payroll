@@ -93,6 +93,18 @@ public class AppDbContext : DbContext
                 .HasColumnName("E-Mail Address")
                 .HasMaxLength(200);
 
+            entity.Property(e => e.HireDate)
+                .HasColumnName("Hire Date")
+                .HasColumnType("date");
+
+            entity.Property(e => e.DateOfBirth)
+                .HasColumnName("Date of Birth")
+                .HasColumnType("date");
+
+            entity.Property(e => e.EiExempt)
+                .HasColumnName("EI_Exempt")
+                .HasDefaultValue(false);
+
             entity.HasIndex(e => e.EmployeeNumber).IsUnique();
         });
 
@@ -142,7 +154,6 @@ public class AppDbContext : DbContext
             entity.Property(e => e.VacationYtdUsed).HasColumnName("Vacation -YTD-Used").HasColumnType("decimal(18,2)");
             entity.Property(e => e.VacationYtdBalance).HasColumnName("Vacation -YTD- Balance").HasColumnType("decimal(18,2)");
             entity.Property(e => e.TotalPd7).HasColumnName("Total PD7").HasColumnType("decimal(18,2)");
-            entity.Property(e => e.HireDate).HasColumnName("Hire Date").HasColumnType("date");
 
             entity.HasOne(e => e.Employee)
                 .WithMany(e => e.PayrollRecords)

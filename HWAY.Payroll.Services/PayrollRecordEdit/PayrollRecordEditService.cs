@@ -19,11 +19,19 @@ public class PayrollRecordEditService : IPayrollRecordEditService
     {
         var record = await _dbContext.PayrollRecords
             .Include(r => r.Employer)
+            .Include(r => r.Employee)
             .Where(r => r.Id == payrollRecordId)
             .FirstOrDefaultAsync();
 
         if (record == null)
             throw new InvalidOperationException($"Payroll record with Id {payrollRecordId} not found.");
+
+        var employee = await _dbContext.Employees
+            .Where(e => e.EmployeeNumber == dto.EmployeeNumber)
+            .FirstOrDefaultAsync();
+
+        if (employee == null)
+            throw new InvalidOperationException($"Employee with number {dto.EmployeeNumber} not found.");
 
         record.Period = PayPeriodRules.NormalizePeriod(
             record.Employer?.EmployerGroup,
@@ -31,9 +39,18 @@ public class PayrollRecordEditService : IPayrollRecordEditService
         var salary = dto.Salary;
         var rate = salary > 0 ? 0 : dto.Rate;
         var payrollYear = DateTime.Today.Year;
-        var cpp1 = PayrollDeductionCaps.ClampCpp1(dto.Cpp1, record.Cpp1Ytd, payrollYear);
-        var cpp2 = PayrollDeductionCaps.ClampCpp2(dto.Cpp2, record.Cpp2Ytd, payrollYear);
-        var ei = PayrollDeductionCaps.ClampEi(dto.Ei, record.EiYtd, payrollYear);
+        var canContributeCpp = EmployeePayrollEligibility.CanContributeCpp(
+            employee.DateOfBirth,
+            DateTime.Today);
+        var cpp1 = canContributeCpp
+            ? PayrollDeductionCaps.ClampCpp1(dto.Cpp1, record.Cpp1Ytd, payrollYear)
+            : 0m;
+        var cpp2 = canContributeCpp
+            ? PayrollDeductionCaps.ClampCpp2(dto.Cpp2, record.Cpp2Ytd, payrollYear)
+            : 0m;
+        var ei = EmployeePayrollEligibility.CanContributeEi(employee.EiExempt)
+            ? PayrollDeductionCaps.ClampEi(dto.Ei, record.EiYtd, payrollYear)
+            : 0m;
         var vacationSetting = VacationSettings.Normalize(dto.VacationSetting);
         var vacationUsed = VacationSettings.IsPaidOut(vacationSetting) ? dto.Vacation : 0m;
 

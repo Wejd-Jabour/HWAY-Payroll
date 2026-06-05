@@ -102,6 +102,41 @@ public class EmployeeUpdateViewModel : INotifyPropertyChanged
         set => SetProperty(ref _emailAddress, value);
     }
 
+    private bool _hasHireDate;
+    public bool HasHireDate
+    {
+        get => _hasHireDate;
+        set => SetProperty(ref _hasHireDate, value);
+    }
+
+    private DateTime _hireDateDisplay = DateTime.Today;
+    public DateTime HireDateDisplay
+    {
+        get => _hireDateDisplay;
+        set => SetProperty(ref _hireDateDisplay, value.Date);
+    }
+
+    private bool _hasDateOfBirth;
+    public bool HasDateOfBirth
+    {
+        get => _hasDateOfBirth;
+        set => SetProperty(ref _hasDateOfBirth, value);
+    }
+
+    private DateTime _dateOfBirthDisplay = DateTime.Today.AddYears(-18);
+    public DateTime DateOfBirthDisplay
+    {
+        get => _dateOfBirthDisplay;
+        set => SetProperty(ref _dateOfBirthDisplay, value.Date);
+    }
+
+    private bool _eiExempt;
+    public bool EiExempt
+    {
+        get => _eiExempt;
+        set => SetProperty(ref _eiExempt, value);
+    }
+
     // 🔹 UI state
     private string _message = "";
     public string Message
@@ -123,6 +158,20 @@ public class EmployeeUpdateViewModel : INotifyPropertyChanged
     {
         try
         {
+            if (HasHireDate && HireDateDisplay.Date > DateTime.Today)
+            {
+                IsSuccess = false;
+                Message = "Hire date cannot be in the future";
+                return;
+            }
+
+            if (HasDateOfBirth && DateOfBirthDisplay.Date > DateTime.Today)
+            {
+                IsSuccess = false;
+                Message = "Birth date cannot be in the future";
+                return;
+            }
+
             var dto = new EmployeeUpdateDto
             {
                 RpNumber = RpNumber,
@@ -134,7 +183,10 @@ public class EmployeeUpdateViewModel : INotifyPropertyChanged
                 City = City,
                 Province = Province,
                 PostalCode = PostalCode,
-                EmailAddress = EmailAddress
+                EmailAddress = EmailAddress,
+                HireDate = HasHireDate ? HireDateDisplay : null,
+                DateOfBirth = HasDateOfBirth ? DateOfBirthDisplay : null,
+                EiExempt = EiExempt
             };
 
             var id = await _employeeUpdateService.UpdateEmployeeAsync(dto);
@@ -164,6 +216,11 @@ public class EmployeeUpdateViewModel : INotifyPropertyChanged
         Province = employee.Province;
         PostalCode = employee.PostalCode;
         EmailAddress = employee.EmailAddress;
+        HasHireDate = employee.HireDate.HasValue;
+        HireDateDisplay = employee.HireDate?.Date ?? DateTime.Today;
+        HasDateOfBirth = employee.DateOfBirth.HasValue;
+        DateOfBirthDisplay = employee.DateOfBirth?.Date ?? DateTime.Today.AddYears(-18);
+        EiExempt = employee.EiExempt;
     }
 
     // 🔹 Property changed boilerplate

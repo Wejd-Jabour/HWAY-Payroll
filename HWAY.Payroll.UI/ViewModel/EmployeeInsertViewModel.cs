@@ -30,6 +30,41 @@ public class EmployeeInsertViewModel : INotifyPropertyChanged
     public string? PostalCode { get; set; }
     public string? EmailAddress { get; set; }
 
+    private bool _hasHireDate;
+    public bool HasHireDate
+    {
+        get => _hasHireDate;
+        set => SetProperty(ref _hasHireDate, value);
+    }
+
+    private DateTime _hireDateDisplay = DateTime.Today;
+    public DateTime HireDateDisplay
+    {
+        get => _hireDateDisplay;
+        set => SetProperty(ref _hireDateDisplay, value.Date);
+    }
+
+    private bool _hasDateOfBirth;
+    public bool HasDateOfBirth
+    {
+        get => _hasDateOfBirth;
+        set => SetProperty(ref _hasDateOfBirth, value);
+    }
+
+    private DateTime _dateOfBirthDisplay = DateTime.Today.AddYears(-18);
+    public DateTime DateOfBirthDisplay
+    {
+        get => _dateOfBirthDisplay;
+        set => SetProperty(ref _dateOfBirthDisplay, value.Date);
+    }
+
+    private bool _eiExempt;
+    public bool EiExempt
+    {
+        get => _eiExempt;
+        set => SetProperty(ref _eiExempt, value);
+    }
+
     // 🔹 UI state
     private bool _isBusy;
     public bool IsBusy
@@ -64,6 +99,12 @@ public class EmployeeInsertViewModel : INotifyPropertyChanged
 
         if (!string.IsNullOrWhiteSpace(EmailAddress) && !EmailAddress.Contains("@"))
             return Fail("Email is invalid");
+
+        if (HasHireDate && HireDateDisplay.Date > DateTime.Today)
+            return Fail("Hire date cannot be in the future");
+
+        if (HasDateOfBirth && DateOfBirthDisplay.Date > DateTime.Today)
+            return Fail("Birth date cannot be in the future");
 
         return true;
     }
@@ -104,7 +145,10 @@ public class EmployeeInsertViewModel : INotifyPropertyChanged
                 City = City,
                 Province = Province,
                 PostalCode = PostalCode,
-                EmailAddress = EmailAddress
+                EmailAddress = EmailAddress,
+                HireDate = HasHireDate ? HireDateDisplay : null,
+                DateOfBirth = HasDateOfBirth ? DateOfBirthDisplay : null,
+                EiExempt = EiExempt
             };
 
             var id = await _employeeInsertService.CreateEmployeeAsync(dto);
@@ -136,6 +180,11 @@ public class EmployeeInsertViewModel : INotifyPropertyChanged
         Province = null;
         PostalCode = null;
         EmailAddress = null;
+        HasHireDate = false;
+        HireDateDisplay = DateTime.Today;
+        HasDateOfBirth = false;
+        DateOfBirthDisplay = DateTime.Today.AddYears(-18);
+        EiExempt = false;
 
         OnPropertyChanged(nameof(RpNumber));
         OnPropertyChanged(nameof(EmployeeNumber));

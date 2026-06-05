@@ -302,7 +302,7 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
     private readonly EmployerLookupDto _employer;
     private readonly PayrollRecordLookupDto _record;
 
-    private static int PayrollYear => DateTime.Today.Year;
+    private int PayrollYear => PayDate.Year;
 
     public EmployeePayrollRowViewModel(
         EmployerLookupDto employer,
@@ -347,6 +347,8 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
     public string EmployeeNumber { get; }
     public string EmployeeName { get; }
     public IReadOnlyList<string> VacationSettingOptions { get; } = VacationSettings.Options;
+    public bool CanContributeCpp => EmployeePayrollEligibility.CanContributeCpp(_record.DateOfBirth, PayDate);
+    public bool CanContributeEi => EmployeePayrollEligibility.CanContributeEi(_record.EiExempt);
 
     public int Period { get; private set; }
     public DateTime PeriodBeginning { get; private set; }
@@ -465,6 +467,7 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
             value,
             _record.Cpp1Ytd,
             PayrollDeductionCaps.ClampCpp1,
+            CanContributeCpp,
             nameof(Cpp1),
             nameof(CanEditCpp1));
     }
@@ -478,6 +481,7 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
             value,
             _record.Cpp2Ytd,
             PayrollDeductionCaps.ClampCpp2,
+            CanContributeCpp,
             nameof(Cpp2),
             nameof(CanEditCpp2));
     }
@@ -491,15 +495,16 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
             value,
             _record.EiYtd,
             PayrollDeductionCaps.ClampEi,
+            CanContributeEi,
             nameof(Ei),
             nameof(CanEditEi));
     }
 
-    public bool CanEditCpp1 => PayrollDeductionCaps.HasCpp1Room(_record.Cpp1Ytd, PayrollYear) || _cpp1 > 0;
+    public bool CanEditCpp1 => CanContributeCpp && (PayrollDeductionCaps.HasCpp1Room(_record.Cpp1Ytd, PayrollYear) || _cpp1 > 0);
 
-    public bool CanEditCpp2 => PayrollDeductionCaps.HasCpp2Room(_record.Cpp2Ytd, PayrollYear) || _cpp2 > 0;
+    public bool CanEditCpp2 => CanContributeCpp && (PayrollDeductionCaps.HasCpp2Room(_record.Cpp2Ytd, PayrollYear) || _cpp2 > 0);
 
-    public bool CanEditEi => PayrollDeductionCaps.HasEiRoom(_record.EiYtd, PayrollYear) || _ei > 0;
+    public bool CanEditEi => CanContributeEi && (PayrollDeductionCaps.HasEiRoom(_record.EiYtd, PayrollYear) || _ei > 0);
 
     private decimal _otherDeduction;
     public decimal OtherDeduction
@@ -565,6 +570,7 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
             if (SetProperty(ref _payDate, value))
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PayDateDisplay)));
+                RefreshDeductionEligibility();
             }
         }
     }
@@ -612,7 +618,8 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
             Cpp1 = Cpp1,
             Cpp2 = Cpp2,
             Ei = Ei,
-            OtherDeduction = OtherDeduction
+            OtherDeduction = OtherDeduction,
+            PayDate = PayDate
         };
     }
 
@@ -661,10 +668,13 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
         decimal requestedValue,
         decimal currentYtd,
         Func<decimal, decimal, int, decimal> capDeduction,
+        bool canContributeDeduction,
         string propertyName,
         string canEditPropertyName)
     {
-        var cappedValue = capDeduction(requestedValue, currentYtd, PayrollYear);
+        var cappedValue = canContributeDeduction
+            ? capDeduction(requestedValue, currentYtd, PayrollYear)
+            : 0m;
         var valueChanged = !EqualityComparer<decimal>.Default.Equals(field, cappedValue);
 
         if (!valueChanged && requestedValue == cappedValue)
@@ -673,6 +683,26 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
         field = cappedValue;
         OnPropertyChanged(propertyName);
         OnPropertyChanged(canEditPropertyName);
+    }
+
+    private void RefreshDeductionEligibility()
+    {
+        if (!CanContributeCpp)
+        {
+            SetProperty(ref _cpp1, 0m, nameof(Cpp1));
+            SetProperty(ref _cpp2, 0m, nameof(Cpp2));
+        }
+
+        if (!CanContributeEi)
+        {
+            SetProperty(ref _ei, 0m, nameof(Ei));
+        }
+
+        OnPropertyChanged(nameof(CanContributeCpp));
+        OnPropertyChanged(nameof(CanContributeEi));
+        OnPropertyChanged(nameof(CanEditCpp1));
+        OnPropertyChanged(nameof(CanEditCpp2));
+        OnPropertyChanged(nameof(CanEditEi));
     }
 
     private void OnPropertyChanged(string propertyName)

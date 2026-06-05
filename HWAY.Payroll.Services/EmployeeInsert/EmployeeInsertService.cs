@@ -35,7 +35,10 @@ public class EmployeeInsertService : IEmployeeInsertService
             City = dto.City,
             Province = dto.Province,
             PostalCode = dto.PostalCode,
-            EmailAddress = dto.EmailAddress
+            EmailAddress = dto.EmailAddress,
+            HireDate = dto.HireDate?.Date,
+            DateOfBirth = dto.DateOfBirth?.Date,
+            EiExempt = dto.EiExempt
         };
 
         _dbContext.Employees.Add(employee);

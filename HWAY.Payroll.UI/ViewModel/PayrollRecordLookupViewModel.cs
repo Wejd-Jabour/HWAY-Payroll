@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
 using HWAY.Payroll.Domain;
+using HWAY.Payroll.Services;
 using HWAY.Payroll.Services.PayrollRecord;
 
 namespace HWAY.Payroll.UI.ViewModels;
@@ -133,21 +134,21 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
     public decimal Cpp1
     {
         get => _cpp1;
-        set => SetProperty(ref _cpp1, value);
+        set => SetProperty(ref _cpp1, CanContributeCpp ? value : 0m);
     }
 
     private decimal _cpp2;
     public decimal Cpp2
     {
         get => _cpp2;
-        set => SetProperty(ref _cpp2, value);
+        set => SetProperty(ref _cpp2, CanContributeCpp ? value : 0m);
     }
 
     private decimal _ei;
     public decimal Ei
     {
         get => _ei;
-        set => SetProperty(ref _ei, value);
+        set => SetProperty(ref _ei, CanContributeEi ? value : 0m);
     }
 
     private decimal _otherDeduction;
@@ -166,6 +167,7 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
             if (SetProperty(ref _hireDate, value))
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HireDateDisplay)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HireDateText)));
             }
         }
     }
@@ -175,6 +177,42 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         get => HireDate ?? DateTime.Today;
         set => HireDate = value;
     }
+
+    public string HireDateText => HireDate?.ToString("yyyy-MM-dd") ?? "";
+
+    private DateTime? _dateOfBirth;
+    public DateTime? DateOfBirth
+    {
+        get => _dateOfBirth;
+        set
+        {
+            if (SetProperty(ref _dateOfBirth, value))
+            {
+                OnEligibilityChanged();
+            }
+        }
+    }
+
+    private bool _eiExempt;
+    public bool EiExempt
+    {
+        get => _eiExempt;
+        set
+        {
+            if (SetProperty(ref _eiExempt, value))
+            {
+                OnEligibilityChanged();
+            }
+        }
+    }
+
+    public bool CanContributeCpp => EmployeePayrollEligibility.CanContributeCpp(DateOfBirth, DateTime.Today);
+
+    public bool CanContributeEi => EmployeePayrollEligibility.CanContributeEi(EiExempt);
+
+    public bool CanEditCpp => CanContributeCpp;
+
+    public bool CanEditEi => CanContributeEi;
 
     // -------------------------
     // UI STATE FLAGS
@@ -277,6 +315,8 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         Ei = 0;
         OtherDeduction = 0;
         HireDate = selectedRecord.HireDate;
+        DateOfBirth = selectedRecord.DateOfBirth;
+        EiExempt = selectedRecord.EiExempt;
 
         EmployeeFound = true;
         EmployeeNotFound = false;
@@ -305,8 +345,7 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
             Cpp1 = Cpp1,
             Cpp2 = Cpp2,
             Ei = Ei,
-            OtherDeduction = OtherDeduction,
-            HireDate = HireDate
+            OtherDeduction = OtherDeduction
         };
 
         await _service.UpdatePayrollRecordAsync(_currentPayrollRecordId, dto);
@@ -379,6 +418,27 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         Ei = 0;
         OtherDeduction = 0;
         HireDate = null;
+        DateOfBirth = null;
+        EiExempt = false;
+    }
+
+    private void OnEligibilityChanged()
+    {
+        if (!CanContributeCpp)
+        {
+            SetProperty(ref _cpp1, 0m, nameof(Cpp1));
+            SetProperty(ref _cpp2, 0m, nameof(Cpp2));
+        }
+
+        if (!CanContributeEi)
+        {
+            SetProperty(ref _ei, 0m, nameof(Ei));
+        }
+
+        OnPropertyChanged(nameof(CanContributeCpp));
+        OnPropertyChanged(nameof(CanContributeEi));
+        OnPropertyChanged(nameof(CanEditCpp));
+        OnPropertyChanged(nameof(CanEditEi));
     }
 
     private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string name = "")
@@ -387,8 +447,13 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
             return false;
 
         field = value;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        OnPropertyChanged(name);
         return true;
+    }
+
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     private static decimal CalculateGross(

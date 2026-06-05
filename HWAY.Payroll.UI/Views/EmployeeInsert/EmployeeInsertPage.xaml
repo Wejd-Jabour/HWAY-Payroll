@@ -42,6 +42,27 @@
                    Keyboard="Email"
                    Text="{Binding EmailAddress}" />
 
+            <HorizontalStackLayout Spacing="8">
+                <CheckBox IsChecked="{Binding HasHireDate}" />
+                <Label Text="Hire Date" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <DatePicker Date="{Binding HireDateDisplay}"
+                        IsVisible="{Binding HasHireDate}" />
+
+            <HorizontalStackLayout Spacing="8">
+                <CheckBox IsChecked="{Binding HasDateOfBirth}" />
+                <Label Text="Birth Date" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <DatePicker Date="{Binding DateOfBirthDisplay}"
+                        IsVisible="{Binding HasDateOfBirth}" />
+
+            <HorizontalStackLayout Spacing="8">
+                <CheckBox IsChecked="{Binding EiExempt}" />
+                <Label Text="EI Exempt" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
             <Button Text="Save Employee"
                     Command="{Binding SaveCommand}"
                     BackgroundColor="Green"
