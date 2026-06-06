@@ -36,6 +36,7 @@ Run `database/supabase_schema.sql` in the Supabase SQL editor. It creates:
 - `Employees`
 - `Employers`
 - `PayrollRecords`
+- `Record History`
 - `PD7`
 - `monthly`
 - `semi-monthly`
@@ -47,6 +48,8 @@ The script preserves the existing table names, quoted column names, decimals, in
 For an existing Supabase database that already has the base schema, run `database/20260604_create_pay_period_tables.sql` to add only the new payroll period tables.
 
 For an existing Supabase database, run `database/20260604_add_employer_paystub_period.sql` to add the employer-level `Period #` tracker.
+
+For an existing Supabase database, run `database/20260606_create_record_history_table.sql` to add the passive `Record History` table populated by the Save All Employees flow.
 
 If the payroll period tables were created before the `P*` columns were corrected to dates, run `database/20260604_convert_pay_period_columns_to_date.sql`.
 
@@ -69,6 +72,7 @@ Once Azure is reachable, export/import in dependency order:
 1. `Employees`
 2. `Employers`
 3. `PayrollRecords`
-4. `PD7`
+4. `Record History`
+5. `PD7`
 
 Keep identity values for `Id` columns during import, then reset each identity sequence to `max("Id")`.

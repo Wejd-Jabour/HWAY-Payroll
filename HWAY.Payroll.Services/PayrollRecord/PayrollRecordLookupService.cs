@@ -4,6 +4,8 @@ using HWAY.Payroll.Services;
 using HWAY.Payroll.Services.PD7;
 using HWAY.Payroll.Services.PayPeriods;
 using Microsoft.EntityFrameworkCore;
+using DataPayrollRecord = HWAY.Payroll.Data.Entities.PayrollRecord;
+using DataRecordHistory = HWAY.Payroll.Data.Entities.RecordHistory;
 
 namespace HWAY.Payroll.Services.PayrollRecord;
 
@@ -255,6 +257,10 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 throw new InvalidOperationException($"Employer with RP number {rpNumber} not found.");
 
             var savedPeriod = PayPeriodRules.NormalizePeriod(employer.EmployerGroup, employer.PaystubPeriod);
+            var savedAt = DateTime.UtcNow;
+            var payPeriodRange = await _payPeriodRangeService.GetPayPeriodRangeAsync(
+                employer.EmployerGroup,
+                savedPeriod);
             var recordIds = updates.Select(update => update.PayrollRecordId).Distinct().ToList();
             var records = await _dbContext.PayrollRecords
                 .Include(record => record.Employee)
@@ -270,6 +276,14 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 }
 
                 ApplyPayrollUpdate(record, update.PayrollRecord, savedPeriod);
+                _dbContext.RecordHistory.Add(CreateRecordHistory(
+                    record,
+                    update.PayrollRecord,
+                    employer,
+                    savedPeriod,
+                    payPeriodRange.Beginning,
+                    payPeriodRange.Ending,
+                    savedAt));
             }
 
             var nextPeriod = PayPeriodRules.GetNextPeriod(employer.EmployerGroup, savedPeriod);
@@ -314,7 +328,7 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
     }
 
     private static void ApplyPayrollUpdate(
-        HWAY.Payroll.Data.Entities.PayrollRecord record,
+        DataPayrollRecord record,
         PayrollRecordUpdateDto dto,
         int period)
     {
@@ -380,6 +394,93 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         record.VacationYtd = updatedVacationYtd;
         record.VacationYtdUsed = updatedVacationYtdUsed;
         record.VacationYtdBalance = updatedVacationYtd - updatedVacationYtdUsed;
+    }
+
+    private static DataRecordHistory CreateRecordHistory(
+        DataPayrollRecord record,
+        PayrollRecordUpdateDto dto,
+        HWAY.Payroll.Data.Entities.Employer employer,
+        int period,
+        DateTime periodBeginning,
+        DateTime periodEnding,
+        DateTime savedAt)
+    {
+        var payDate = (dto.PayDate ?? DateTime.Today).Date;
+        var paidVacation = VacationSettings.IsPaidOut(record.VacationSetting)
+            ? record.Vacation
+            : 0m;
+        var vacationUsed = VacationSettings.IsPaidOut(record.VacationSetting)
+            ? record.Vacation
+            : dto.VacationUsed;
+        var totalDeductions =
+            record.Tax1 +
+            record.Cpp1 +
+            record.Cpp2 +
+            record.Ei +
+            record.OtherDeduction;
+        var totalDeductionsYtd =
+            record.TaxYtd +
+            record.Cpp1Ytd +
+            record.Cpp2Ytd +
+            record.EiYtd +
+            record.OtherDeductionYtd;
+
+        return new DataRecordHistory
+        {
+            PayrollRecordId = record.Id,
+            EmployeeNumber = record.EmployeeNumber,
+            EmployeeName = record.EmployeeName,
+            RpNumber = record.RpNumber,
+            EmployerName = employer.EmployerName,
+            EmployerGroup = employer.EmployerGroup ?? string.Empty,
+            EmployerAddress = employer.Address ?? string.Empty,
+            EmployerCity = employer.City ?? string.Empty,
+            EmployerPostalCode = employer.PostalCode ?? string.Empty,
+            EmployeeAddress = record.Employee?.Address ?? string.Empty,
+            EmployeeCity = record.Employee?.City ?? string.Empty,
+            EmployeeProvince = record.Employee?.Province ?? string.Empty,
+            EmployeePostalCode = record.Employee?.PostalCode ?? string.Empty,
+            EmployeeEmailAddress = record.Employee?.EmailAddress ?? string.Empty,
+            Period = period,
+            PeriodBeginning = periodBeginning.Date,
+            PeriodEnding = periodEnding.Date,
+            PayDate = payDate,
+            Month = payDate.Month,
+            Year = payDate.Year,
+            SavedAt = savedAt,
+            Salary = record.Salary,
+            Rate = record.Rate,
+            RegularHours = record.RegularHours,
+            OvertimeHours = record.OvertimeHours,
+            PublicHolidayHours = record.PublicHolidayHours,
+            StatHolidayHours = record.StatHolidayHours,
+            Vacation = record.Vacation,
+            VacationUsed = vacationUsed,
+            VacationSetting = record.VacationSetting,
+            Gross = record.Gross,
+            PaidVacation = paidVacation,
+            TotalPay = record.Gross + paidVacation,
+            Tax1 = record.Tax1,
+            Cpp1 = record.Cpp1,
+            Cpp2 = record.Cpp2,
+            Ei = record.Ei,
+            OtherDeduction = record.OtherDeduction,
+            TotalDeductions = totalDeductions,
+            NetPay = record.NetPay,
+            GrossYtd = record.GrossYtd,
+            NetYtd = record.NetYtd,
+            TaxYtd = record.TaxYtd,
+            Cpp1Ytd = record.Cpp1Ytd,
+            Cpp2Ytd = record.Cpp2Ytd,
+            EiYtd = record.EiYtd,
+            OtherDeductionYtd = record.OtherDeductionYtd,
+            VacationYtd = record.VacationYtd,
+            VacationYtdUsed = record.VacationYtdUsed,
+            VacationYtdBalance = record.VacationYtdBalance,
+            TotalPayYtd = record.GrossYtd + record.VacationYtdUsed,
+            TotalDeductionsYtd = totalDeductionsYtd,
+            TotalPd7 = record.TotalPd7
+        };
     }
 
     private static decimal CalculateNetPay(
