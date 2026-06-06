@@ -6,4 +6,7 @@ public interface IPayrollRecordLookupService
     Task<List<PayrollRecordLookupDto>> SearchPayrollRecordsByRpNumberAsync(string rpNumber);
     Task<PayrollRecordLookupDto?> GetPayrollRecordByEmployeeNumberAsync(string employeeNumber);
     Task UpdatePayrollRecordAsync(int payrollRecordId, PayrollRecordUpdateDto dto);
+    Task<EmployerPayrollSaveResult> UpdatePayrollRecordsForEmployerAsync(
+        string rpNumber,
+        IReadOnlyCollection<PayrollRecordBatchUpdateDto> updates);
 }

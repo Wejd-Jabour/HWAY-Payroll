@@ -70,8 +70,8 @@
 
 	<!-- Exclude QuestPDF font files from app bundle to suppress warnings -->
 	<ItemGroup>
-		<Content Include="$(NuGetPackageRoot)questpdf\**\LatoFont\*.ttf" CopyToOutputDirectory="Never" />
-		<Content Include="$(NuGetPackageRoot)questpdf\**\LatoFont\*.txt" CopyToOutputDirectory="Never" />
+		<Content Remove="$(NuGetPackageRoot)questpdf\**\LatoFont\*.ttf" />
+		<Content Remove="$(NuGetPackageRoot)questpdf\**\LatoFont\*.txt" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\HWAY.Payroll.Domain\HWAY.Payroll.Domain.csproj" />
@@ -88,6 +88,33 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\PaystubTemplate.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\EmployeeInsertPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\EmployeeUpdatePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\EmployeePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\EmployerInsertPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\EmployerRemovePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\EmployerUpdatePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\EmployerPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\PD7Page.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\SettingsPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

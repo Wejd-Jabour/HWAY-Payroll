@@ -8,6 +8,8 @@ public class PayrollRecordLookupDto
     public string EmployeeNumber { get; set; } = string.Empty;
     public string RpNumber { get; set; } = string.Empty;
     public string EmployeeName { get; set; } = string.Empty;
+    public string EmployerName { get; set; } = string.Empty;
+    public int Period { get; set; }
     public string EmployeeAddress { get; set; } = string.Empty;
     public string EmployeeCity { get; set; } = string.Empty;
     public string EmployeeProvince { get; set; } = string.Empty;
@@ -21,6 +23,7 @@ public class PayrollRecordLookupDto
     public decimal PublicHolidayHours { get; set; }
     public decimal StatHolidayHours { get; set; }
     public decimal Vacation { get; set; }
+    public string VacationSetting { get; set; } = HWAY.Payroll.Domain.VacationSettings.Accumulate;
     public decimal Gross { get; set; }
 
     public decimal Tax1 { get; set; }
@@ -41,4 +44,7 @@ public class PayrollRecordLookupDto
     public decimal VacationYtdUsed { get; set; }
     public decimal VacationYtdBalance { get; set; }
     public decimal TotalPd7 { get; set; }
+    public DateTime? HireDate { get; set; }
+    public DateTime? DateOfBirth { get; set; }
+    public bool EiExempt { get; set; }
 }

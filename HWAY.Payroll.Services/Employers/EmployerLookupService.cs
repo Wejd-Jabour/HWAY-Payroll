@@ -22,9 +22,11 @@ public class EmployerLookupService : IEmployerLookupService
 
         if (!string.IsNullOrWhiteSpace(searchText))
         {
+            var normalizedSearchText = searchText.ToLowerInvariant();
+
             query = query.Where(employer =>
-                employer.RpNumber.Contains(searchText) ||
-                employer.EmployerName.Contains(searchText));
+                employer.RpNumber.ToLower().Contains(normalizedSearchText) ||
+                employer.EmployerName.ToLower().Contains(normalizedSearchText));
         }
 
         return await query
@@ -38,7 +40,9 @@ public class EmployerLookupService : IEmployerLookupService
                 Address = employer.Address,
                 City = employer.City,
                 PostalCode = employer.PostalCode,
-                EmployerGroup = employer.EmployerGroup
+                EmployerGroup = employer.EmployerGroup,
+                PaystubPeriod = employer.PaystubPeriod,
+                Fee = employer.Fee
             })
             .ToListAsync();
     }
@@ -58,7 +62,9 @@ public class EmployerLookupService : IEmployerLookupService
                 Address = employer.Address,
                 City = employer.City,
                 PostalCode = employer.PostalCode,
-                EmployerGroup = employer.EmployerGroup
+                EmployerGroup = employer.EmployerGroup,
+                PaystubPeriod = employer.PaystubPeriod,
+                Fee = employer.Fee
             })
             .FirstOrDefaultAsync();
     }

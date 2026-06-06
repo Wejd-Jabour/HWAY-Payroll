@@ -101,7 +101,7 @@
 
         <!-- Pay period section -->
         <Label Text="PAY PERIOD" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="610,425,90,14" />
-        <Label Text="{Binding PayPeriod}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="706,425,70,14" />
+        <Label Text="{Binding Period}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="706,425,70,14" />
 
         <Label Text="Period Beginning" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="610,436,100,14" />
         <Label Text="{Binding PeriodBeginning}" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="698,436,100,14" />
@@ -183,9 +183,9 @@
         <Label Text="{Binding StatHolidayCurrent}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="385,763,62,12" />
         <Label Text="{Binding StatHolidayYtd}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="449,763,48,12" />
 
-        <Label Text="Vacation Pay" Style="{StaticResource Text}" AbsoluteLayout.LayoutBounds="65,778,100,12" />
-        <Label Text="{Binding VacationPayCurrent}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="385,778,62,12" />
-        <Label Text="{Binding VacationPayYtd}" Style="{StaticResource RightText}" AbsoluteLayout.LayoutBounds="449,778,48,12" />
+        <Label Text="Vacation Pay" Style="{StaticResource Text}" IsVisible="{Binding ShowVacationPay}" AbsoluteLayout.LayoutBounds="65,778,100,12" />
+        <Label Text="{Binding VacationPayCurrent}" Style="{StaticResource RightText}" IsVisible="{Binding ShowVacationPay}" AbsoluteLayout.LayoutBounds="385,778,62,12" />
+        <Label Text="{Binding VacationPayYtd}" Style="{StaticResource RightText}" IsVisible="{Binding ShowVacationPay}" AbsoluteLayout.LayoutBounds="449,778,48,12" />
 
         <Label Text="Total Pay" Style="{StaticResource BoldText}" AbsoluteLayout.LayoutBounds="65,793,100,12" />
         <Label Text="{Binding TotalPayCurrent}" Style="{StaticResource RightBoldText}" AbsoluteLayout.LayoutBounds="385,793,62,12" />

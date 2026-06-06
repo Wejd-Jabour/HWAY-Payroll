@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="HWAY.Payroll.UI.Views.PayrollRecordEditPage"
+    Title="Edit Payroll Record">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="14">
+
+            <!-- Header -->
+            <Label Text="Edit Payroll Record"
+                   FontSize="26"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center" />
+
+            <!-- Search Section -->
+            <Frame Padding="15"
+                   BorderColor="LightGray"
+                   CornerRadius="12">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Search payroll records"
+                           FontAttributes="Bold"
+                           FontSize="18" />
+
+                    <Entry Placeholder="Employee #, employee name, employer #, or employer name"
+                           Keyboard="Text"
+                           Text="{Binding SearchText}" />
+
+                    <Button Text="Search Records"
+                            Command="{Binding SearchCommand}"
+                            BackgroundColor="#512BD4"
+                            TextColor="White"
+                            CornerRadius="10" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <CollectionView ItemsSource="{Binding SearchResults}"
+                SelectionMode="Single"
+                SelectedItem="{Binding SelectedPayrollRecord}"
+                IsVisible="{Binding SearchResultsFound}"
+                Margin="0,10,0,0">
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+
+                    <Frame BorderColor="LightGray"
+                        CornerRadius="10"
+                        Padding="12"
+                        Margin="0,0,0,10">
+
+                        <VerticalStackLayout Spacing="4">
+
+                            <Label Text="{Binding EmployeeName}"
+                                FontAttributes="Bold" />
+
+                            <Label Text="{Binding EmployeeNumber,
+                                                StringFormat='Employee: {0}'}" />
+
+                            <Label Text="{Binding RpNumber,
+                                                StringFormat='Employer RP: {0}'}" />
+
+                            <Label Text="{Binding EmployerName,
+                                                StringFormat='Employer: {0}'}" />
+
+                        </VerticalStackLayout>
+
+                    </Frame>
+
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+            <Label Text="No payroll records found."
+                   TextColor="Red"
+                   HorizontalOptions="Center"
+                   IsVisible="{Binding EmployeeNotFound}" />
+
+            <Label Text="{Binding Message}"
+                   TextColor="Red"
+                   HorizontalOptions="Center" />
+
+            <!-- Employee Info -->
+            <Frame Padding="15">
+                <VerticalStackLayout Spacing="10">
+
+                    <Label Text="Employee Information"
+                           FontAttributes="Bold"
+                           FontSize="18"/>
+
+                    <Entry Placeholder="Employee Number"
+                           Text="{Binding EmployeeNumber}" />
+
+                    <Entry Placeholder="RP Number"
+                           Text="{Binding RpNumber}" />
+
+                    <Entry Placeholder="Employee Name"
+                           Text="{Binding EmployeeName}" />
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Earnings -->
+            <Frame Padding="15">
+                <VerticalStackLayout Spacing="10">
+
+                    <Label Text="Earnings"
+                           FontAttributes="Bold"
+                           FontSize="18"/>
+                    
+                    <Label Text="Salary" />
+                    <Entry Placeholder="Salary"
+                           Keyboard="Numeric"
+                           Text="{Binding Salary}" />
+
+                    <Label Text="Rate" />
+                    <Entry Placeholder="Rate"
+                           Keyboard="Numeric"
+                           Text="{Binding Rate}" />
+
+                    <Label Text="Regular Hours" />
+                    <Entry Placeholder="Regular Hours"
+                           Keyboard="Numeric"
+                           Text="{Binding RegularHours}" />
+
+                    <Label Text="Overtime Hours" />
+                    <Entry Placeholder="Overtime Hours"
+                           Keyboard="Numeric"
+                           Text="{Binding OvertimeHours}" />
+
+                    <Button Text="Recalculate Gross &amp; Open CRA"
+                            Command="{Binding CalculatePayrollCommand}"
+                            BackgroundColor="Orange"
+                            TextColor="White"
+                            CornerRadius="10" />
+                    
+                    <Label Text="Vacation" />
+                    <Entry Placeholder="Vacation"
+                           Keyboard="Numeric"
+                           Text="{Binding Vacation}"
+                           IsReadOnly="True" />
+
+                    <Label Text="Vacation Setting" />
+                    <Picker ItemsSource="{Binding VacationSettingOptions}"
+                            SelectedItem="{Binding VacationSetting}"
+                            Title="Vacation setting" />
+
+                    <Label Text="Gross" />
+                    <Entry Placeholder="Gross"
+                           Keyboard="Numeric"
+                           Text="{Binding Gross}"
+                           IsReadOnly="True" />
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Deductions -->
+            <Frame Padding="15">
+                <VerticalStackLayout Spacing="10">
+
+                    <Label Text="Deductions"
+                           FontAttributes="Bold"
+                           FontSize="18"/>
+
+                    <Label Text="Tax1" />
+                    <Entry Placeholder="Tax"
+                           Keyboard="Numeric"
+                           Text="{Binding Tax1}" />
+
+                    <Label Text="CPP1" />
+                    <Entry Placeholder="CPP1"
+                           Keyboard="Numeric"
+                           Text="{Binding Cpp1}"
+                           IsEnabled="{Binding CanEditCpp1}" />
+
+                    <Label Text="CPP2" />
+                    <Entry Placeholder="CPP2"
+                           Keyboard="Numeric"
+                           Text="{Binding Cpp2}"
+                           IsEnabled="{Binding CanEditCpp2}" />
+
+                    <Label Text="EI" />
+                    <Entry Placeholder="EI"
+                           Keyboard="Numeric"
+                           Text="{Binding Ei}"
+                           IsEnabled="{Binding CanEditEi}" />
+
+                    <Label Text="Other Deduction" />
+                    <Entry Placeholder="Other Deduction"
+                           Keyboard="Numeric"
+                           Text="{Binding OtherDeduction}" />
+
+                    <Label Text="Net Pay" />
+                    <Entry Placeholder="Net Pay"
+                           Keyboard="Numeric"
+                           Text="{Binding NetPay}" />
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Save Button -->
+            <Button Text="Save Changes"
+                    Command="{Binding SaveCommand}"
+                    BackgroundColor="Green"
+                    TextColor="White" />
+
+            <!-- Message -->
+            <Label Text="{Binding Message}"
+                   HorizontalOptions="Center"
+                   TextColor="Red"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -98,6 +98,9 @@
                 <Entry Text="{Binding StatHolidayHours}"
                        Keyboard="Numeric" />
 
+                <Label Text="Hire Date" /> 
+                <Label Text="{Binding HireDateText}" />
+
                 <!-- Calculate Button -->
                 <Button Text="Calculate Payroll &amp; Open CRA"
                         Command="{Binding CalculateAndOpenCraCommand}"
@@ -117,6 +120,11 @@
                        Keyboard="Numeric"
                        IsReadOnly="True" />
 
+                <Label Text="Vacation Setting" />
+                <Picker ItemsSource="{Binding VacationSettingOptions}"
+                        SelectedItem="{Binding VacationSetting}"
+                        Title="Vacation setting" />
+
                 <!-- Tax / Deductions -->
                 <Label Text="Tax1" />
                 <Entry Text="{Binding Tax1}"
@@ -124,15 +132,18 @@
 
                 <Label Text="CPP1" />
                 <Entry Text="{Binding Cpp1}"
-                       Keyboard="Numeric" />
+                       Keyboard="Numeric"
+                       IsEnabled="{Binding CanEditCpp}" />
 
                 <Label Text="CPP2" />
                 <Entry Text="{Binding Cpp2}"
-                       Keyboard="Numeric" />
+                       Keyboard="Numeric"
+                       IsEnabled="{Binding CanEditCpp}" />
 
                 <Label Text="EI" />
                 <Entry Text="{Binding Ei}"
-                       Keyboard="Numeric" />
+                       Keyboard="Numeric"
+                       IsEnabled="{Binding CanEditEi}" />
 
                 <Label Text="Other Deduction" />
                 <Entry Text="{Binding OtherDeduction}"

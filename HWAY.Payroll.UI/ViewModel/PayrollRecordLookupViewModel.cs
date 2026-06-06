@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
+using HWAY.Payroll.Domain;
+using HWAY.Payroll.Services;
 using HWAY.Payroll.Services.PayrollRecord;
 
 namespace HWAY.Payroll.UI.ViewModels;
@@ -60,18 +62,37 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         set => SetProperty(ref _vacation, value);
     }
 
+    private string _vacationSetting = VacationSettings.Accumulate;
+    public string VacationSetting
+    {
+        get => _vacationSetting;
+        set => SetProperty(ref _vacationSetting, VacationSettings.Normalize(value));
+    }
+
     private decimal _salary;
     public decimal Salary
     {
         get => _salary;
-        set => SetProperty(ref _salary, value);
+        set
+        {
+            if (SetProperty(ref _salary, value) && value > 0)
+            {
+                SetProperty(ref _rate, 0m, nameof(Rate));
+            }
+        }
     }
 
     private decimal _rate;
     public decimal Rate
     {
         get => _rate;
-        set => SetProperty(ref _rate, value);
+        set
+        {
+            if (SetProperty(ref _rate, value) && value > 0)
+            {
+                SetProperty(ref _salary, 0m, nameof(Salary));
+            }
+        }
     }
 
     private decimal _regularHours;
@@ -113,21 +134,21 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
     public decimal Cpp1
     {
         get => _cpp1;
-        set => SetProperty(ref _cpp1, value);
+        set => SetProperty(ref _cpp1, CanContributeCpp ? value : 0m);
     }
 
     private decimal _cpp2;
     public decimal Cpp2
     {
         get => _cpp2;
-        set => SetProperty(ref _cpp2, value);
+        set => SetProperty(ref _cpp2, CanContributeCpp ? value : 0m);
     }
 
     private decimal _ei;
     public decimal Ei
     {
         get => _ei;
-        set => SetProperty(ref _ei, value);
+        set => SetProperty(ref _ei, CanContributeEi ? value : 0m);
     }
 
     private decimal _otherDeduction;
@@ -136,6 +157,62 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         get => _otherDeduction;
         set => SetProperty(ref _otherDeduction, value);
     }
+
+    private DateTime? _hireDate;
+    public DateTime? HireDate
+    {
+        get => _hireDate;
+        set
+        {
+            if (SetProperty(ref _hireDate, value))
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HireDateDisplay)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HireDateText)));
+            }
+        }
+    }
+
+    public DateTime HireDateDisplay
+    {
+        get => HireDate ?? DateTime.Today;
+        set => HireDate = value;
+    }
+
+    public string HireDateText => HireDate?.ToString("yyyy-MM-dd") ?? "";
+
+    private DateTime? _dateOfBirth;
+    public DateTime? DateOfBirth
+    {
+        get => _dateOfBirth;
+        set
+        {
+            if (SetProperty(ref _dateOfBirth, value))
+            {
+                OnEligibilityChanged();
+            }
+        }
+    }
+
+    private bool _eiExempt;
+    public bool EiExempt
+    {
+        get => _eiExempt;
+        set
+        {
+            if (SetProperty(ref _eiExempt, value))
+            {
+                OnEligibilityChanged();
+            }
+        }
+    }
+
+    public bool CanContributeCpp => EmployeePayrollEligibility.CanContributeCpp(DateOfBirth, DateTime.Today);
+
+    public bool CanContributeEi => EmployeePayrollEligibility.CanContributeEi(EiExempt);
+
+    public bool CanEditCpp => CanContributeCpp;
+
+    public bool CanEditEi => CanContributeEi;
 
     // -------------------------
     // UI STATE FLAGS
@@ -166,6 +243,7 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
     // SEARCH RESULTS
     // -------------------------
     public ObservableCollection<PayrollRecordLookupDto> SearchResults { get; }
+    public IReadOnlyList<string> VacationSettingOptions { get; } = VacationSettings.Options;
 
     private bool _searchResultsFound;
     public bool SearchResultsFound
@@ -222,19 +300,23 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         RpNumber = selectedRecord.RpNumber;
 
         Salary = selectedRecord.Salary;
-        Rate = selectedRecord.Rate;
-        RegularHours = selectedRecord.RegularHours;
-        OvertimeHours = selectedRecord.OvertimeHours;
-        PublicHolidayHours = selectedRecord.PublicHolidayHours;
-        StatHolidayHours = selectedRecord.StatHolidayHours;
-        Gross = selectedRecord.Gross;
-        Vacation = selectedRecord.Vacation;
+        Rate = selectedRecord.Salary > 0 ? 0 : selectedRecord.Rate;
+        RegularHours = 0;
+        OvertimeHours = 0;
+        PublicHolidayHours = 0;
+        StatHolidayHours = 0;
+        Gross = 0;
+        Vacation = 0;
+        VacationSetting = selectedRecord.VacationSetting;
 
-        Tax1 = selectedRecord.Tax1;
-        Cpp1 = selectedRecord.Cpp1;
-        Cpp2 = selectedRecord.Cpp2;
-        Ei = selectedRecord.Ei;
-        OtherDeduction = selectedRecord.OtherDeduction;
+        Tax1 = 0;
+        Cpp1 = 0;
+        Cpp2 = 0;
+        Ei = 0;
+        OtherDeduction = 0;
+        HireDate = selectedRecord.HireDate;
+        DateOfBirth = selectedRecord.DateOfBirth;
+        EiExempt = selectedRecord.EiExempt;
 
         EmployeeFound = true;
         EmployeeNotFound = false;
@@ -258,6 +340,7 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
             StatHolidayHours = StatHolidayHours,
             Gross = Gross,
             Vacation = Vacation,
+            VacationSetting = VacationSetting,
             Tax1 = Tax1,
             Cpp1 = Cpp1,
             Cpp2 = Cpp2,
@@ -267,11 +350,12 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
 
         await _service.UpdatePayrollRecordAsync(_currentPayrollRecordId, dto);
 
-        // Clear selection and hide details to allow selecting next employee
-        SelectedPayrollRecord = null;
-        ClearFields();
-        EmployeeFound = false;
-        _currentPayrollRecordId = 0;
+        await SearchByRpNumber();
+
+        SelectedPayrollRecord = SearchResults
+            .FirstOrDefault(r => r.Id == _currentPayrollRecordId);
+
+        EmployeeFound = true;
 
         // Optionally, show a success message or something
     }
@@ -283,8 +367,22 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
     {
         Gross = CalculateGross(Salary, Rate, RegularHours, OvertimeHours, PublicHolidayHours, StatHolidayHours);
 
-        // Calculate Vacation: 4% of Gross (adjust as needed)
-        Vacation = Gross * 0.04m;
+        // Set Vacation Rate
+        decimal vacationRate = 0.04m;
+        
+        // Check if employee worked with company for 5+ years to apply 6% vacation rate
+        if (HireDate.HasValue)
+        {
+            var yearsWorked = DateTime.Today.Year - HireDate.Value.Year;
+
+            if (HireDate.Value.Date > DateTime.Today.AddYears(-yearsWorked))
+                yearsWorked--;
+
+            if (yearsWorked >= 5)
+                vacationRate = 0.06m;
+        }
+
+        Vacation = Gross * vacationRate;
 
         // Open CRA website
         OpenCraWebsite();
@@ -313,11 +411,34 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
         StatHolidayHours = 0;
         Gross = 0;
         Vacation = 0;
+        VacationSetting = VacationSettings.Accumulate;
         Tax1 = 0;
         Cpp1 = 0;
         Cpp2 = 0;
         Ei = 0;
         OtherDeduction = 0;
+        HireDate = null;
+        DateOfBirth = null;
+        EiExempt = false;
+    }
+
+    private void OnEligibilityChanged()
+    {
+        if (!CanContributeCpp)
+        {
+            SetProperty(ref _cpp1, 0m, nameof(Cpp1));
+            SetProperty(ref _cpp2, 0m, nameof(Cpp2));
+        }
+
+        if (!CanContributeEi)
+        {
+            SetProperty(ref _ei, 0m, nameof(Ei));
+        }
+
+        OnPropertyChanged(nameof(CanContributeCpp));
+        OnPropertyChanged(nameof(CanContributeEi));
+        OnPropertyChanged(nameof(CanEditCpp));
+        OnPropertyChanged(nameof(CanEditEi));
     }
 
     private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string name = "")
@@ -326,8 +447,13 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
             return false;
 
         field = value;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        OnPropertyChanged(name);
         return true;
+    }
+
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     private static decimal CalculateGross(
