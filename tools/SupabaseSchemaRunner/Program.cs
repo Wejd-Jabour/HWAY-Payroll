@@ -28,6 +28,7 @@ drop table if exists public."bi-weekly B" cascade;
 drop table if exists public."bi-weekly A" cascade;
 drop table if exists public."semi-monthly" cascade;
 drop table if exists public."monthly" cascade;
+drop table if exists public."Record History" cascade;
 drop table if exists public."PayrollRecords" cascade;
 drop table if exists public."PD7" cascade;
 drop table if exists public."Employees" cascade;
@@ -61,6 +62,7 @@ where c.table_schema = 'public'
       'Employees',
       'Employers',
       'PayrollRecords',
+      'Record History',
       'PD7',
       'monthly',
       'semi-monthly',
@@ -115,6 +117,8 @@ union all
 select 'PD7' as table_name, count(*) as row_count from public."PD7"
 union all
 select 'PayrollRecords' as table_name, count(*) as row_count from public."PayrollRecords"
+union all
+select 'Record History' as table_name, count(*) as row_count from public."Record History"
 union all
 select 'monthly' as table_name, count(*) as row_count from public."monthly"
 union all

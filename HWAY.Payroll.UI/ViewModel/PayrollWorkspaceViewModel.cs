@@ -654,7 +654,7 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string name = "")
-    {
+    {   
         if (EqualityComparer<T>.Default.Equals(field, value))
             return false;
 
