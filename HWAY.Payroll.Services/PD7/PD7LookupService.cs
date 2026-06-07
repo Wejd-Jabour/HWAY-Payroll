@@ -85,6 +85,24 @@ public class PD7LookupService : IPD7LookupService
         return p == null ? null : MapToDto(p);
     }
 
+    public async Task<decimal> GetCalendarYearPd7TotalAsync(string rpNumber, int year)
+    {
+        rpNumber = rpNumber.Trim();
+
+        if (string.IsNullOrWhiteSpace(rpNumber))
+            throw new Exception("RP Number is required.");
+
+        if (year < 1)
+            throw new Exception("Year is required.");
+
+        var total = await _dbContext.PD7Records
+            .AsNoTracking()
+            .Where(record => record.RPNumber == rpNumber && record.Year == year)
+            .SumAsync(record => (decimal?)record.PD7Total);
+
+        return RoundMoney(total ?? 0);
+    }
+
     public async Task<PD7LookupDto> CalculatePd7Async(string rpNumber, int month, int year)
     {
         rpNumber = rpNumber.Trim();

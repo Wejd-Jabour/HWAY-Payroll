@@ -105,6 +105,13 @@ public class PD7ViewModel : INotifyPropertyChanged
         set => SetProperty(ref _pd7Total, value);
     }
 
+    private decimal _calendarYearPD7Total;
+    public decimal CalendarYearPD7Total
+    {
+        get => _calendarYearPD7Total;
+        set => SetProperty(ref _calendarYearPD7Total, value);
+    }
+
     private int _activeEmployees;
     public int ActiveEmployees
     {
@@ -335,11 +342,13 @@ public class PD7ViewModel : INotifyPropertyChanged
             if (saved != null)
             {
                 ApplySavedFields(saved);
+                await RefreshCalendarYearPD7TotalAsync();
                 return;
             }
 
             var calculated = await _pd7LookupService.CalculatePd7Async(RpNumber, Month, Year);
             ApplyCalculatedFields(calculated);
+            await RefreshCalendarYearPD7TotalAsync();
         }
         catch (Exception ex)
         {
@@ -351,6 +360,17 @@ public class PD7ViewModel : INotifyPropertyChanged
             IsBusy = false;
             _isCalculating = false;
         }
+    }
+
+    private async Task RefreshCalendarYearPD7TotalAsync()
+    {
+        if (string.IsNullOrWhiteSpace(RpNumber) || Year < 1)
+        {
+            CalendarYearPD7Total = 0;
+            return;
+        }
+
+        CalendarYearPD7Total = await _pd7LookupService.GetCalendarYearPd7TotalAsync(RpNumber, Year);
     }
 
     private async Task SaveAsync()
@@ -461,6 +481,7 @@ public class PD7ViewModel : INotifyPropertyChanged
         Fee = SelectedEmployer?.Fee ?? 0;
         Gross = 0;
         PD7Total = 0;
+        CalendarYearPD7Total = 0;
         ActiveEmployees = 0;
         Period = "XX";
         Transfer = 0;
@@ -477,6 +498,7 @@ public class PD7ViewModel : INotifyPropertyChanged
         Fee = 0;
         Gross = 0;
         PD7Total = 0;
+        CalendarYearPD7Total = 0;
         ActiveEmployees = 0;
         Period = "XX";
         Transfer = 0;

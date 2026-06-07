@@ -71,6 +71,9 @@
                                     <Label Text="{Binding PaystubPeriod, StringFormat='Period #: {0}'}"
                                            FontSize="11"
                                            Opacity="0.7"/>
+                                    <Label Text="{Binding PD7TotalDisplay}"
+                                           FontSize="11"
+                                           Opacity="0.7"/>
                                 </VerticalStackLayout>
                             </Grid>
                         </DataTemplate>
