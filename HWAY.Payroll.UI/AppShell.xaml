@@ -35,6 +35,11 @@
         Route="PD7Page" />
 
         <ShellContent
+        Title="T4 Records"
+        ContentTemplate="{DataTemplate views:T4Page}"
+        Route="T4Page" />
+
+        <ShellContent
         Title="Settings"
         ContentTemplate="{DataTemplate views:SettingsPage}"
         Route="SettingsPage" />
