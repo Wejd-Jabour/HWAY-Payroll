@@ -13,6 +13,7 @@ using HWAY.Payroll.Services.EmployerInsert;
 using HWAY.Payroll.Services.EmployerUpdate;
 using HWAY.Payroll.Services.PayPeriods;
 using HWAY.Payroll.Services.PD7;
+using HWAY.Payroll.Services.T4;
 using HWAY.Payroll.UI.ViewModels;
 using HWAY.Payroll.UI.Views;
 using HWAY.Payroll.UI.ViewModel;
@@ -56,6 +57,7 @@ public static class MauiProgram
 
         // PD7 lookup service
         builder.Services.AddScoped<IPD7LookupService, PD7LookupService>();
+        builder.Services.AddScoped<IT4LookupService, T4LookupService>();
 
         builder.Services.AddTransient<EmployerLookupViewModel>();
         builder.Services.AddTransient<EmployerLookupPage>();
@@ -104,6 +106,9 @@ public static class MauiProgram
         // PD7 view
         builder.Services.AddTransient<PD7ViewModel>();
         builder.Services.AddTransient<PD7Page>();
+
+        builder.Services.AddTransient<T4ViewModel>();
+        builder.Services.AddTransient<T4Page>();
 
         builder.Services.AddTransient<BiWeeklySettingsViewModel>();
         builder.Services.AddTransient<SettingsPage>();
