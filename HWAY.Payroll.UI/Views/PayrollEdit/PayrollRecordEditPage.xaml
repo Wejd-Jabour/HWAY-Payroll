@@ -129,7 +129,7 @@
                            Keyboard="Numeric"
                            Text="{Binding OvertimeHours}" />
 
-                    <Button Text="Recalculate Gross &amp; Open CRA"
+                    <Button Text="Recalculate Payroll Deductions"
                             Command="{Binding CalculatePayrollCommand}"
                             BackgroundColor="Orange"
                             TextColor="White"

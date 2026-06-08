@@ -102,11 +102,15 @@
                 <Label Text="{Binding HireDateText}" />
 
                 <!-- Calculate Button -->
-                <Button Text="Calculate Payroll &amp; Open CRA"
+                <Button Text="Calculate Payroll Deductions"
                         Command="{Binding CalculateAndOpenCraCommand}"
                         BackgroundColor="Orange"
                         TextColor="White"
                         CornerRadius="10" />
+
+                <Label Text="{Binding Message}"
+                       TextColor="Green"
+                       FontAttributes="Bold" />
 
                 <!-- Gross -->
                 <Label Text="Gross" />

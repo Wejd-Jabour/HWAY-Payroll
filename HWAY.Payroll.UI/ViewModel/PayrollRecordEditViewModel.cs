@@ -6,6 +6,8 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using HWAY.Payroll.Domain;
 using HWAY.Payroll.Services;
+using HWAY.Payroll.Services.Calculations;
+using HWAY.Payroll.Services.PayPeriods;
 using HWAY.Payroll.Services.PayrollRecord;
 using HWAY.Payroll.Services.PayrollRecordEdit;
 
@@ -15,6 +17,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
 {
     private readonly IPayrollRecordEditService _service;
     private readonly IPayrollRecordLookupService _lookupService;
+    private readonly IPayrollDeductionCalculator _deductionCalculator;
 
     private int _currentPayrollRecordId;
     private decimal _cpp1Ytd;
@@ -26,14 +29,18 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
 
     private static int PayrollYear => DateTime.Today.Year;
 
-    public PayrollRecordEditViewModel(IPayrollRecordEditService service, IPayrollRecordLookupService lookupService)
+    public PayrollRecordEditViewModel(
+        IPayrollRecordEditService service,
+        IPayrollRecordLookupService lookupService,
+        IPayrollDeductionCalculator deductionCalculator)
     {
         _service = service;
         _lookupService = lookupService;
+        _deductionCalculator = deductionCalculator;
 
         SearchCommand = new Command(async () => await SearchPayrollRecords());
         SaveCommand = new Command(async () => await SaveChanges());
-        CalculatePayrollCommand = new Command(CalculatePayroll);
+        CalculatePayrollCommand = new Command(async () => await CalculatePayrollAsync());
         OpenCraWebsiteCommand = new Command(OpenCraWebsite);
 
         SearchResults = new ObservableCollection<PayrollRecordLookupDto>();
@@ -364,7 +371,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
 
         if (_requiresRecalculate)
         {
-            Message = "Recalculate gross and vacation before saving by pressing the CRA button.";
+            Message = "Recalculate payroll deductions before saving.";
             return;
         }
 
@@ -405,14 +412,51 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
         }
     }
 
-    private void CalculatePayroll()
+    private async Task CalculatePayrollAsync()
     {
+        if (SelectedPayrollRecord is null)
+        {
+            Message = "Select a payroll record before calculating.";
+            return;
+        }
+
         Gross = Salary + (Rate * RegularHours) + (Rate * 1.5m * OvertimeHours);
         Vacation = Gross * 0.04m;
+
+        try
+        {
+            var deductions = await _deductionCalculator.CalculateAsync(new PayrollDeductionCalculationRequest
+            {
+                PayDate = DateTime.Today,
+                PayPeriodsPerYear = PayPeriodRules.GetMaxPeriod(SelectedPayrollRecord.EmployerGroup),
+                CurrentPeriod = PayPeriodRules.NormalizePeriod(
+                    SelectedPayrollRecord.EmployerGroup,
+                    SelectedPayrollRecord.EmployerPaystubPeriod),
+                Province = SelectedPayrollRecord.EmployeeProvince,
+                GrossIncome = Gross,
+                PaidVacation = VacationSettings.IsPaidOut(VacationSetting) ? Vacation : 0m,
+                PensionableIncomeYtd = SelectedPayrollRecord.GrossYtd + SelectedPayrollRecord.VacationYtdUsed,
+                Cpp1Ytd = SelectedPayrollRecord.Cpp1Ytd,
+                Cpp2Ytd = SelectedPayrollRecord.Cpp2Ytd,
+                EiYtd = SelectedPayrollRecord.EiYtd,
+                CanContributeCpp = CanContributeCpp,
+                CanContributeEi = CanContributeEi
+            });
+
+            Tax1 = deductions.Tax;
+            Cpp1 = deductions.Cpp1;
+            Cpp2 = deductions.Cpp2;
+            Ei = deductions.Ei;
+        }
+        catch (Exception ex)
+        {
+            Message = $"Unable to calculate payroll deductions: {ex.Message}";
+            return;
+        }
+
         NetPay = CalculateNetPay(Gross, Vacation, VacationSetting, Tax1, Cpp1, Cpp2, Ei, OtherDeduction);
         _requiresRecalculate = false;
-        Message = "Gross and vacation recalculated. Opening CRA...";
-        OpenCraWebsite();
+        Message = "Payroll deductions recalculated.";
     }
 
     private void OpenCraWebsite()

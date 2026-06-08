@@ -14,6 +14,7 @@ using HWAY.Payroll.Services.EmployerUpdate;
 using HWAY.Payroll.Services.PayPeriods;
 using HWAY.Payroll.Services.PD7;
 using HWAY.Payroll.Services.T4;
+using HWAY.Payroll.Services.Calculations;
 using HWAY.Payroll.UI.ViewModels;
 using HWAY.Payroll.UI.Views;
 using HWAY.Payroll.UI.ViewModel;
@@ -54,6 +55,8 @@ public static class MauiProgram
         builder.Services.AddScoped<IEmployerUpdateService, EmployerUpdateService>();
         builder.Services.AddScoped<IBiWeeklyScheduleService, BiWeeklyScheduleService>();
         builder.Services.AddScoped<IPayPeriodRangeService, PayPeriodRangeService>();
+        builder.Services.AddScoped<ICalculationSettingsService, CalculationSettingsService>();
+        builder.Services.AddScoped<IPayrollDeductionCalculator, PayrollDeductionCalculator>();
 
         // PD7 lookup service
         builder.Services.AddScoped<IPD7LookupService, PD7LookupService>();
