@@ -186,6 +186,143 @@
         <Setter Property="HorizontalTextAlignment" Value="Center" />
     </Style>
 
+    <Style TargetType="Label" x:Key="HwayPageTitle">
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="#0F172A" />
+    </Style>
+
+    <Style TargetType="Label" x:Key="HwaySectionTitle">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="#1F2937" />
+    </Style>
+
+    <Style TargetType="Label" x:Key="HwaySubsectionTitle">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="#334155" />
+    </Style>
+
+    <Style TargetType="Label" x:Key="HwaySmallLabel">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="TextColor" Value="#64748B" />
+    </Style>
+
+    <Style TargetType="Label" x:Key="HwayFieldLabel">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="#475569" />
+    </Style>
+
+    <Style TargetType="Label" x:Key="HwayValueLabel">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="TextColor" Value="#111827" />
+    </Style>
+
+    <Style TargetType="Label" x:Key="HwayAmountLabel">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="#0F172A" />
+    </Style>
+
+    <Style TargetType="Label" x:Key="HwaySuccessMessage">
+        <Setter Property="TextColor" Value="#166534" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+    </Style>
+
+    <Style TargetType="Label" x:Key="HwayErrorMessage">
+        <Setter Property="TextColor" Value="#B91C1C" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+    </Style>
+
+    <Style TargetType="Border" x:Key="HwayCardBorder">
+        <Setter Property="BackgroundColor" Value="#FFFFFF" />
+        <Setter Property="Stroke" Value="#D9E2EC" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 8" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Padding" Value="18" />
+    </Style>
+
+    <Style TargetType="Border" x:Key="HwayDropdownBorder">
+        <Setter Property="BackgroundColor" Value="#FFFFFF" />
+        <Setter Property="Stroke" Value="#CBD5E1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 8" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+    <Style TargetType="Border" x:Key="HwayInputBorder">
+        <Setter Property="BackgroundColor" Value="#F8FAFC" />
+        <Setter Property="Stroke" Value="#CBD5E1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 8" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="MinimumHeightRequest" Value="46" />
+    </Style>
+
+    <Style TargetType="Border" x:Key="HwayReadOnlyInputBorder">
+        <Setter Property="BackgroundColor" Value="#F1F5F9" />
+        <Setter Property="Stroke" Value="#D9E2EC" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 8" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="MinimumHeightRequest" Value="46" />
+    </Style>
+
+    <Style TargetType="Entry" x:Key="HwayEntry">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="#0F172A" />
+        <Setter Property="PlaceholderColor" Value="#94A3B8" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
+    </Style>
+
+    <Style TargetType="Picker" x:Key="HwayPicker">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="#0F172A" />
+        <Setter Property="TitleColor" Value="#64748B" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
+    </Style>
+
+    <Style TargetType="DatePicker" x:Key="HwayDatePicker">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="#0F172A" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
+    </Style>
+
+    <Style TargetType="Button" x:Key="HwayPrimaryButton">
+        <Setter Property="BackgroundColor" Value="#1D4ED8" />
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <Style TargetType="Button" x:Key="HwaySecondaryButton">
+        <Setter Property="BackgroundColor" Value="#475569" />
+        <Setter Property="TextColor" Value="White" />
+    </Style>
+
+    <Style TargetType="Button" x:Key="HwaySaveButton">
+        <Setter Property="BackgroundColor" Value="#15803D" />
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <Style TargetType="Button" x:Key="HwayDangerButton">
+        <Setter Property="BackgroundColor" Value="#B91C1C" />
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <Style TargetType="Button" x:Key="HwayTealButton">
+        <Setter Property="BackgroundColor" Value="#0F766E" />
+        <Setter Property="TextColor" Value="White" />
+    </Style>
+
     <Style TargetType="Picker">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
         <Setter Property="TitleColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}" />

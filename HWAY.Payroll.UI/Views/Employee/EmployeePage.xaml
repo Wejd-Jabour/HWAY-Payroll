@@ -4,100 +4,133 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="HWAY.Payroll.UI.Views.EmployeePage"
+    BackgroundColor="#F6F8FA"
     Title="Employee Management">
 
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="12">
-            
-            <!-- Title -->
-            <Label Text="Employees" FontSize="24" FontAttributes="Bold"/>
+        <VerticalStackLayout Padding="24" Spacing="18">
 
-            <!-- Employers List -->
-            <Label Text="Employers" FontSize="18" FontAttributes="Bold"/>
-            <Border StrokeThickness="1" Padding="0" Margin="0,0,0,8">
-                <CollectionView ItemsSource="{Binding Employers}"
-                               SelectionMode="None"
-                               HeightRequest="220">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Padding="12">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer
-                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectEmployerCommand}"
-                                        CommandParameter="{Binding .}" />
-                                </Grid.GestureRecognizers>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <VerticalStackLayout Grid.Column="0" Spacing="3">
+                    <Label Text="Employees" Style="{StaticResource HwayPageTitle}" />
+                    <Label Text="Search, create, update, and remove employee records" Style="{StaticResource HwaySmallLabel}" />
+                </VerticalStackLayout>
 
-                                <VerticalStackLayout Spacing="2">
-                                    <Label Text="{Binding RpNumber}"
-                                           FontAttributes="Bold"
-                                           FontSize="16" />
-                                    <Label Text="{Binding EmployerName}"
-                                           FontSize="14" />
-                                </VerticalStackLayout>
-                            </Grid>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                <ActivityIndicator
+                    Grid.Column="1"
+                    IsVisible="{Binding IsBusy}"
+                    IsRunning="{Binding IsBusy}"
+                    VerticalOptions="Center" />
+            </Grid>
+
+            <Border Style="{StaticResource HwayCardBorder}">
+                <VerticalStackLayout Spacing="14">
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="Employer Filter" Style="{StaticResource HwaySectionTitle}" />
+                        <Label Text="Choose an employer or search employees directly" Style="{StaticResource HwaySmallLabel}" />
+                    </VerticalStackLayout>
+
+                    <Border Style="{StaticResource HwayDropdownBorder}" HeightRequest="220">
+                        <CollectionView
+                            ItemsSource="{Binding Employers}"
+                            SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Padding="14,12" ColumnDefinitions="150,*" ColumnSpacing="14">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectEmployerCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        </Grid.GestureRecognizers>
+
+                                        <Label
+                                            Grid.Column="0"
+                                            Text="{Binding RpNumber}"
+                                            FontAttributes="Bold"
+                                            TextColor="#0F172A"
+                                            VerticalOptions="Center" />
+                                        <Label
+                                            Grid.Column="1"
+                                            Text="{Binding EmployerName}"
+                                            TextColor="#334155"
+                                            VerticalOptions="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Border>
+
+                    <BoxView HeightRequest="1" BackgroundColor="#E2E8F0" />
+
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+                        <VerticalStackLayout Grid.Column="0" Spacing="6">
+                            <Label Text="Employee Search" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry
+                                    Placeholder="Search by RP number, Employee #, or Name"
+                                    Text="{Binding SearchText}"
+                                    ReturnCommand="{Binding SearchCommand}"
+                                    Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <Button
+                            Grid.Column="1"
+                            Text="Search"
+                            Command="{Binding SearchCommand}"
+                            Style="{StaticResource HwayPrimaryButton}"
+                            VerticalOptions="End" />
+
+                        <Button
+                            Grid.Column="2"
+                            Text="+ Add New Employee"
+                            Command="{Binding NewEmployeeCommand}"
+                            Style="{StaticResource HwaySaveButton}"
+                            VerticalOptions="End" />
+                    </Grid>
+                </VerticalStackLayout>
             </Border>
-            
-            <!-- Search Bar -->
-            <Label Text="Search by RP number, Employee #, or Name" FontSize="14"/>
-            <Entry Placeholder="Enter search term..."
-                   Text="{Binding SearchText}"
-                   ReturnCommand="{Binding SearchCommand}"/>
 
-              <!-- Search and New Buttons -->
-            <HorizontalStackLayout Spacing="10">
-                <Button Text="Search"
-                        Command="{Binding SearchCommand}"
-                        BackgroundColor="Blue"
-                        TextColor="White"
-                        HorizontalOptions="Fill"/>
-                
-                <Button Text="+ Add New Employer"
-                        Command="{Binding NewEmployeeCommand}"
-                        BackgroundColor="Green"
-                        TextColor="White"
-                        HorizontalOptions="Fill"/>
-            </HorizontalStackLayout>
+            <Label Text="{Binding Message}" Style="{StaticResource HwayErrorMessage}" />
 
-            <!-- Message -->
-            <Label Text="{Binding Message}"
-                   TextColor="Red"
-                   HorizontalOptions="Center"
-                   FontAttributes="Bold"/>
-
-            <!-- Activity Indicator -->
-            <ActivityIndicator IsVisible="{Binding IsBusy}"
-                             IsRunning="{Binding IsBusy}"/>
-
-            <!-- Employee Results Box (styled like PayrollWorkspacePage) -->
-            <Border IsVisible="{Binding SearchResultsFound}"
-                    StrokeThickness="1"
-                    Padding="0"
-                    Margin="0,12,0,0">
-                <CollectionView ItemsSource="{Binding Employees}"
-                               SelectionMode="Single">
+            <Border
+                IsVisible="{Binding SearchResultsFound}"
+                Style="{StaticResource HwayCardBorder}"
+                Padding="0">
+                <CollectionView
+                    ItemsSource="{Binding Employees}"
+                    SelectionMode="Single">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Grid Padding="12">
+                            <Grid Padding="14" ColumnDefinitions="*,160,180,220" ColumnSpacing="14">
                                 <Grid.GestureRecognizers>
                                     <TapGestureRecognizer
                                         Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectEmployeeCommand}"
                                         CommandParameter="{Binding .}" />
                                 </Grid.GestureRecognizers>
 
-                                <VerticalStackLayout Spacing="4">
-                                    <Label Text="{Binding FirstName, StringFormat='Name: {0}'}"
-                                           FontAttributes="Bold"
-                                           FontSize="14"/>
-                                    <Label Text="{Binding EmployeeNumber, StringFormat='Employee #: {0}'}"
-                                           FontSize="12"/>
-                                    <Label Text="{Binding RpNumber, StringFormat='RP #: {0}'}"
-                                           FontSize="12"/>
-                                    <Label Text="{Binding EmailAddress}"
-                                           FontSize="11"
-                                           Opacity="0.7"/>
+                                <VerticalStackLayout Grid.Column="0" Spacing="3">
+                                    <Label
+                                        Text="{Binding FirstName, StringFormat='Name: {0}'}"
+                                        FontAttributes="Bold"
+                                        FontSize="16"
+                                        TextColor="#111827" />
+                                    <Label Text="{Binding LastName}" Style="{StaticResource HwaySmallLabel}" />
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                    <Label Text="Employee #" Style="{StaticResource HwayFieldLabel}" />
+                                    <Label Text="{Binding EmployeeNumber}" Style="{StaticResource HwayValueLabel}" />
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout Grid.Column="2" Spacing="2">
+                                    <Label Text="RP Number" Style="{StaticResource HwayFieldLabel}" />
+                                    <Label Text="{Binding RpNumber}" Style="{StaticResource HwayValueLabel}" />
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout Grid.Column="3" Spacing="2">
+                                    <Label Text="Email" Style="{StaticResource HwayFieldLabel}" />
+                                    <Label Text="{Binding EmailAddress}" Style="{StaticResource HwaySmallLabel}" />
                                 </VerticalStackLayout>
                             </Grid>
                         </DataTemplate>
@@ -105,90 +138,142 @@
                 </CollectionView>
             </Border>
 
-            <!-- Edit Form -->
-            <Border IsVisible="{Binding EmployeeSelected}"
-                    StrokeThickness="1"
-                    Padding="16"
-                    Margin="0,12,0,0">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="{Binding IsEditMode, StringFormat='Edit Employee|New Employee'}"
-                           FontSize="18"
-                           FontAttributes="Bold"/>
+            <Border
+                IsVisible="{Binding EmployeeSelected}"
+                Style="{StaticResource HwayCardBorder}">
+                <VerticalStackLayout Spacing="14">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <VerticalStackLayout Grid.Column="0" Spacing="3">
+                            <Label Text="Employee Details" Style="{StaticResource HwaySectionTitle}" />
+                            <Label Text="Edit employee profile and payroll eligibility" Style="{StaticResource HwaySmallLabel}" />
+                        </VerticalStackLayout>
 
-                    <Entry Placeholder="RP Number"
-                           Text="{Binding RpNumber}"
-                           IsReadOnly="{Binding IsEditMode}"/>
-
-                    <Entry Placeholder="Employee Number"
-                           Text="{Binding EmployeeNumber}"
-                           IsReadOnly="{Binding IsEditMode}"/>
-
-                    <Entry Placeholder="First Name"
-                           Text="{Binding FirstName}"/>
-
-                    <Entry Placeholder="Last Name"
-                           Text="{Binding LastName}"/>
-
-                    <Entry Placeholder="SIN"
-                           Text="{Binding Sin}"/>
-
-                    <Entry Placeholder="Address"
-                           Text="{Binding Address}"/>
-
-                    <Entry Placeholder="City"
-                           Text="{Binding City}"/>
-
-                    <Entry Placeholder="Province"
-                           Text="{Binding Province}"/>
-
-                    <Entry Placeholder="Postal Code"
-                           Text="{Binding PostalCode}"/>
-
-                    <Entry Placeholder="Email"
-                           Text="{Binding EmailAddress}"/>
-
-                    <HorizontalStackLayout Spacing="8">
-                        <CheckBox IsChecked="{Binding HasHireDate}" />
-                        <Label Text="Hire Date" VerticalOptions="Center" />
-                    </HorizontalStackLayout>
-
-                    <DatePicker Date="{Binding HireDateDisplay}"
-                                IsVisible="{Binding HasHireDate}" />
-
-                    <HorizontalStackLayout Spacing="8">
-                        <CheckBox IsChecked="{Binding HasDateOfBirth}" />
-                        <Label Text="Birth Date" VerticalOptions="Center" />
-                    </HorizontalStackLayout>
-
-                    <DatePicker Date="{Binding DateOfBirthDisplay}"
-                                IsVisible="{Binding HasDateOfBirth}" />
-
-                    <HorizontalStackLayout Spacing="8">
-                        <CheckBox IsChecked="{Binding EiExempt}" />
-                        <Label Text="EI Exempt" VerticalOptions="Center" />
-                    </HorizontalStackLayout>
-
-                    <!-- Action Buttons -->
-                    <HorizontalStackLayout Spacing="10" Margin="0,20,0,0">
-                        <Button Text="Save"
-                                Command="{Binding SaveCommand}"
-                                BackgroundColor="Green"
-                                TextColor="White"
-                                HorizontalOptions="Fill"/>
-
-                        <Button Text="Delete"
-                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteCommand}"
-                                CommandParameter="{Binding}"
-                                IsVisible="{Binding IsEditMode}"
-                                BackgroundColor="Red"
-                                TextColor="White"
-                                HorizontalOptions="Fill"/>
-                    </HorizontalStackLayout>
-
-                    <Button Text="Cancel"
+                        <Button
+                            Grid.Column="1"
+                            Text="Cancel"
                             Command="{Binding ClearFormCommand}"
-                            BackgroundColor="Gray"
-                            TextColor="White"/>
+                            Style="{StaticResource HwaySecondaryButton}"
+                            VerticalOptions="Center" />
+                    </Grid>
+
+                    <FlexLayout
+                        Direction="Row"
+                        Wrap="Wrap"
+                        AlignItems="Start"
+                        JustifyContent="Start">
+
+                        <VerticalStackLayout WidthRequest="300" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="RP Number" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="RP Number" Text="{Binding RpNumber}" IsReadOnly="{Binding IsEditMode}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="300" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="Employee Number" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="Employee Number" Text="{Binding EmployeeNumber}" IsReadOnly="{Binding IsEditMode}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="300" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="First Name" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="First Name" Text="{Binding FirstName}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="300" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="Last Name" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="Last Name" Text="{Binding LastName}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="300" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="SIN" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="SIN" Text="{Binding Sin}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="300" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="Address" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="Address" Text="{Binding Address}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="220" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="City" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="City" Text="{Binding City}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="180" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="Province" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="Province" Text="{Binding Province}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="200" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="Postal Code" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="Postal Code" Text="{Binding PostalCode}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="320" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="Email" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="Email" Text="{Binding EmailAddress}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </FlexLayout>
+
+                    <BoxView HeightRequest="1" BackgroundColor="#E2E8F0" />
+
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Payroll Eligibility" Style="{StaticResource HwaySubsectionTitle}" />
+
+                        <HorizontalStackLayout Spacing="8">
+                            <CheckBox IsChecked="{Binding HasHireDate}" />
+                            <Label Text="Hire Date" Style="{StaticResource HwayValueLabel}" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+
+                        <Border IsVisible="{Binding HasHireDate}" Style="{StaticResource HwayInputBorder}" WidthRequest="300" HorizontalOptions="Start">
+                            <DatePicker Date="{Binding HireDateDisplay}" Style="{StaticResource HwayDatePicker}" />
+                        </Border>
+
+                        <HorizontalStackLayout Spacing="8">
+                            <CheckBox IsChecked="{Binding HasDateOfBirth}" />
+                            <Label Text="Birth Date" Style="{StaticResource HwayValueLabel}" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+
+                        <Border IsVisible="{Binding HasDateOfBirth}" Style="{StaticResource HwayInputBorder}" WidthRequest="300" HorizontalOptions="Start">
+                            <DatePicker Date="{Binding DateOfBirthDisplay}" Style="{StaticResource HwayDatePicker}" />
+                        </Border>
+
+                        <HorizontalStackLayout Spacing="8">
+                            <CheckBox IsChecked="{Binding EiExempt}" />
+                            <Label Text="EI Exempt" Style="{StaticResource HwayValueLabel}" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Button
+                            Text="Save"
+                            Command="{Binding SaveCommand}"
+                            Style="{StaticResource HwaySaveButton}" />
+
+                        <Button
+                            Text="Delete"
+                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteCommand}"
+                            IsVisible="{Binding IsEditMode}"
+                            Style="{StaticResource HwayDangerButton}" />
+                    </HorizontalStackLayout>
                 </VerticalStackLayout>
             </Border>
         </VerticalStackLayout>

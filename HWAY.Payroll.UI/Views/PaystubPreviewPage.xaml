@@ -4,14 +4,22 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:HWAY.Payroll.UI.Views"
+    BackgroundColor="#F6F8FA"
     Title="Paystub Preview">
 
-    <ScrollView
-        Orientation="Both"
-        BackgroundColor="White">
+    <Grid Padding="24">
+        <Border
+            Style="{StaticResource HwayCardBorder}"
+            Padding="0">
 
-        <views:PaystubTemplate />
+            <ScrollView
+                Orientation="Both"
+                BackgroundColor="White">
 
-    </ScrollView>
+                <views:PaystubTemplate />
+
+            </ScrollView>
+        </Border>
+    </Grid>
 
 </ContentPage>
