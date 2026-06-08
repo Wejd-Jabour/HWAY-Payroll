@@ -4,58 +4,79 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="HWAY.Payroll.UI.Views.EmployerSearchPage"
     x:Name="ThisPage"
+    BackgroundColor="#F6F8FA"
     Title="Employer Search">
 
-    <Grid RowDefinitions="Auto, Auto, Auto, *" Padding="20" RowSpacing="15">
+    <Grid RowDefinitions="Auto,*" Padding="24" RowSpacing="18">
 
-        <!-- TITLE -->
-        <Label Grid.Row="0"
-               Text="Employer Search"
-               FontSize="26"
-               FontAttributes="Bold"
-               HorizontalOptions="Center"/>
+        <VerticalStackLayout Grid.Row="0" Spacing="18">
+            <VerticalStackLayout Spacing="3">
+                <Label Text="Employer Search" Style="{StaticResource HwayPageTitle}" />
+                <Label Text="Find employers by RP number or employer name" Style="{StaticResource HwaySmallLabel}" />
+            </VerticalStackLayout>
 
-        <!-- SEARCH BAR -->
-        <Entry Grid.Row="1"
-               Placeholder="Search by RP or Employer Name"
-               Text="{Binding SearchText}" />
+            <Border Style="{StaticResource HwayCardBorder}">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <VerticalStackLayout Grid.Column="0" Spacing="6">
+                        <Label Text="Search" Style="{StaticResource HwayFieldLabel}" />
+                        <Border Style="{StaticResource HwayInputBorder}">
+                            <Entry
+                                Placeholder="Search by RP or Employer Name"
+                                Text="{Binding SearchText}"
+                                Style="{StaticResource HwayEntry}" />
+                        </Border>
+                    </VerticalStackLayout>
 
-        <!-- SEARCH BUTTON -->
-        <Button Grid.Row="2"
-                Text="Search"
-                Command="{Binding SearchCommand}"
-                BackgroundColor="DodgerBlue"
-                TextColor="White"/>
+                    <Button
+                        Grid.Column="1"
+                        Text="Search"
+                        Command="{Binding SearchCommand}"
+                        Style="{StaticResource HwayPrimaryButton}"
+                        VerticalOptions="End" />
+                </Grid>
+            </Border>
+        </VerticalStackLayout>
 
-        <!-- RESULTS -->
-        <CollectionView Grid.Row="3"
-                        ItemsSource="{Binding Employers}"
-                        SelectionMode="None">
+        <CollectionView
+            Grid.Row="1"
+            ItemsSource="{Binding Employers}"
+            SelectionMode="None">
 
             <CollectionView.ItemTemplate>
                 <DataTemplate>
+                    <Border
+                        BackgroundColor="#FFFFFF"
+                        Stroke="#D9E2EC"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1"
+                        Padding="14"
+                        Margin="0,0,0,10">
 
-                    <Frame Padding="10" Margin="5">
-                        <Frame.GestureRecognizers>
-
+                        <Border.GestureRecognizers>
                             <TapGestureRecognizer
                                 Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectEmployerCommand}"
                                 CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
 
-                        </Frame.GestureRecognizers>
+                        <Grid ColumnDefinitions="180,*" ColumnSpacing="16">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="RP Number" Style="{StaticResource HwayFieldLabel}" />
+                                <Label Text="{Binding RpNumber}" Style="{StaticResource HwayValueLabel}" />
+                            </VerticalStackLayout>
 
-                        <VerticalStackLayout>
-                            <Label Text="{Binding RpNumber}" TextColor="Gray"/>
-                            <Label Text="{Binding EmployerName}" TextColor="Gray"/>
-
-                        </VerticalStackLayout>
-                    </Frame>
-
+                            <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                <Label Text="Employer" Style="{StaticResource HwayFieldLabel}" />
+                                <Label
+                                    Text="{Binding EmployerName}"
+                                    FontSize="16"
+                                    FontAttributes="Bold"
+                                    TextColor="#111827" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
-
         </CollectionView>
 
     </Grid>
-
 </ContentPage>

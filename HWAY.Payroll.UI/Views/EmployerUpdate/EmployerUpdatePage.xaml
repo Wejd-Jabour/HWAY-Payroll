@@ -3,51 +3,96 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="HWAY.Payroll.UI.Views.EmployerUpdatePage"
+    BackgroundColor="#F6F8FA"
     Title="Update Employer">
 
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="12">
+        <VerticalStackLayout Padding="24" Spacing="18">
 
-            <Label Text="Update Employer"
-                   FontSize="26"
-                   FontAttributes="Bold"
-                   HorizontalOptions="Center"/>
+            <VerticalStackLayout Spacing="3">
+                <Label Text="Update Employer" Style="{StaticResource HwayPageTitle}" />
+                <Label Text="Review and update employer payroll settings" Style="{StaticResource HwaySmallLabel}" />
+            </VerticalStackLayout>
 
-            <Entry Placeholder="RP Number"
-                   Text="{Binding RpNumber}" />
+            <Border Style="{StaticResource HwayCardBorder}">
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="Employer Information" Style="{StaticResource HwaySectionTitle}" />
 
-            <Entry Placeholder="Employer Name"
-                   Text="{Binding EmployerName}" />
+                    <FlexLayout
+                        Direction="Row"
+                        Wrap="Wrap"
+                        AlignItems="Start"
+                        JustifyContent="Start">
 
-            <Entry Placeholder="Address"
-                   Text="{Binding Address}" />
+                        <VerticalStackLayout WidthRequest="300" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="RP Number" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="RP Number" Text="{Binding RpNumber}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
 
-            <Entry Placeholder="City"
-                   Text="{Binding City}" />
+                        <VerticalStackLayout WidthRequest="360" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="Employer Name" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="Employer Name" Text="{Binding EmployerName}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
 
-            <Entry Placeholder="Postal Code"
-                   Text="{Binding PostalCode}" />
+                        <VerticalStackLayout WidthRequest="360" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="Address" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="Address" Text="{Binding Address}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
 
-            <Entry Placeholder="Employer Group"
-                   Text="{Binding EmployerGroup}" />
+                        <VerticalStackLayout WidthRequest="240" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="City" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="City" Text="{Binding City}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
 
-            <Entry Placeholder="Period #"
-                   Keyboard="Numeric"
-                   Text="{Binding PaystubPeriod}" />
+                        <VerticalStackLayout WidthRequest="220" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="Postal Code" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="Postal Code" Text="{Binding PostalCode}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
 
-            <Entry Placeholder="Fee"
-                   Keyboard="Numeric"
-                   Text="{Binding Fee}" />
+                        <VerticalStackLayout WidthRequest="220" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="Employer Group" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="Employer Group" Text="{Binding EmployerGroup}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
 
-            <Button Text="Save Changes"
-                    Command="{Binding SaveCommand}"
-                    BackgroundColor="Green"
-                    TextColor="White"/>
+                        <VerticalStackLayout WidthRequest="180" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="Period #" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="Period #" Keyboard="Numeric" Text="{Binding PaystubPeriod}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
 
-            <Label Text="{Binding Message}"
-                   HorizontalOptions="Center"/>
+                        <VerticalStackLayout WidthRequest="180" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="Fee" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="Fee" Keyboard="Numeric" Text="{Binding Fee}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </FlexLayout>
+
+                    <Button
+                        Text="Save Changes"
+                        Command="{Binding SaveCommand}"
+                        Style="{StaticResource HwaySaveButton}"
+                        HorizontalOptions="Start" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label
+                Text="{Binding Message}"
+                Style="{StaticResource HwayErrorMessage}" />
 
         </VerticalStackLayout>
     </ScrollView>
-
 </ContentPage>
