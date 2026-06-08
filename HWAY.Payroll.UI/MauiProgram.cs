@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using HWAY.Payroll.Data.Context;
 using Microsoft.EntityFrameworkCore;
+using HWAY.Payroll.Services;
 using HWAY.Payroll.Services.Employers;
 using HWAY.Payroll.Services.PayrollRecord;
 using HWAY.Payroll.Services.PayrollRecordEdit;
@@ -55,6 +56,7 @@ public static class MauiProgram
         builder.Services.AddScoped<IEmployerUpdateService, EmployerUpdateService>();
         builder.Services.AddScoped<IBiWeeklyScheduleService, BiWeeklyScheduleService>();
         builder.Services.AddScoped<IPayPeriodRangeService, PayPeriodRangeService>();
+        builder.Services.AddScoped<IPayrollDeductionLimitService, PayrollDeductionLimitService>();
         builder.Services.AddScoped<ICalculationSettingsService, CalculationSettingsService>();
         builder.Services.AddScoped<IPayrollDeductionCalculator, PayrollDeductionCalculator>();
 

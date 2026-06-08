@@ -16,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<RecordHistory> RecordHistory => Set<RecordHistory>();
     public DbSet<PD7> PD7Records => Set<PD7>();
     public DbSet<Calculation> Calculations => Set<Calculation>();
+    public DbSet<PayrollDeductionLimit> PayrollDeductionLimits => Set<PayrollDeductionLimit>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -274,6 +275,36 @@ public class AppDbContext : DbContext
                 .IsRequired();
 
             entity.HasIndex(e => e.Name).IsUnique();
+        });
+
+        modelBuilder.Entity<PayrollDeductionLimit>(entity =>
+        {
+            entity.ToTable("PayrollDeductionLimits");
+
+            entity.HasKey(e => e.Year);
+
+            entity.Property(e => e.Year)
+                .ValueGeneratedNever();
+
+            entity.Property(e => e.Cpp1Maximum)
+                .HasColumnName("CPP1Maximum")
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.Cpp2Maximum)
+                .HasColumnName("CPP2Maximum")
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.EiMaximum)
+                .HasColumnName("EIMaximum")
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("now()");
+
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("now()");
         });
     }
 }

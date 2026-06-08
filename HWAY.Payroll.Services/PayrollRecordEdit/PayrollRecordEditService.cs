@@ -9,10 +9,14 @@ namespace HWAY.Payroll.Services.PayrollRecordEdit;
 public class PayrollRecordEditService : IPayrollRecordEditService
 {
     private readonly AppDbContext _dbContext;
+    private readonly IPayrollDeductionLimitService _deductionLimitService;
 
-    public PayrollRecordEditService(AppDbContext dbContext)
+    public PayrollRecordEditService(
+        AppDbContext dbContext,
+        IPayrollDeductionLimitService deductionLimitService)
     {
         _dbContext = dbContext;
+        _deductionLimitService = deductionLimitService;
     }
 
     public async Task UpdatePayrollRecordAsync(int payrollRecordId, PayrollRecordEditDto dto)
@@ -39,17 +43,18 @@ public class PayrollRecordEditService : IPayrollRecordEditService
         var salary = dto.Salary;
         var rate = salary > 0 ? 0 : dto.Rate;
         var payrollYear = DateTime.Today.Year;
+        var deductionLimits = await _deductionLimitService.GetLimitValuesForYearAsync(payrollYear);
         var canContributeCpp = EmployeePayrollEligibility.CanContributeCpp(
             employee.DateOfBirth,
             DateTime.Today);
         var cpp1 = canContributeCpp
-            ? PayrollDeductionCaps.ClampCpp1(dto.Cpp1, record.Cpp1Ytd, payrollYear)
+            ? PayrollDeductionCaps.ClampCpp1(dto.Cpp1, record.Cpp1Ytd, deductionLimits)
             : 0m;
         var cpp2 = canContributeCpp
-            ? PayrollDeductionCaps.ClampCpp2(dto.Cpp2, record.Cpp2Ytd, payrollYear)
+            ? PayrollDeductionCaps.ClampCpp2(dto.Cpp2, record.Cpp2Ytd, deductionLimits)
             : 0m;
         var ei = EmployeePayrollEligibility.CanContributeEi(employee.EiExempt)
-            ? PayrollDeductionCaps.ClampEi(dto.Ei, record.EiYtd, payrollYear)
+            ? PayrollDeductionCaps.ClampEi(dto.Ei, record.EiYtd, deductionLimits)
             : 0m;
         var vacationSetting = VacationSettings.Normalize(dto.VacationSetting);
         var vacationUsed = VacationSettings.IsPaidOut(vacationSetting) ? dto.Vacation : 0m;
