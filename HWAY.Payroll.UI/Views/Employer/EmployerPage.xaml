@@ -165,10 +165,15 @@
                             </Border>
                         </VerticalStackLayout>
 
-                        <VerticalStackLayout WidthRequest="200" Spacing="6" Margin="0,0,18,10">
+                        <VerticalStackLayout WidthRequest="240" Spacing="6" Margin="0,0,18,10">
                             <Label Text="Employer Group" Style="{StaticResource HwayFieldLabel}" />
                             <Border Style="{StaticResource HwayInputBorder}">
-                                <Entry Placeholder="Employer Group" Text="{Binding EmployerGroup}" Style="{StaticResource HwayEntry}" />
+                                <Picker
+                                    Title="Employer Group"
+                                    ItemsSource="{Binding EmployerGroupOptions}"
+                                    ItemDisplayBinding="{Binding DisplayName}"
+                                    SelectedItem="{Binding SelectedEmployerGroupOption}"
+                                    Style="{StaticResource HwayPicker}" />
                             </Border>
                         </VerticalStackLayout>
 
