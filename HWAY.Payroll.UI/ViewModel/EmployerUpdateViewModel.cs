@@ -71,7 +71,21 @@ public class EmployerUpdateViewModel : INotifyPropertyChanged
     public string? EmployerGroup
     {
         get => _employerGroup;
-        set => SetProperty(ref _employerGroup, value);
+        set
+        {
+            if (SetProperty(ref _employerGroup, EmployerGroupOption.NormalizeCode(value)))
+            {
+                OnPropertyChanged(nameof(SelectedEmployerGroupOption));
+            }
+        }
+    }
+
+    public IReadOnlyList<EmployerGroupOption> EmployerGroupOptions => EmployerGroupOption.All;
+
+    public EmployerGroupOption SelectedEmployerGroupOption
+    {
+        get => EmployerGroupOption.FromCode(EmployerGroup);
+        set => EmployerGroup = value?.Code;
     }
 
     private decimal _fee;
@@ -159,4 +173,7 @@ public class EmployerUpdateViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         return true;
     }
+
+    private void OnPropertyChanged(string name)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

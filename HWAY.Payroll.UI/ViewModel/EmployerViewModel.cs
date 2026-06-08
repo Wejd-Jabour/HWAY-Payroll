@@ -5,6 +5,7 @@ using System.Windows.Input;
 using HWAY.Payroll.Services.EmployerInsert;
 using HWAY.Payroll.Services.EmployerUpdate;
 using HWAY.Payroll.Services.EmployerRemove;
+using HWAY.Payroll.UI.ViewModels;
 using Microsoft.Maui.Controls;
 
 namespace HWAY.Payroll.UI.ViewModel;
@@ -98,7 +99,21 @@ public class EmployerViewModel : INotifyPropertyChanged
     public string? EmployerGroup
     {
         get => _employerGroup;
-        set => SetProperty(ref _employerGroup, value);
+        set
+        {
+            if (SetProperty(ref _employerGroup, EmployerGroupOption.NormalizeCode(value)))
+            {
+                OnPropertyChanged(nameof(SelectedEmployerGroupOption));
+            }
+        }
+    }
+
+    public IReadOnlyList<EmployerGroupOption> EmployerGroupOptions => EmployerGroupOption.All;
+
+    public EmployerGroupOption SelectedEmployerGroupOption
+    {
+        get => EmployerGroupOption.FromCode(EmployerGroup);
+        set => EmployerGroup = value?.Code;
     }
 
     private decimal _fee;
@@ -423,7 +438,7 @@ public class EmployerViewModel : INotifyPropertyChanged
         Address = "";
         City = "";
         PostalCode = "";
-        EmployerGroup = "";
+        EmployerGroup = EmployerGroupOption.Default.Code;
         PaystubPeriod = 1;
         Fee = 0;
         SelectedEmployer = null;

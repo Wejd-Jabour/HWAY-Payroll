@@ -25,7 +25,28 @@ public class EmployerInsertViewModel : INotifyPropertyChanged
     public string? Address { get; set; }
     public string? City { get; set; }
     public string? PostalCode { get; set; }
-    public string? EmployerGroup { get; set; }
+
+    private string? _employerGroup = EmployerGroupOption.Default.Code;
+    public string? EmployerGroup
+    {
+        get => _employerGroup;
+        set
+        {
+            if (SetProperty(ref _employerGroup, EmployerGroupOption.NormalizeCode(value)))
+            {
+                OnPropertyChanged(nameof(SelectedEmployerGroupOption));
+            }
+        }
+    }
+
+    public IReadOnlyList<EmployerGroupOption> EmployerGroupOptions => EmployerGroupOption.All;
+
+    public EmployerGroupOption SelectedEmployerGroupOption
+    {
+        get => EmployerGroupOption.FromCode(EmployerGroup);
+        set => EmployerGroup = value?.Code;
+    }
+
     public decimal Fee { get; set; }
     
 
@@ -118,7 +139,7 @@ public class EmployerInsertViewModel : INotifyPropertyChanged
         Address = null;
         City = null;
         PostalCode = null;
-        EmployerGroup = null;
+        EmployerGroup = EmployerGroupOption.Default.Code;
         Fee = 0;
 
         OnPropertyChanged(nameof(RpNumber));
