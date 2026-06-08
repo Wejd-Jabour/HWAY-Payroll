@@ -173,6 +173,94 @@
             </HorizontalStackLayout>
 
             <Label
+                Text="Yearly CPP/EI Limits"
+                FontSize="24"
+                FontAttributes="Bold"
+                Margin="0,18,0,0" />
+
+            <Grid ColumnDefinitions="360,*" ColumnSpacing="16">
+                <Border
+                    Grid.Column="0"
+                    StrokeThickness="1"
+                    Padding="12">
+
+                    <VerticalStackLayout Spacing="10">
+                        <Label
+                            Text="Saved Years"
+                            FontSize="18"
+                            FontAttributes="Bold" />
+
+                        <Grid ColumnDefinitions="70,*,*,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="Year" FontAttributes="Bold" />
+                            <Label Grid.Column="1" Text="CPP1" FontAttributes="Bold" />
+                            <Label Grid.Column="2" Text="CPP2" FontAttributes="Bold" />
+                            <Label Grid.Column="3" Text="EI" FontAttributes="Bold" />
+                        </Grid>
+
+                        <CollectionView
+                            ItemsSource="{Binding DeductionLimits}"
+                            SelectedItem="{Binding SelectedDeductionLimit}"
+                            SelectionMode="Single"
+                            HeightRequest="180">
+
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="70,*,*,*" Padding="8" ColumnSpacing="8">
+                                        <Label Grid.Column="0" Text="{Binding Year}" />
+                                        <Label Grid.Column="1" Text="{Binding Cpp1Maximum}" />
+                                        <Label Grid.Column="2" Text="{Binding Cpp2Maximum}" />
+                                        <Label Grid.Column="3" Text="{Binding EiMaximum}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <Button
+                            Text="Reload Limits"
+                            Command="{Binding ReloadDeductionLimitsCommand}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border
+                    Grid.Column="1"
+                    StrokeThickness="1"
+                    Padding="12">
+
+                    <VerticalStackLayout Spacing="12">
+                        <Label
+                            Text="Edit Limits"
+                            FontSize="18"
+                            FontAttributes="Bold" />
+
+                        <Grid
+                            ColumnDefinitions="220,180"
+                            RowDefinitions="Auto,Auto,Auto,Auto"
+                            RowSpacing="10"
+                            ColumnSpacing="12">
+
+                            <Label Grid.Row="0" Grid.Column="0" Text="Year" VerticalOptions="Center" />
+                            <Entry Grid.Row="0" Grid.Column="1" Text="{Binding DeductionLimitYear}" Keyboard="Numeric" />
+
+                            <Label Grid.Row="1" Grid.Column="0" Text="Maximum CPP1" VerticalOptions="Center" />
+                            <Entry Grid.Row="1" Grid.Column="1" Text="{Binding DeductionLimitCpp1Maximum}" Keyboard="Numeric" />
+
+                            <Label Grid.Row="2" Grid.Column="0" Text="Maximum CPP2" VerticalOptions="Center" />
+                            <Entry Grid.Row="2" Grid.Column="1" Text="{Binding DeductionLimitCpp2Maximum}" Keyboard="Numeric" />
+
+                            <Label Grid.Row="3" Grid.Column="0" Text="Maximum EI" VerticalOptions="Center" />
+                            <Entry Grid.Row="3" Grid.Column="1" Text="{Binding DeductionLimitEiMaximum}" Keyboard="Numeric" />
+                        </Grid>
+
+                        <Button
+                            Text="Save Limits"
+                            Command="{Binding SaveDeductionLimitCommand}"
+                            HorizontalOptions="Start"
+                            WidthRequest="160" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <Label
                 Text="Payroll Calculations"
                 FontSize="24"
                 FontAttributes="Bold"

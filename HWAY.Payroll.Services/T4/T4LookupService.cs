@@ -1,4 +1,5 @@
 using HWAY.Payroll.Data.Context;
+using HWAY.Payroll.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace HWAY.Payroll.Services.T4;
@@ -6,10 +7,14 @@ namespace HWAY.Payroll.Services.T4;
 public class T4LookupService : IT4LookupService
 {
     private readonly AppDbContext _dbContext;
+    private readonly IPayrollDeductionLimitService _deductionLimitService;
 
-    public T4LookupService(AppDbContext dbContext)
+    public T4LookupService(
+        AppDbContext dbContext,
+        IPayrollDeductionLimitService deductionLimitService)
     {
         _dbContext = dbContext;
+        _deductionLimitService = deductionLimitService;
     }
 
     public async Task<T4CompanyDto> CalculateCompanyT4Async(string rpNumber, int year)
@@ -22,7 +27,7 @@ public class T4LookupService : IT4LookupService
         if (year < 1)
             throw new InvalidOperationException("Year is required.");
 
-        var rules = T4TaxYearRuleProvider.GetRules(year);
+        var rules = await GetRulesAsync(year);
         if (rules == null)
         {
             var supportedYears = string.Join(", ", T4TaxYearRuleProvider.SupportedYears);
@@ -81,6 +86,27 @@ public class T4LookupService : IT4LookupService
             Box16ATotal = RoundMoney(slips.Sum(s => s.Box16ACpp2Contributions)),
             Box18Total = RoundMoney(slips.Sum(s => s.Box18EiPremiums))
         };
+    }
+
+    private async Task<T4TaxYearRules?> GetRulesAsync(int year)
+    {
+        var rules = T4TaxYearRuleProvider.GetRules(year);
+
+        if (rules is null)
+        {
+            return null;
+        }
+
+        var savedLimits = await _deductionLimitService.GetLimitValuesForYearAsync(year);
+
+        return savedLimits is null
+            ? rules
+            : rules with
+            {
+                Cpp1MaximumContribution = savedLimits.Cpp1Maximum,
+                Cpp2MaximumContribution = savedLimits.Cpp2Maximum,
+                EiMaximumPremium = savedLimits.EiMaximum
+            };
     }
 
     private async Task<List<T4HistoryRow>> GetHistoryRowsAsync(string rpNumber, int year)

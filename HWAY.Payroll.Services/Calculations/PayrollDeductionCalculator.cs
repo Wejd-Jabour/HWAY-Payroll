@@ -1,4 +1,5 @@
 using System.Text.Json;
+using HWAY.Payroll.Services;
 
 namespace HWAY.Payroll.Services.Calculations;
 
@@ -71,10 +72,14 @@ public sealed class PayrollDeductionCalculator : IPayrollDeductionCalculator
         };
 
     private readonly ICalculationSettingsService _calculationSettingsService;
+    private readonly IPayrollDeductionLimitService _deductionLimitService;
 
-    public PayrollDeductionCalculator(ICalculationSettingsService calculationSettingsService)
+    public PayrollDeductionCalculator(
+        ICalculationSettingsService calculationSettingsService,
+        IPayrollDeductionLimitService deductionLimitService)
     {
         _calculationSettingsService = calculationSettingsService;
+        _deductionLimitService = deductionLimitService;
     }
 
     public async Task<PayrollDeductionCalculationResult> CalculateAsync(
@@ -85,6 +90,12 @@ public sealed class PayrollDeductionCalculator : IPayrollDeductionCalculator
         var cppPeriod = SelectPeriod(definitions.Cpp.Periods, request.PayDate);
         var eiPeriod = SelectPeriod(definitions.Ei.Periods, request.PayDate);
         var taxPeriod = SelectPeriod(definitions.Tax.Periods, request.PayDate);
+        var savedLimits = await _deductionLimitService.GetLimitValuesForYearAsync(
+            request.PayDate.Year,
+            cancellationToken);
+
+        ApplySavedDeductionLimits(cppPeriod, eiPeriod, savedLimits);
+
         var payPeriods = request.PayPeriodsPerYear > 0 ? request.PayPeriodsPerYear : 26;
         var totalPay = Math.Max(0m, request.GrossIncome + request.PaidVacation);
 
@@ -178,6 +189,21 @@ public sealed class PayrollDeductionCalculator : IPayrollDeductionCalculator
             .FirstOrDefault();
 
         return selected ?? periods.OrderBy(period => period.EffectiveFrom).First();
+    }
+
+    private static void ApplySavedDeductionLimits(
+        CppFormulaPeriod cppPeriod,
+        EiFormulaPeriod eiPeriod,
+        PayrollDeductionLimitValues? limits)
+    {
+        if (limits is null)
+        {
+            return;
+        }
+
+        cppPeriod.MaximumContribution = limits.Cpp1Maximum;
+        cppPeriod.MaximumCpp2Contribution = limits.Cpp2Maximum;
+        eiPeriod.MaximumEmployeePremium = limits.EiMaximum;
     }
 
     private static decimal CalculateCpp1(

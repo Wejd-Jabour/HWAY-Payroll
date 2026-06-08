@@ -9,40 +9,63 @@ public static class PayrollDeductionCaps
     public const decimal EiMaximum = 1123.07m;
 
     public static decimal ClampCpp1(decimal requestedAmount, decimal currentYtd, int year) =>
-        ClampCurrentDeduction(requestedAmount, currentYtd, GetCpp1Maximum(year));
+        ClampCpp1(requestedAmount, currentYtd, GetDefaultLimits(year));
 
     public static decimal ClampCpp2(decimal requestedAmount, decimal currentYtd, int year) =>
-        ClampCurrentDeduction(requestedAmount, currentYtd, GetCpp2Maximum(year));
+        ClampCpp2(requestedAmount, currentYtd, GetDefaultLimits(year));
 
     public static decimal ClampEi(decimal requestedAmount, decimal currentYtd, int year) =>
-        ClampCurrentDeduction(requestedAmount, currentYtd, GetEiMaximum(year));
+        ClampEi(requestedAmount, currentYtd, GetDefaultLimits(year));
+
+    public static decimal ClampCpp1(
+        decimal requestedAmount,
+        decimal currentYtd,
+        PayrollDeductionLimitValues? limits) =>
+        ClampCurrentDeduction(requestedAmount, currentYtd, limits?.Cpp1Maximum);
+
+    public static decimal ClampCpp2(
+        decimal requestedAmount,
+        decimal currentYtd,
+        PayrollDeductionLimitValues? limits) =>
+        ClampCurrentDeduction(requestedAmount, currentYtd, limits?.Cpp2Maximum);
+
+    public static decimal ClampEi(
+        decimal requestedAmount,
+        decimal currentYtd,
+        PayrollDeductionLimitValues? limits) =>
+        ClampCurrentDeduction(requestedAmount, currentYtd, limits?.EiMaximum);
 
     public static bool HasCpp1Room(decimal currentYtd, int year) =>
-        HasRemainingRoom(currentYtd, GetCpp1Maximum(year));
+        HasCpp1Room(currentYtd, GetDefaultLimits(year));
 
     public static bool HasCpp2Room(decimal currentYtd, int year) =>
-        HasRemainingRoom(currentYtd, GetCpp2Maximum(year));
+        HasCpp2Room(currentYtd, GetDefaultLimits(year));
 
     public static bool HasEiRoom(decimal currentYtd, int year) =>
-        HasRemainingRoom(currentYtd, GetEiMaximum(year));
+        HasEiRoom(currentYtd, GetDefaultLimits(year));
+
+    public static bool HasCpp1Room(decimal currentYtd, PayrollDeductionLimitValues? limits) =>
+        HasRemainingRoom(currentYtd, limits?.Cpp1Maximum);
+
+    public static bool HasCpp2Room(decimal currentYtd, PayrollDeductionLimitValues? limits) =>
+        HasRemainingRoom(currentYtd, limits?.Cpp2Maximum);
+
+    public static bool HasEiRoom(decimal currentYtd, PayrollDeductionLimitValues? limits) =>
+        HasRemainingRoom(currentYtd, limits?.EiMaximum);
 
     public static decimal GetCpp1Remaining(decimal currentYtd, int year) =>
-        GetRemaining(currentYtd, GetCpp1Maximum(year));
+        GetRemaining(currentYtd, GetDefaultLimits(year)?.Cpp1Maximum);
 
     public static decimal GetCpp2Remaining(decimal currentYtd, int year) =>
-        GetRemaining(currentYtd, GetCpp2Maximum(year));
+        GetRemaining(currentYtd, GetDefaultLimits(year)?.Cpp2Maximum);
 
     public static decimal GetEiRemaining(decimal currentYtd, int year) =>
-        GetRemaining(currentYtd, GetEiMaximum(year));
+        GetRemaining(currentYtd, GetDefaultLimits(year)?.EiMaximum);
 
-    private static decimal? GetCpp1Maximum(int year) =>
-        year == SupportedYear ? Cpp1Maximum : null;
-
-    private static decimal? GetCpp2Maximum(int year) =>
-        year == SupportedYear ? Cpp2Maximum : null;
-
-    private static decimal? GetEiMaximum(int year) =>
-        year == SupportedYear ? EiMaximum : null;
+    public static PayrollDeductionLimitValues? GetDefaultLimits(int year) =>
+        year == SupportedYear
+            ? new PayrollDeductionLimitValues(year, Cpp1Maximum, Cpp2Maximum, EiMaximum)
+            : null;
 
     private static decimal ClampCurrentDeduction(
         decimal requestedAmount,

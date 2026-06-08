@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Windows.Input;
+using HWAY.Payroll.Services;
 using HWAY.Payroll.Services.Calculations;
 using HWAY.Payroll.Services.PayPeriods;
 using Microsoft.Maui.Controls;
@@ -15,22 +16,30 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
 {
     private readonly IBiWeeklyScheduleService _scheduleService;
     private readonly ICalculationSettingsService _calculationSettingsService;
+    private readonly IPayrollDeductionLimitService _deductionLimitService;
     private bool _isBusy;
     private string _message = "";
     private CalculationEditorRow? _selectedCalculation;
+    private PayrollDeductionLimitEditorRow? _selectedDeductionLimit;
     private JsonObject? _guidedCalculationJson;
     private JsonObject? _guidedPeriodJson;
     private DateTime _guidedEffectiveDate = DateTime.Today;
     private string _selectedProvinceCode = "";
     private string _newCalculationName = "";
     private string _newCalculation = "";
+    private int _deductionLimitYear = DateTime.Today.Year;
+    private string _deductionLimitCpp1Maximum = "";
+    private string _deductionLimitCpp2Maximum = "";
+    private string _deductionLimitEiMaximum = "";
 
     public BiWeeklySettingsViewModel(
         IBiWeeklyScheduleService scheduleService,
-        ICalculationSettingsService calculationSettingsService)
+        ICalculationSettingsService calculationSettingsService,
+        IPayrollDeductionLimitService deductionLimitService)
     {
         _scheduleService = scheduleService;
         _calculationSettingsService = calculationSettingsService;
+        _deductionLimitService = deductionLimitService;
 
         ScheduleA = new BiWeeklyScheduleEditor(
             "Bi-weekly A",
@@ -44,6 +53,7 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
             DateTime.Today.AddDays(-14),
             _scheduleService);
         Calculations = new ObservableCollection<CalculationEditorRow>();
+        DeductionLimits = new ObservableCollection<PayrollDeductionLimitEditorRow>();
         GuidedFields = new ObservableCollection<CalculationSimpleField>();
         FederalFields = new ObservableCollection<CalculationSimpleField>();
         FederalTaxBrackets = new ObservableCollection<TaxBracketEditorRow>();
@@ -59,6 +69,8 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
         ReloadCalculationsCommand = new Command(async () => await LoadCalculationsAsync());
         SaveCalculationCommand = new Command(async () => await SaveSelectedCalculationAsync());
         AddCalculationCommand = new Command(async () => await AddCalculationAsync());
+        ReloadDeductionLimitsCommand = new Command(async () => await LoadDeductionLimitsAsync());
+        SaveDeductionLimitCommand = new Command(async () => await SaveDeductionLimitAsync());
 
         _ = LoadInitialSettingsAsync();
     }
@@ -66,6 +78,7 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
     public BiWeeklyScheduleEditor ScheduleA { get; }
     public BiWeeklyScheduleEditor ScheduleB { get; }
     public ObservableCollection<CalculationEditorRow> Calculations { get; }
+    public ObservableCollection<PayrollDeductionLimitEditorRow> DeductionLimits { get; }
     public ObservableCollection<CalculationSimpleField> GuidedFields { get; }
     public ObservableCollection<CalculationSimpleField> FederalFields { get; }
     public ObservableCollection<TaxBracketEditorRow> FederalTaxBrackets { get; }
@@ -81,6 +94,8 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
     public ICommand ReloadCalculationsCommand { get; }
     public ICommand SaveCalculationCommand { get; }
     public ICommand AddCalculationCommand { get; }
+    public ICommand ReloadDeductionLimitsCommand { get; }
+    public ICommand SaveDeductionLimitCommand { get; }
 
     public bool IsBusy
     {
@@ -104,6 +119,42 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
                 LoadGuidedCalculationEditor();
             }
         }
+    }
+
+    public PayrollDeductionLimitEditorRow? SelectedDeductionLimit
+    {
+        get => _selectedDeductionLimit;
+        set
+        {
+            if (SetProperty(ref _selectedDeductionLimit, value))
+            {
+                LoadSelectedDeductionLimit();
+            }
+        }
+    }
+
+    public int DeductionLimitYear
+    {
+        get => _deductionLimitYear;
+        set => SetProperty(ref _deductionLimitYear, value);
+    }
+
+    public string DeductionLimitCpp1Maximum
+    {
+        get => _deductionLimitCpp1Maximum;
+        set => SetProperty(ref _deductionLimitCpp1Maximum, value);
+    }
+
+    public string DeductionLimitCpp2Maximum
+    {
+        get => _deductionLimitCpp2Maximum;
+        set => SetProperty(ref _deductionLimitCpp2Maximum, value);
+    }
+
+    public string DeductionLimitEiMaximum
+    {
+        get => _deductionLimitEiMaximum;
+        set => SetProperty(ref _deductionLimitEiMaximum, value);
     }
 
     public DateTime GuidedEffectiveDate
@@ -158,6 +209,7 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
     {
         await LoadSavedSchedulesAsync();
         await LoadCalculationsAsync();
+        await LoadDeductionLimitsAsync();
     }
 
     private async Task LoadSavedSchedulesAsync()
@@ -302,6 +354,7 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
                 Name = SelectedCalculation.Name,
                 Calculation = SelectedCalculation.Calculation
             });
+            await SyncDeductionLimitFromSelectedCalculationAsync();
             await LoadCalculationsIntoCollectionAsync(SelectedCalculation.Name);
 
             Message = $"Saved {SelectedCalculation?.Name ?? "calculation"}.";
@@ -349,6 +402,233 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
         {
             IsBusy = false;
         }
+    }
+
+    private async Task LoadDeductionLimitsAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            Message = "";
+
+            await LoadDeductionLimitsIntoCollectionAsync(DeductionLimitYear);
+            Message = "Loaded yearly CPP/EI limits.";
+        }
+        catch (Exception ex)
+        {
+            Message = $"Unable to load yearly CPP/EI limits: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task SaveDeductionLimitAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            Message = "";
+
+            var limit = new PayrollDeductionLimitDto
+            {
+                Year = DeductionLimitYear,
+                Cpp1Maximum = CalculationSimpleField.ParseDecimal(
+                    DeductionLimitCpp1Maximum,
+                    "CPP1 maximum"),
+                Cpp2Maximum = CalculationSimpleField.ParseDecimal(
+                    DeductionLimitCpp2Maximum,
+                    "CPP2 maximum"),
+                EiMaximum = CalculationSimpleField.ParseDecimal(
+                    DeductionLimitEiMaximum,
+                    "EI maximum")
+            };
+
+            await _deductionLimitService.SaveLimitAsync(limit);
+            await UpdateCalculationJsonFromDeductionLimitAsync(limit);
+            await LoadDeductionLimitsIntoCollectionAsync(limit.Year);
+
+            Message = $"Saved yearly CPP/EI limits for {limit.Year}.";
+        }
+        catch (Exception ex)
+        {
+            Message = $"Unable to save yearly CPP/EI limits: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task LoadDeductionLimitsIntoCollectionAsync(int? selectedYear = null)
+    {
+        var limits = await _deductionLimitService.GetLimitsAsync();
+
+        DeductionLimits.Clear();
+
+        foreach (var limit in limits)
+        {
+            DeductionLimits.Add(new PayrollDeductionLimitEditorRow(
+                limit.Year,
+                limit.Cpp1Maximum,
+                limit.Cpp2Maximum,
+                limit.EiMaximum,
+                limit.UpdatedAt));
+        }
+
+        SelectedDeductionLimit = selectedYear.HasValue
+            ? DeductionLimits.FirstOrDefault(limit => limit.Year == selectedYear.Value)
+                ?? DeductionLimits.FirstOrDefault()
+            : DeductionLimits.FirstOrDefault();
+
+        if (SelectedDeductionLimit is null)
+        {
+            DeductionLimitYear = DateTime.Today.Year;
+            DeductionLimitCpp1Maximum = "";
+            DeductionLimitCpp2Maximum = "";
+            DeductionLimitEiMaximum = "";
+        }
+    }
+
+    private void LoadSelectedDeductionLimit()
+    {
+        if (SelectedDeductionLimit is null)
+        {
+            return;
+        }
+
+        DeductionLimitYear = SelectedDeductionLimit.Year;
+        DeductionLimitCpp1Maximum = SelectedDeductionLimit.Cpp1Maximum.ToString("0.00", CultureInfo.InvariantCulture);
+        DeductionLimitCpp2Maximum = SelectedDeductionLimit.Cpp2Maximum.ToString("0.00", CultureInfo.InvariantCulture);
+        DeductionLimitEiMaximum = SelectedDeductionLimit.EiMaximum.ToString("0.00", CultureInfo.InvariantCulture);
+    }
+
+    private async Task SyncDeductionLimitFromSelectedCalculationAsync()
+    {
+        if ((!IsCppCalculationSelected && !IsEiCalculationSelected) || _guidedPeriodJson is null)
+        {
+            return;
+        }
+
+        var year = GuidedEffectiveDate.Year;
+        var existing = await _deductionLimitService.GetLimitValuesForYearAsync(year)
+            ?? PayrollDeductionCaps.GetDefaultLimits(year)
+            ?? new PayrollDeductionLimitValues(year, 0m, 0m, 0m);
+        var limit = new PayrollDeductionLimitDto
+        {
+            Year = year,
+            Cpp1Maximum = existing.Cpp1Maximum,
+            Cpp2Maximum = existing.Cpp2Maximum,
+            EiMaximum = existing.EiMaximum
+        };
+
+        if (IsCppCalculationSelected)
+        {
+            limit.Cpp1Maximum = ReadDecimal(_guidedPeriodJson, "maximumContribution", existing.Cpp1Maximum);
+            limit.Cpp2Maximum = ReadDecimal(_guidedPeriodJson, "maximumCpp2Contribution", existing.Cpp2Maximum);
+        }
+
+        if (IsEiCalculationSelected)
+        {
+            limit.EiMaximum = ReadDecimal(_guidedPeriodJson, "maximumEmployeePremium", existing.EiMaximum);
+        }
+
+        await _deductionLimitService.SaveLimitAsync(limit);
+        await LoadDeductionLimitsIntoCollectionAsync(year);
+    }
+
+    private async Task UpdateCalculationJsonFromDeductionLimitAsync(PayrollDeductionLimitDto limit)
+    {
+        var calculations = await _calculationSettingsService.GetCalculationsAsync();
+        var effectiveFrom = new DateTime(limit.Year, 1, 1);
+
+        await UpdateCalculationJsonAsync(
+            calculations,
+            DefaultPayrollCalculations.CppName,
+            calculation =>
+            {
+                var period = GetOrCreatePeriodForYear(calculation, effectiveFrom);
+                period["maximumContribution"] = limit.Cpp1Maximum;
+                period["maximumCpp2Contribution"] = limit.Cpp2Maximum;
+            });
+
+        await UpdateCalculationJsonAsync(
+            calculations,
+            DefaultPayrollCalculations.EiName,
+            calculation =>
+            {
+                var period = GetOrCreatePeriodForYear(calculation, effectiveFrom);
+                period["maximumEmployeePremium"] = limit.EiMaximum;
+            });
+    }
+
+    private async Task UpdateCalculationJsonAsync(
+        IReadOnlyList<CalculationDto> calculations,
+        string name,
+        Action<JsonObject> update)
+    {
+        var calculation = calculations
+            .FirstOrDefault(item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+        if (calculation is null)
+        {
+            return;
+        }
+
+        var json = JsonNode.Parse(calculation.Calculation)?.AsObject()
+            ?? throw new InvalidOperationException($"{name} calculation is empty.");
+
+        update(json);
+
+        calculation.Calculation = json.ToJsonString(new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+
+        await _calculationSettingsService.SaveCalculationAsync(calculation);
+    }
+
+    private static JsonObject GetOrCreatePeriodForYear(JsonObject calculation, DateTime effectiveFrom)
+    {
+        if (calculation["periods"] is not JsonArray periods)
+        {
+            periods = new JsonArray();
+            calculation["periods"] = periods;
+        }
+
+        var existing = periods
+            .OfType<JsonObject>()
+            .FirstOrDefault(period => (ReadDate(period, "effectiveFrom") ?? DateTime.MinValue).Year == effectiveFrom.Year);
+
+        if (existing is not null)
+        {
+            existing["effectiveFrom"] = effectiveFrom.ToString("yyyy-MM-dd");
+            return existing;
+        }
+
+        var latest = periods
+            .OfType<JsonObject>()
+            .OrderByDescending(period => ReadDate(period, "effectiveFrom") ?? DateTime.MinValue)
+            .FirstOrDefault();
+        var created = latest is null
+            ? new JsonObject()
+            : JsonNode.Parse(latest.ToJsonString())!.AsObject();
+
+        created["effectiveFrom"] = effectiveFrom.ToString("yyyy-MM-dd");
+        periods.Add(created);
+
+        return created;
     }
 
     private async Task LoadCalculationsIntoCollectionAsync(string? selectedName = null)
@@ -642,6 +922,9 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
     private static string ReadString(JsonObject owner, string key) =>
         owner[key]?.GetValue<string>() ?? "";
 
+    private static decimal ReadDecimal(JsonObject owner, string key, decimal fallback) =>
+        owner[key]?.GetValue<decimal>() ?? fallback;
+
     private static DateTime? ReadDate(JsonObject owner, string key)
     {
         var value = ReadString(owner, key);
@@ -871,6 +1154,31 @@ public sealed class CalculationEditorRow : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
+}
+
+public sealed class PayrollDeductionLimitEditorRow
+{
+    public PayrollDeductionLimitEditorRow(
+        int year,
+        decimal cpp1Maximum,
+        decimal cpp2Maximum,
+        decimal eiMaximum,
+        DateTime updatedAt)
+    {
+        Year = year;
+        Cpp1Maximum = cpp1Maximum;
+        Cpp2Maximum = cpp2Maximum;
+        EiMaximum = eiMaximum;
+        UpdatedAt = updatedAt;
+    }
+
+    public int Year { get; }
+    public decimal Cpp1Maximum { get; }
+    public decimal Cpp2Maximum { get; }
+    public decimal EiMaximum { get; }
+    public DateTime UpdatedAt { get; }
+
+    public string UpdatedAtDisplay => UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
 }
 
 public sealed class CalculationSimpleField : INotifyPropertyChanged

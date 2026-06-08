@@ -19,6 +19,7 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
     private readonly IPayrollRecordLookupService _payrollRecordService;
     private readonly IPayPeriodRangeService _payPeriodRangeService;
     private readonly IPayrollDeductionCalculator _deductionCalculator;
+    private readonly IPayrollDeductionLimitService _deductionLimitService;
 
     private string _searchText = string.Empty;
     private EmployerLookupDto? _selectedEmployer;
@@ -33,12 +34,14 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         IEmployerLookupService employerLookupService,
         IPayrollRecordLookupService payrollRecordService,
         IPayPeriodRangeService payPeriodRangeService,
-        IPayrollDeductionCalculator deductionCalculator)
+        IPayrollDeductionCalculator deductionCalculator,
+        IPayrollDeductionLimitService deductionLimitService)
     {
         _employerLookupService = employerLookupService;
         _payrollRecordService = payrollRecordService;
         _payPeriodRangeService = payPeriodRangeService;
         _deductionCalculator = deductionCalculator;
+        _deductionLimitService = deductionLimitService;
 
         Employers = new ObservableCollection<EmployerLookupDto>();
         EmployeePayrollRows = new ObservableCollection<EmployeePayrollRowViewModel>();
@@ -198,7 +201,8 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
                 record,
                 currentPeriod,
                 payPeriodRange.Beginning,
-                payPeriodRange.Ending));
+                payPeriodRange.Ending,
+                _deductionLimitService));
         }
 
         SearchResultsFound = EmployeePayrollRows.Count > 0;
@@ -312,18 +316,24 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
 {
     private readonly EmployerLookupDto _employer;
     private readonly PayrollRecordLookupDto _record;
+    private readonly IPayrollDeductionLimitService _deductionLimitService;
+    private PayrollDeductionLimitValues? _deductionLimits;
 
     private int PayrollYear => PayDate.Year;
+    private PayrollDeductionLimitValues? CurrentDeductionLimits =>
+        _deductionLimits ?? PayrollDeductionCaps.GetDefaultLimits(PayrollYear);
 
     public EmployeePayrollRowViewModel(
         EmployerLookupDto employer,
         PayrollRecordLookupDto record,
         int period,
         DateTime periodBeginning,
-        DateTime periodEnding)
+        DateTime periodEnding,
+        IPayrollDeductionLimitService deductionLimitService)
     {
         _employer = employer;
         _record = record;
+        _deductionLimitService = deductionLimitService;
 
         Id = record.Id;
         EmployeeNumber = record.EmployeeNumber;
@@ -352,6 +362,8 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
         Ei = 0;
         OtherDeduction = 0;
         VacationUsed = 0;
+
+        _ = LoadDeductionLimitsAsync(PayrollYear);
     }
 
     public int Id { get; }
@@ -511,11 +523,11 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
             nameof(CanEditEi));
     }
 
-    public bool CanEditCpp1 => CanContributeCpp && (PayrollDeductionCaps.HasCpp1Room(_record.Cpp1Ytd, PayrollYear) || _cpp1 > 0);
+    public bool CanEditCpp1 => CanContributeCpp && (PayrollDeductionCaps.HasCpp1Room(_record.Cpp1Ytd, CurrentDeductionLimits) || _cpp1 > 0);
 
-    public bool CanEditCpp2 => CanContributeCpp && (PayrollDeductionCaps.HasCpp2Room(_record.Cpp2Ytd, PayrollYear) || _cpp2 > 0);
+    public bool CanEditCpp2 => CanContributeCpp && (PayrollDeductionCaps.HasCpp2Room(_record.Cpp2Ytd, CurrentDeductionLimits) || _cpp2 > 0);
 
-    public bool CanEditEi => CanContributeEi && (PayrollDeductionCaps.HasEiRoom(_record.EiYtd, PayrollYear) || _ei > 0);
+    public bool CanEditEi => CanContributeEi && (PayrollDeductionCaps.HasEiRoom(_record.EiYtd, CurrentDeductionLimits) || _ei > 0);
 
     private decimal _otherDeduction;
     public decimal OtherDeduction
@@ -578,10 +590,17 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
         get => _payDate;
         set
         {
+            var previousYear = PayrollYear;
+
             if (SetProperty(ref _payDate, value))
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PayDateDisplay)));
                 RefreshDeductionEligibility();
+
+                if (previousYear != PayrollYear)
+                {
+                    _ = LoadDeductionLimitsAsync(PayrollYear);
+                }
             }
         }
     }
@@ -699,13 +718,13 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
         ref decimal field,
         decimal requestedValue,
         decimal currentYtd,
-        Func<decimal, decimal, int, decimal> capDeduction,
+        Func<decimal, decimal, PayrollDeductionLimitValues?, decimal> capDeduction,
         bool canContributeDeduction,
         string propertyName,
         string canEditPropertyName)
     {
         var cappedValue = canContributeDeduction
-            ? capDeduction(requestedValue, currentYtd, PayrollYear)
+            ? capDeduction(requestedValue, currentYtd, CurrentDeductionLimits)
             : 0m;
         var valueChanged = !EqualityComparer<decimal>.Default.Equals(field, cappedValue);
 
@@ -715,6 +734,22 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
         field = cappedValue;
         OnPropertyChanged(propertyName);
         OnPropertyChanged(canEditPropertyName);
+    }
+
+    private async Task LoadDeductionLimitsAsync(int year)
+    {
+        try
+        {
+            _deductionLimits = await _deductionLimitService.GetLimitValuesForYearAsync(year);
+        }
+        catch
+        {
+            _deductionLimits = PayrollDeductionCaps.GetDefaultLimits(year);
+        }
+
+        OnPropertyChanged(nameof(CanEditCpp1));
+        OnPropertyChanged(nameof(CanEditCpp2));
+        OnPropertyChanged(nameof(CanEditEi));
     }
 
     private void RefreshDeductionEligibility()
