@@ -33,10 +33,10 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
 
         SearchCommand = new Command(async () => await SearchEmployeesAsync());
         SelectEmployerCommand = new Command<EmployerLookupDto>(async (employer) => await SelectEmployerAsync(employer));
-        SelectEmployeeCommand = new Command<EmployeeLookupDto>(async (emp) => await SelectEmployeeAsync(emp));
+        SelectEmployeeCommand = new Command<EmployeeLookupDto>(SelectEmployee);
         SaveCommand = new Command(async () => await SaveEmployeeAsync());
         DeleteCommand = new Command(async () => await DeleteEmployeeAsync());
-        ClearFormCommand = new Command(() => ClearForm());
+        ClearFormCommand = new Command(CancelForm);
         NewEmployeeCommand = new Command(() => NewEmployee());
         InitializeCommand = new Command(async () => await InitializeAsync());
     }
@@ -67,6 +67,11 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
         get => _selectedEmployee;
         set => SetProperty(ref _selectedEmployee, value);
     }
+
+    private string _previousSearchText = "";
+    private bool _previousSearchResultsFound;
+    private EmployerLookupDto? _previousSelectedEmployer;
+    private List<EmployeeLookupDto> _previousEmployees = new();
 
     // ===================== Form Fields =====================
     private string _rpNumber = "";
@@ -288,7 +293,7 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
         await SearchEmployeesAsync();
     }
 
-    private async Task SelectEmployeeAsync(EmployeeLookupDto? employee)
+    private void SelectEmployee(EmployeeLookupDto? employee)
     {
         if (employee == null)
             return;
@@ -297,6 +302,8 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
         {
             IsBusy = true;
             Message = "";
+
+            CaptureSearchState();
 
             SelectedEmployee = employee;
 
@@ -321,6 +328,7 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
             EmployeeSelected = true;
             SearchText = ""; // Clear search to show form
             Employees.Clear();
+            SearchResultsFound = false;
         }
         catch (Exception ex)
         {
@@ -334,11 +342,22 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
 
     private void NewEmployee()
     {
+        CaptureSearchState();
         ClearForm();
         IsEditMode = false;
         EmployeeSelected = true;
         SearchText = "";
         Employees.Clear();
+        SearchResultsFound = false;
+    }
+
+    private void CancelForm()
+    {
+        ClearForm();
+        IsEditMode = false;
+        EmployeeSelected = false;
+        RestoreSearchState();
+        Message = "";
     }
 
     private async Task SaveEmployeeAsync()
@@ -533,6 +552,28 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
         DateOfBirthDisplay = DateTime.Today.AddYears(-18);
         EiExempt = false;
         SelectedEmployee = null;
+    }
+
+    private void CaptureSearchState()
+    {
+        _previousSearchText = SearchText;
+        _previousSearchResultsFound = SearchResultsFound;
+        _previousSelectedEmployer = SelectedEmployer;
+        _previousEmployees = Employees.ToList();
+    }
+
+    private void RestoreSearchState()
+    {
+        SelectedEmployer = _previousSelectedEmployer;
+        SearchText = _previousSearchText;
+
+        Employees.Clear();
+        foreach (var employee in _previousEmployees)
+        {
+            Employees.Add(employee);
+        }
+
+        SearchResultsFound = _previousSearchResultsFound && Employees.Count > 0;
     }
 
     // ===================== Property Changed =====================

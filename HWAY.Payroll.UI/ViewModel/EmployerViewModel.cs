@@ -27,10 +27,10 @@ public class EmployerViewModel : INotifyPropertyChanged
         Employers = new ObservableCollection<EmployerLookupDto>();
 
         SearchCommand = new Command(async () => await SearchEmployersAsync());
-        SelectEmployerCommand = new Command<EmployerLookupDto>(async (employer) => await SelectEmployerAsync(employer));
+        SelectEmployerCommand = new Command<EmployerLookupDto>(SelectEmployer);
         SaveCommand = new Command(async () => await SaveEmployerAsync());
         DeleteCommand = new Command(async () => await DeleteEmployerAsync());
-        ClearFormCommand = new Command(() => ClearForm());
+        ClearFormCommand = new Command(CancelForm);
         NewEmployerCommand = new Command(() => NewEmployer());
         InitializeCommand = new Command(async () => await InitializeAsync());
     }
@@ -53,6 +53,10 @@ public class EmployerViewModel : INotifyPropertyChanged
         get => _selectedEmployer;
         set => SetProperty(ref _selectedEmployer, value);
     }
+
+    private string _previousSearchText = "";
+    private bool _previousSearchResultsFound;
+    private List<EmployerLookupDto> _previousEmployers = new();
 
     // ===================== Form Fields =====================
     private string _rpNumber = "";
@@ -220,7 +224,7 @@ public class EmployerViewModel : INotifyPropertyChanged
         }
     }
 
-    private async Task SelectEmployerAsync(EmployerLookupDto? employer)
+    private void SelectEmployer(EmployerLookupDto? employer)
     {
         if (employer == null)
             return;
@@ -229,6 +233,8 @@ public class EmployerViewModel : INotifyPropertyChanged
         {
             IsBusy = true;
             Message = "";
+
+            CaptureSearchState();
 
             SelectedEmployer = employer;
 
@@ -246,6 +252,7 @@ public class EmployerViewModel : INotifyPropertyChanged
             EmployerSelected = true;
             SearchText = ""; // Clear search to show form
             Employers.Clear();
+            SearchResultsFound = false;
         }
         catch (Exception ex)
         {
@@ -259,11 +266,22 @@ public class EmployerViewModel : INotifyPropertyChanged
 
     private void NewEmployer()
     {
+        CaptureSearchState();
         ClearForm();
         IsEditMode = false;
         EmployerSelected = true;
         SearchText = "";
         Employers.Clear();
+        SearchResultsFound = false;
+    }
+
+    private void CancelForm()
+    {
+        ClearForm();
+        IsEditMode = false;
+        EmployerSelected = false;
+        RestoreSearchState();
+        Message = "";
     }
 
     private async Task SaveEmployerAsync()
@@ -409,6 +427,26 @@ public class EmployerViewModel : INotifyPropertyChanged
         PaystubPeriod = 1;
         Fee = 0;
         SelectedEmployer = null;
+    }
+
+    private void CaptureSearchState()
+    {
+        _previousSearchText = SearchText;
+        _previousSearchResultsFound = SearchResultsFound;
+        _previousEmployers = Employers.ToList();
+    }
+
+    private void RestoreSearchState()
+    {
+        SearchText = _previousSearchText;
+
+        Employers.Clear();
+        foreach (var employer in _previousEmployers)
+        {
+            Employers.Add(employer);
+        }
+
+        SearchResultsFound = _previousSearchResultsFound && Employers.Count > 0;
     }
 
     // ===================== Property Changed =====================
