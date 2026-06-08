@@ -54,6 +54,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
                 EmployerName = record.Employer!.EmployerName,
+                EmployerGroup = record.Employer.EmployerGroup ?? string.Empty,
+                EmployerPaystubPeriod = record.Employer.PaystubPeriod,
                 Period = record.Period,
 
                 EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
@@ -112,6 +114,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
                 EmployerName = record.Employer!.EmployerName,
+                EmployerGroup = record.Employer.EmployerGroup ?? string.Empty,
+                EmployerPaystubPeriod = record.Employer.PaystubPeriod,
                 Period = record.Period,
 
                 EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
@@ -169,6 +173,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
                 EmployerName = record.Employer!.EmployerName,
+                EmployerGroup = record.Employer.EmployerGroup ?? string.Empty,
+                EmployerPaystubPeriod = record.Employer.PaystubPeriod,
                 Period = record.Period,
 
                 EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",

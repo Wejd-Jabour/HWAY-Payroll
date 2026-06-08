@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<PayrollRecord> PayrollRecords => Set<PayrollRecord>();
     public DbSet<RecordHistory> RecordHistory => Set<RecordHistory>();
     public DbSet<PD7> PD7Records => Set<PD7>();
+    public DbSet<Calculation> Calculations => Set<Calculation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -255,6 +256,24 @@ public class AppDbContext : DbContext
             entity.Property(e => e.FeeCheck).HasColumnName("Fee Check");
             entity.Property(e => e.Month);
             entity.Property(e => e.Year);
+        });
+
+        modelBuilder.Entity<Calculation>(entity =>
+        {
+            entity.ToTable("Calculations");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(e => e.CalculationText)
+                .HasColumnName("Calculation")
+                .HasColumnType("text")
+                .IsRequired();
+
+            entity.HasIndex(e => e.Name).IsUnique();
         });
     }
 }

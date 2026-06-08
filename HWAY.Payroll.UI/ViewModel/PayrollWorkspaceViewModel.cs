@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
 using HWAY.Payroll.Services;
+using HWAY.Payroll.Services.Calculations;
 using HWAY.Payroll.Domain;
 using HWAY.Payroll.Services.Employers;
 using HWAY.Payroll.Services.PayPeriods;
@@ -17,6 +18,7 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
     private readonly IEmployerLookupService _employerLookupService;
     private readonly IPayrollRecordLookupService _payrollRecordService;
     private readonly IPayPeriodRangeService _payPeriodRangeService;
+    private readonly IPayrollDeductionCalculator _deductionCalculator;
 
     private string _searchText = string.Empty;
     private EmployerLookupDto? _selectedEmployer;
@@ -30,11 +32,13 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
     public PayrollWorkspaceViewModel(
         IEmployerLookupService employerLookupService,
         IPayrollRecordLookupService payrollRecordService,
-        IPayPeriodRangeService payPeriodRangeService)
+        IPayPeriodRangeService payPeriodRangeService,
+        IPayrollDeductionCalculator deductionCalculator)
     {
         _employerLookupService = employerLookupService;
         _payrollRecordService = payrollRecordService;
         _payPeriodRangeService = payPeriodRangeService;
+        _deductionCalculator = deductionCalculator;
 
         Employers = new ObservableCollection<EmployerLookupDto>();
         EmployeePayrollRows = new ObservableCollection<EmployeePayrollRowViewModel>();
@@ -42,7 +46,7 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         SearchCommand = new Command(async () => await SearchEmployersAsync());
         SelectEmployerCommand = new Command<EmployerLookupDto>(async employer => await SelectEmployerAsync(employer));
 
-        CalculateRowCommand = new Command<EmployeePayrollRowViewModel>(CalculateRow);
+        CalculateRowCommand = new Command<EmployeePayrollRowViewModel>(async row => await CalculateRowAsync(row));
         SaveAllRowsCommand = new Command(async () => await SaveAllRowsAsync());
         PreviewRowPaystubCommand = new Command<EmployeePayrollRowViewModel>(PreviewRowPaystub);
         OpenCraWebsiteCommand = new Command(OpenCraWebsite);
@@ -201,13 +205,20 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         EmployeeNotFound = !SearchResultsFound;
     }
 
-    private void CalculateRow(EmployeePayrollRowViewModel? row)
+    private async Task CalculateRowAsync(EmployeePayrollRowViewModel? row)
     {
         if (row is null)
             return;
 
-        row.CalculatePayroll();
-        OpenCraWebsite();
+        try
+        {
+            await row.CalculatePayrollAsync(_deductionCalculator);
+            Message = $"Calculated payroll deductions for {row.EmployeeName}.";
+        }
+        catch (Exception ex)
+        {
+            Message = $"Unable to calculate payroll deductions: {ex.Message}";
+        }
     }
 
     private async Task SaveAllRowsAsync()
@@ -582,11 +593,32 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
     }
 
 
-    public void CalculatePayroll()
+    public async Task CalculatePayrollAsync(IPayrollDeductionCalculator deductionCalculator)
     {
         Gross = CalculateGross(Salary, Rate, RegularHours, OvertimeHours, PublicHolidayHours, StatHolidayHours);
 
         Vacation = Gross * 0.04m;
+
+        var deductionResult = await deductionCalculator.CalculateAsync(new PayrollDeductionCalculationRequest
+        {
+            PayDate = PayDate,
+            PayPeriodsPerYear = PayPeriodRules.GetMaxPeriod(_employer.EmployerGroup),
+            CurrentPeriod = Period,
+            Province = _record.EmployeeProvince,
+            GrossIncome = Gross,
+            PaidVacation = IsVacationPaidOut ? Vacation : 0m,
+            PensionableIncomeYtd = _record.GrossYtd + _record.VacationYtdUsed,
+            Cpp1Ytd = _record.Cpp1Ytd,
+            Cpp2Ytd = _record.Cpp2Ytd,
+            EiYtd = _record.EiYtd,
+            CanContributeCpp = CanContributeCpp,
+            CanContributeEi = CanContributeEi
+        });
+
+        Tax1 = deductionResult.Tax;
+        Cpp1 = deductionResult.Cpp1;
+        Cpp2 = deductionResult.Cpp2;
+        Ei = deductionResult.Ei;
 
         VacationYtd = _record.VacationYtd + Vacation;
         VacationYtdUsed = _record.VacationYtdUsed + VacationUsed;

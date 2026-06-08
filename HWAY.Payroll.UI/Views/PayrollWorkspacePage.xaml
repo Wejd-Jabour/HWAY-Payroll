@@ -261,11 +261,11 @@
                                 </Grid>
 
                                 <Button
-                                    Text="Calculate Payroll &amp; Open CRA Tax Calculator"
+                                    Text="Calculate Payroll Deductions"
                                     Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.CalculateRowCommand}"
                                     CommandParameter="{Binding .}"
                                     HorizontalOptions="Start"
-                                    WidthRequest="330" />
+                                    WidthRequest="260" />
 
                                 <Grid
                                     ColumnDefinitions="Auto,160,80,160"

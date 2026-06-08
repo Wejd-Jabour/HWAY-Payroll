@@ -33,6 +33,7 @@ drop table if exists public."PayrollRecords" cascade;
 drop table if exists public."PD7" cascade;
 drop table if exists public."Employees" cascade;
 drop table if exists public."Employers" cascade;
+drop table if exists public."Calculations" cascade;
 """;
 
 await using var connection = new NpgsqlConnection(connectionString);
@@ -64,6 +65,7 @@ where c.table_schema = 'public'
       'PayrollRecords',
       'Record History',
       'PD7',
+      'Calculations',
       'monthly',
       'semi-monthly',
       'bi-weekly A',
@@ -115,6 +117,8 @@ union all
 select 'Employers' as table_name, count(*) as row_count from public."Employers"
 union all
 select 'PD7' as table_name, count(*) as row_count from public."PD7"
+union all
+select 'Calculations' as table_name, count(*) as row_count from public."Calculations"
 union all
 select 'PayrollRecords' as table_name, count(*) as row_count from public."PayrollRecords"
 union all

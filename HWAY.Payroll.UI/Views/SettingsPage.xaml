@@ -173,6 +173,232 @@
             </HorizontalStackLayout>
 
             <Label
+                Text="Payroll Calculations"
+                FontSize="24"
+                FontAttributes="Bold"
+                Margin="0,18,0,0" />
+
+            <Grid ColumnDefinitions="280,*" ColumnSpacing="16">
+                <Border
+                    Grid.Column="0"
+                    StrokeThickness="1"
+                    Padding="12">
+
+                    <VerticalStackLayout Spacing="10">
+                        <Label
+                            Text="Stored Calculations"
+                            FontSize="18"
+                            FontAttributes="Bold" />
+
+                        <CollectionView
+                            ItemsSource="{Binding Calculations}"
+                            SelectedItem="{Binding SelectedCalculation}"
+                            SelectionMode="Single"
+                            HeightRequest="260">
+
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Padding="8">
+                                        <Label Text="{Binding DisplayName}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <Button
+                            Text="Reload Calculations"
+                            Command="{Binding ReloadCalculationsCommand}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border
+                    Grid.Column="1"
+                    StrokeThickness="1"
+                    Padding="12">
+
+                    <VerticalStackLayout Spacing="12">
+                        <Label
+                            Text="Edit Yearly Values"
+                            FontSize="18"
+                            FontAttributes="Bold" />
+
+                        <Label
+                            Text="{Binding SelectedCalculation.DisplayName}"
+                            FontSize="16"
+                            FontAttributes="Bold" />
+
+                        <Grid
+                            ColumnDefinitions="220,180"
+                            ColumnSpacing="12"
+                            IsVisible="{Binding IsKnownCalculationSelected}">
+
+                            <Label Grid.Column="0" Text="Effective date" VerticalOptions="Center" />
+                            <DatePicker Grid.Column="1" Date="{Binding GuidedEffectiveDate}" />
+                        </Grid>
+
+                        <VerticalStackLayout
+                            Spacing="8"
+                            IsVisible="{Binding ShowBasicGuidedFields}"
+                            BindableLayout.ItemsSource="{Binding GuidedFields}">
+
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="320,180" ColumnSpacing="12">
+                                        <Label Grid.Column="0" Text="{Binding Label}" VerticalOptions="Center" />
+                                        <Entry Grid.Column="1" Text="{Binding Value}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout
+                            Spacing="14"
+                            IsVisible="{Binding IsTaxCalculationSelected}">
+
+                            <Label Text="General Tax Settings" FontAttributes="Bold" />
+
+                            <VerticalStackLayout
+                                Spacing="8"
+                                BindableLayout.ItemsSource="{Binding GuidedFields}">
+
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="320,180" ColumnSpacing="12">
+                                            <Label Grid.Column="0" Text="{Binding Label}" VerticalOptions="Center" />
+                                            <Entry Grid.Column="1" Text="{Binding Value}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+
+                            <Label Text="Federal Amounts" FontAttributes="Bold" />
+
+                            <VerticalStackLayout
+                                Spacing="8"
+                                BindableLayout.ItemsSource="{Binding FederalFields}">
+
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="320,180" ColumnSpacing="12">
+                                            <Label Grid.Column="0" Text="{Binding Label}" VerticalOptions="Center" />
+                                            <Entry Grid.Column="1" Text="{Binding Value}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+
+                            <Label Text="Federal Tax Brackets" FontAttributes="Bold" />
+
+                            <Grid ColumnDefinitions="160,120,160" ColumnSpacing="10">
+                                <Label Grid.Column="0" Text="Starts at income" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="Rate (%)" FontAttributes="Bold" />
+                                <Label Grid.Column="2" Text="Subtract" FontAttributes="Bold" />
+                            </Grid>
+
+                            <VerticalStackLayout
+                                Spacing="6"
+                                BindableLayout.ItemsSource="{Binding FederalTaxBrackets}">
+
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="160,120,160" ColumnSpacing="10">
+                                            <Entry Grid.Column="0" Text="{Binding Threshold}" />
+                                            <Entry Grid.Column="1" Text="{Binding Rate}" />
+                                            <Entry Grid.Column="2" Text="{Binding Constant}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+
+                            <Label Text="Province / Territory" FontAttributes="Bold" />
+
+                            <Picker
+                                ItemsSource="{Binding ProvinceCodes}"
+                                SelectedItem="{Binding SelectedProvinceCode}"
+                                WidthRequest="180"
+                                HorizontalOptions="Start" />
+
+                            <VerticalStackLayout
+                                Spacing="8"
+                                BindableLayout.ItemsSource="{Binding ProvinceFields}">
+
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="320,180" ColumnSpacing="12">
+                                            <Label Grid.Column="0" Text="{Binding Label}" VerticalOptions="Center" />
+                                            <Entry Grid.Column="1" Text="{Binding Value}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+
+                            <Label Text="Province Tax Brackets" FontAttributes="Bold" />
+
+                            <Grid ColumnDefinitions="160,120,160" ColumnSpacing="10">
+                                <Label Grid.Column="0" Text="Starts at income" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="Rate (%)" FontAttributes="Bold" />
+                                <Label Grid.Column="2" Text="Subtract" FontAttributes="Bold" />
+                            </Grid>
+
+                            <VerticalStackLayout
+                                Spacing="6"
+                                BindableLayout.ItemsSource="{Binding ProvinceTaxBrackets}">
+
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="160,120,160" ColumnSpacing="10">
+                                            <Entry Grid.Column="0" Text="{Binding Threshold}" />
+                                            <Entry Grid.Column="1" Text="{Binding Rate}" />
+                                            <Entry Grid.Column="2" Text="{Binding Constant}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout
+                                Spacing="8"
+                                IsVisible="{Binding ShowHealthPremiumBands}">
+
+                                <Label Text="Ontario Health Premium" FontAttributes="Bold" />
+
+                                <Grid ColumnDefinitions="120,120,120,100,120" ColumnSpacing="10">
+                                    <Label Grid.Column="0" Text="Starts" FontAttributes="Bold" />
+                                    <Label Grid.Column="1" Text="Ends" FontAttributes="Bold" />
+                                    <Label Grid.Column="2" Text="Base" FontAttributes="Bold" />
+                                    <Label Grid.Column="3" Text="Rate (%)" FontAttributes="Bold" />
+                                    <Label Grid.Column="4" Text="Maximum" FontAttributes="Bold" />
+                                </Grid>
+
+                                <VerticalStackLayout
+                                    Spacing="6"
+                                    BindableLayout.ItemsSource="{Binding HealthPremiumBands}">
+
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid ColumnDefinitions="120,120,120,100,120" ColumnSpacing="10">
+                                                <Entry Grid.Column="0" Text="{Binding Start}" />
+                                                <Entry Grid.Column="1" Text="{Binding End}" />
+                                                <Entry Grid.Column="2" Text="{Binding Base}" />
+                                                <Entry Grid.Column="3" Text="{Binding Rate}" />
+                                                <Entry Grid.Column="4" Text="{Binding Maximum}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+
+                        <Button
+                            Text="Save Yearly Values"
+                            Command="{Binding SaveCalculationCommand}"
+                            HorizontalOptions="Start"
+                            WidthRequest="180" />
+
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <Label
                 Text="{Binding Message}"
                 TextColor="Red"
                 FontAttributes="Bold" />
