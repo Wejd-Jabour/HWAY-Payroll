@@ -169,6 +169,16 @@
                             <Label Text="{Binding Gross, StringFormat='{0:0.00}'}" Style="{StaticResource HwayAmountLabel}" />
                         </VerticalStackLayout>
 
+                        <VerticalStackLayout WidthRequest="190" Spacing="2" Margin="0,0,18,10">
+                            <Label Text="Net Total" Style="{StaticResource HwayFieldLabel}" />
+                            <Label Text="{Binding NetTotal, StringFormat='{0:0.00}'}" Style="{StaticResource HwayAmountLabel}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="220" Spacing="2" Margin="0,0,18,10">
+                            <Label Text="Employer Contribution" Style="{StaticResource HwayFieldLabel}" />
+                            <Label Text="{Binding EmployerContribution, StringFormat='{0:0.00}'}" Style="{StaticResource HwayAmountLabel}" />
+                        </VerticalStackLayout>
+
                         <VerticalStackLayout WidthRequest="170" Spacing="2" Margin="0,0,18,10">
                             <Label Text="Active Employees" Style="{StaticResource HwayFieldLabel}" />
                             <Label Text="{Binding ActiveEmployees}" Style="{StaticResource HwayAmountLabel}" />
@@ -190,7 +200,19 @@
                         </VerticalStackLayout>
                     </FlexLayout>
 
-                    <Grid ColumnDefinitions="170,240,180" ColumnSpacing="12" RowSpacing="8">
+                    <Border
+                        BackgroundColor="{Binding CalculationCheckStatusColor}"
+                        Stroke="#CBD5E1"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1"
+                        Padding="12">
+                        <Grid ColumnDefinitions="170,*" ColumnSpacing="12">
+                            <Label Grid.Column="0" Text="Calculation Check" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="{Binding CalculationCheckStatusText}" Style="{StaticResource HwayValueLabel}" VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+
+                    <Grid ColumnDefinitions="170,240,*" ColumnSpacing="12" RowSpacing="8">
                         <Label Grid.Column="0" Text="Received" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
                         <Border
                             Grid.Column="1"
@@ -208,10 +230,17 @@
                                 Style="{StaticResource HwayEntry}" />
                         </Border>
 
-                        <VerticalStackLayout Grid.Column="2" Spacing="2" VerticalOptions="Center">
-                            <Label Text="Fee Check" Style="{StaticResource HwayFieldLabel}" />
-                            <Label Text="{Binding FeeCheckStatusText}" Style="{StaticResource HwayValueLabel}" />
-                        </VerticalStackLayout>
+                        <HorizontalStackLayout Grid.Column="2" Spacing="18" VerticalOptions="Center">
+                            <VerticalStackLayout IsVisible="{Binding HasPaidSoFar}" WidthRequest="140" Spacing="2">
+                                <Label Text="Paid So Far" Style="{StaticResource HwayFieldLabel}" />
+                                <Label Text="{Binding TotalReceived, StringFormat='{0:0.00}'}" Style="{StaticResource HwayAmountLabel}" />
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout WidthRequest="220" Spacing="2">
+                                <Label Text="Transfer Check" Style="{StaticResource HwayFieldLabel}" />
+                                <Label Text="{Binding FeeCheckStatusText}" Style="{StaticResource HwayValueLabel}" />
+                            </VerticalStackLayout>
+                        </HorizontalStackLayout>
                     </Grid>
 
                     <HorizontalStackLayout Spacing="10">

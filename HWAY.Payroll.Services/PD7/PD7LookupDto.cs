@@ -5,6 +5,8 @@ public class PD7LookupDto
     public string RPNumber { get; set; } = string.Empty;
     public decimal Fee { get; set; }
     public decimal Gross { get; set; }
+    public decimal NetTotal { get; set; }
+    public decimal EmployerContribution { get; set; }
     public decimal PD7Total { get; set; }
     public int ActiveEmployees { get; set; }
     public string Period { get; set; } = string.Empty;
