@@ -22,6 +22,36 @@
                     VerticalOptions="Center" />
             </Grid>
 
+            <Border Style="{StaticResource HwayCardBorder}">
+                <VerticalStackLayout Spacing="14">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <VerticalStackLayout Grid.Column="0" Spacing="3">
+                            <Label Text="Year Reset" Style="{StaticResource HwaySectionTitle}" />
+                            <Label Text="Clear live payroll totals and start period tracking again" Style="{StaticResource HwaySmallLabel}" />
+                        </VerticalStackLayout>
+
+                        <Button
+                            Grid.Column="1"
+                            Text="Reset Year"
+                            Command="{Binding ResetYearCommand}"
+                            Style="{StaticResource HwayDangerButton}"
+                            VerticalOptions="Center" />
+                    </Grid>
+
+                    <Grid ColumnDefinitions="160,180,*" ColumnSpacing="12">
+                        <Label Grid.Column="0" Text="Payroll year" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                        <Border Grid.Column="1" Style="{StaticResource HwayInputBorder}">
+                            <Entry Text="{Binding ResetYear}" Keyboard="Numeric" Style="{StaticResource HwayEntry}" />
+                        </Border>
+                        <Label
+                            Grid.Column="2"
+                            Text="Keeps companies, employees, pay schedules, deduction limits, calculation values, payroll history, and PD7 records."
+                            Style="{StaticResource HwaySmallLabel}"
+                            VerticalOptions="Center" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
             <VerticalStackLayout Spacing="3">
                 <Label Text="Bi-weekly Settings" Style="{StaticResource HwaySectionTitle}" />
                 <Label Text="Set the last period ending date and preview generated pay periods" Style="{StaticResource HwaySmallLabel}" />
