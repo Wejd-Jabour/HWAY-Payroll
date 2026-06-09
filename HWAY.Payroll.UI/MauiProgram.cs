@@ -18,6 +18,7 @@ using HWAY.Payroll.Services.PD7;
 using HWAY.Payroll.Services.PayrollHistory;
 using HWAY.Payroll.Services.T4;
 using HWAY.Payroll.Services.Calculations;
+using HWAY.Payroll.Services.YearEnd;
 using HWAY.Payroll.UI.ViewModels;
 using HWAY.Payroll.UI.Views;
 using HWAY.Payroll.UI.ViewModel;
@@ -64,6 +65,7 @@ public static class MauiProgram
         builder.Services.AddScoped<ICalculationSettingsService, CalculationSettingsService>();
         builder.Services.AddScoped<IPayrollDeductionCalculator, PayrollDeductionCalculator>();
         builder.Services.AddScoped<IPayrollHistoryLookupService, PayrollHistoryLookupService>();
+        builder.Services.AddScoped<IYearEndResetService, YearEndResetService>();
 
         // PD7 lookup service
         builder.Services.AddScoped<IPD7LookupService, PD7LookupService>();

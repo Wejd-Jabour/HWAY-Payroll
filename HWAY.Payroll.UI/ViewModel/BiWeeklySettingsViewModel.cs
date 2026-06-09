@@ -8,6 +8,7 @@ using System.Windows.Input;
 using HWAY.Payroll.Services;
 using HWAY.Payroll.Services.Calculations;
 using HWAY.Payroll.Services.PayPeriods;
+using HWAY.Payroll.Services.YearEnd;
 using Microsoft.Maui.Controls;
 
 namespace HWAY.Payroll.UI.ViewModel;
@@ -17,6 +18,7 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
     private readonly IBiWeeklyScheduleService _scheduleService;
     private readonly ICalculationSettingsService _calculationSettingsService;
     private readonly IPayrollDeductionLimitService _deductionLimitService;
+    private readonly IYearEndResetService _yearEndResetService;
     private bool _isBusy;
     private string _message = "";
     private CalculationEditorRow? _selectedCalculation;
@@ -31,15 +33,18 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
     private string _deductionLimitCpp1Maximum = "";
     private string _deductionLimitCpp2Maximum = "";
     private string _deductionLimitEiMaximum = "";
+    private int _resetYear = DateTime.Today.Year;
 
     public BiWeeklySettingsViewModel(
         IBiWeeklyScheduleService scheduleService,
         ICalculationSettingsService calculationSettingsService,
-        IPayrollDeductionLimitService deductionLimitService)
+        IPayrollDeductionLimitService deductionLimitService,
+        IYearEndResetService yearEndResetService)
     {
         _scheduleService = scheduleService;
         _calculationSettingsService = calculationSettingsService;
         _deductionLimitService = deductionLimitService;
+        _yearEndResetService = yearEndResetService;
 
         ScheduleA = new BiWeeklyScheduleEditor(
             "Bi-weekly A",
@@ -71,6 +76,7 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
         AddCalculationCommand = new Command(async () => await AddCalculationAsync());
         ReloadDeductionLimitsCommand = new Command(async () => await LoadDeductionLimitsAsync());
         SaveDeductionLimitCommand = new Command(async () => await SaveDeductionLimitAsync());
+        ResetYearCommand = new Command(async () => await ResetYearAsync());
 
         _ = LoadInitialSettingsAsync();
     }
@@ -96,6 +102,7 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
     public ICommand AddCalculationCommand { get; }
     public ICommand ReloadDeductionLimitsCommand { get; }
     public ICommand SaveDeductionLimitCommand { get; }
+    public ICommand ResetYearCommand { get; }
 
     public bool IsBusy
     {
@@ -107,6 +114,12 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
     {
         get => _message;
         set => SetProperty(ref _message, value);
+    }
+
+    public int ResetYear
+    {
+        get => _resetYear;
+        set => SetProperty(ref _resetYear, value);
     }
 
     public CalculationEditorRow? SelectedCalculation
@@ -210,6 +223,51 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
         await LoadSavedSchedulesAsync();
         await LoadCalculationsAsync();
         await LoadDeductionLimitsAsync();
+    }
+
+    private async Task ResetYearAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        if (ResetYear < 1)
+        {
+            Message = "Enter a valid reset year.";
+            return;
+        }
+
+        var confirmed = await Application.Current!.MainPage!.DisplayAlert(
+            "Reset Payroll Year",
+            $"Reset payroll year {ResetYear}? This clears payroll YTD totals and current payroll amounts, and resets employer periods to 1. Payroll history and PD7 records are kept.",
+            "Reset Year",
+            "Cancel");
+
+        if (!confirmed)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            Message = "";
+
+            var result = await _yearEndResetService.ResetYearAsync(ResetYear);
+
+            Message =
+                $"Reset {result.Year}: {result.PayrollRecordsReset} payroll records, " +
+                $"{result.EmployersReset} employers. Payroll history and PD7 records were kept.";
+        }
+        catch (Exception ex)
+        {
+            Message = $"Unable to reset payroll year: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private async Task LoadSavedSchedulesAsync()

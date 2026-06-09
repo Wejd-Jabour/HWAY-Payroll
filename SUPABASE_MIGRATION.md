@@ -13,7 +13,9 @@ The direct database host for this project is IPv6-only. On this machine, use the
 
 ## Configure The App
 
-Set one of these before running the app:
+The app includes the Supabase Session Pooler connection as its built-in default, so the packaged application can connect without manual environment setup.
+
+To override the built-in connection for development or a future Supabase project, set one of these before running the app:
 
 ```powershell
 $env:SUPABASE_DB_PASSWORD = "<supabase database password>"

@@ -6,6 +6,8 @@ namespace HWAY.Payroll.Data.Context;
 public static class DatabaseConfiguration
 {
     private const string SupabaseProjectRef = "bgobasrlbmxnzflnfzch";
+    private const string BuiltInSupabaseConnectionString =
+        "Host=aws-1-us-east-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.bgobasrlbmxnzflnfzch;Password=Hway2026$$$;Ssl Mode=Require;Timeout=30;Command Timeout=120";
 
     public static void ConfigureSupabase(DbContextOptionsBuilder optionsBuilder)
     {
@@ -32,8 +34,7 @@ public static class DatabaseConfiguration
 
         if (string.IsNullOrWhiteSpace(password))
         {
-            throw new InvalidOperationException(
-                "Supabase database connection is not configured. Set HWAY_PAYROLL_DB_CONNECTION, SUPABASE_CONNECTION_STRING, or SUPABASE_DB_PASSWORD.");
+            return NormalizeConnectionString(BuiltInSupabaseConnectionString);
         }
 
         var host = GetEnvironmentVariable("SUPABASE_DB_HOST")
