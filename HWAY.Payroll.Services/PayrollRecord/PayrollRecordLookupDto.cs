@@ -8,6 +8,7 @@ public class PayrollRecordLookupDto
     public string EmployeeNumber { get; set; } = string.Empty;
     public string RpNumber { get; set; } = string.Empty;
     public string EmployeeName { get; set; } = string.Empty;
+    public string EmployeeDisplayText => $"{EmployeeNumber} - {EmployeeName}";
     public string EmployerName { get; set; } = string.Empty;
     public string EmployerGroup { get; set; } = string.Empty;
     public int EmployerPaystubPeriod { get; set; } = 1;

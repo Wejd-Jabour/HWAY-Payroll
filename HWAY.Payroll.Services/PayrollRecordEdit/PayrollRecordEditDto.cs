@@ -37,3 +37,11 @@ public class PayrollRecordEditDto
     public decimal VacationYtdBalance { get; set; }
     public decimal TotalPd7 { get; set; }
 }
+
+public sealed class PayrollRecordEditResultDto
+{
+    public bool HistoryUpdated { get; set; }
+    public bool Pd7Updated { get; set; }
+    public int? Pd7Month { get; set; }
+    public int? Pd7Year { get; set; }
+}
