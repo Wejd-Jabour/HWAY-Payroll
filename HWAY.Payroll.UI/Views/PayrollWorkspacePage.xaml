@@ -278,12 +278,17 @@
                         <Label Text="{Binding SelectedEmployer.PaystubPeriod, StringFormat='Current period: {0}'}" Style="{StaticResource SmallLabel}" />
                     </VerticalStackLayout>
 
-                    <Button
-                        Grid.Column="1"
-                        Text="Save All Employees"
-                        Command="{Binding SaveAllRowsCommand}"
-                        Style="{StaticResource SaveActionButton}"
-                        VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                        <Button
+                            Text="Send All Pay Stubs"
+                            Clicked="SendAllPaystubsButton_Clicked"
+                            Style="{StaticResource PrintActionButton}" />
+
+                        <Button
+                            Text="Save All Employees"
+                            Command="{Binding SaveAllRowsCommand}"
+                            Style="{StaticResource SaveActionButton}" />
+                    </VerticalStackLayout>
                 </Grid>
 
                 <VerticalStackLayout
@@ -516,12 +521,19 @@
                     </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
 
-                <Button
-                    Text="Save All Employees"
-                    Command="{Binding SaveAllRowsCommand}"
-                    Style="{StaticResource SaveActionButton}"
-                    HorizontalOptions="Fill"
-                    Margin="0,8,0,0" />
+                <VerticalStackLayout Spacing="8" Margin="0,8,0,0">
+                    <Button
+                        Text="Send All Pay Stubs"
+                        Clicked="SendAllPaystubsButton_Clicked"
+                        Style="{StaticResource PrintActionButton}"
+                        HorizontalOptions="Fill" />
+
+                    <Button
+                        Text="Save All Employees"
+                        Command="{Binding SaveAllRowsCommand}"
+                        Style="{StaticResource SaveActionButton}"
+                        HorizontalOptions="Fill" />
+                </VerticalStackLayout>
             </VerticalStackLayout>
         </VerticalStackLayout>
     </ScrollView>

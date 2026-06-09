@@ -10,7 +10,7 @@ namespace HWAY.Payroll.Services.Paystub;
 
 public class PaystubPDFService : IPaystubPDFService
 {
-    public async Task ExportFromViewAsync(View paystubView, string fileName)
+    public async Task<string> GenerateFromViewAsync(View paystubView, string fileName)
     {
         // Force the paystub to its intended printable size.
         paystubView.Measure(850, 1100);
@@ -22,7 +22,7 @@ public class PaystubPDFService : IPaystubPDFService
         var screenshot = await paystubView.CaptureAsync();
 
         if (screenshot is null)
-            return;
+            throw new InvalidOperationException("Unable to capture the paystub view.");
 
         await using var imageStream = await screenshot.OpenReadAsync(ScreenshotFormat.Png);
 
@@ -42,6 +42,13 @@ public class PaystubPDFService : IPaystubPDFService
             });
         })
         .GeneratePdf(filePath);
+
+        return filePath;
+    }
+
+    public async Task ExportFromViewAsync(View paystubView, string fileName)
+    {
+        var filePath = await GenerateFromViewAsync(paystubView, fileName);
 
         await Launcher.OpenAsync(new OpenFileRequest
         {

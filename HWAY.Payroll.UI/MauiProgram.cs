@@ -6,6 +6,7 @@ using HWAY.Payroll.Services.Employers;
 using HWAY.Payroll.Services.PayrollRecord;
 using HWAY.Payroll.Services.PayrollRecordEdit;
 using HWAY.Payroll.Services.Paystub;
+using HWAY.Payroll.Services.Email;
 using HWAY.Payroll.Services.EmployeeInsert;
 using HWAY.Payroll.Services.EmployeeUpdate;
 using HWAY.Payroll.Services.EmployeeRemove;
@@ -49,6 +50,8 @@ public static class MauiProgram
         builder.Services.AddScoped<IPayrollRecordLookupService, PayrollRecordLookupService>();
         builder.Services.AddScoped<IPayrollRecordEditService, PayrollRecordEditService>();
         builder.Services.AddScoped<IPaystubPDFService, PaystubPDFService>();
+        builder.Services.AddScoped<IEmailSettingsService, FixedEmailSettingsService>();
+        builder.Services.AddScoped<IPaystubEmailService, SmtpPaystubEmailService>();
         builder.Services.AddScoped<IEmployeeInsertService, EmployeeInsertService>();
         builder.Services.AddScoped<IEmployeeUpdateService, EmployeeUpdateService>();
         builder.Services.AddScoped<IEmployeeRemoveService, EmployeeRemoveService>();

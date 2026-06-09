@@ -338,6 +338,7 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
         Id = record.Id;
         EmployeeNumber = record.EmployeeNumber;
         EmployeeName = record.EmployeeName;
+        EmployeeEmailAddress = record.EmployeeEmailAddress;
         Period = period;
         PeriodBeginning = periodBeginning.Date;
         PeriodEnding = periodEnding.Date;
@@ -369,6 +370,7 @@ public class EmployeePayrollRowViewModel : INotifyPropertyChanged
     public int Id { get; }
     public string EmployeeNumber { get; }
     public string EmployeeName { get; }
+    public string EmployeeEmailAddress { get; }
     public IReadOnlyList<string> VacationSettingOptions { get; } = VacationSettings.Options;
     public bool CanContributeCpp => EmployeePayrollEligibility.CanContributeCpp(_record.DateOfBirth, PayDate);
     public bool CanContributeEi => EmployeePayrollEligibility.CanContributeEi(_record.EiExempt);
