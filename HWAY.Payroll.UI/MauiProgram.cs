@@ -14,6 +14,7 @@ using HWAY.Payroll.Services.EmployerInsert;
 using HWAY.Payroll.Services.EmployerUpdate;
 using HWAY.Payroll.Services.PayPeriods;
 using HWAY.Payroll.Services.PD7;
+using HWAY.Payroll.Services.PayrollHistory;
 using HWAY.Payroll.Services.T4;
 using HWAY.Payroll.Services.Calculations;
 using HWAY.Payroll.UI.ViewModels;
@@ -59,6 +60,7 @@ public static class MauiProgram
         builder.Services.AddScoped<IPayrollDeductionLimitService, PayrollDeductionLimitService>();
         builder.Services.AddScoped<ICalculationSettingsService, CalculationSettingsService>();
         builder.Services.AddScoped<IPayrollDeductionCalculator, PayrollDeductionCalculator>();
+        builder.Services.AddScoped<IPayrollHistoryLookupService, PayrollHistoryLookupService>();
 
         // PD7 lookup service
         builder.Services.AddScoped<IPD7LookupService, PD7LookupService>();
@@ -73,6 +75,9 @@ public static class MauiProgram
 
         builder.Services.AddTransient<PayrollWorkspaceViewModel>();
         builder.Services.AddTransient<PayrollWorkspacePage>();
+
+        builder.Services.AddTransient<PayrollHistoryViewModel>();
+        builder.Services.AddTransient<PayrollHistoryPage>();
 
         // Temporary paystub preview page
         builder.Services.AddTransient<PaystubPreviewPage>();

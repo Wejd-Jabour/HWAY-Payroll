@@ -13,6 +13,11 @@
         ContentTemplate="{DataTemplate views:PayrollWorkspacePage}"
         Route="PayrollWorkspacePage" />
 
+        <ShellContent
+        Title="Payroll History"
+        ContentTemplate="{DataTemplate views:PayrollHistoryPage}"
+        Route="PayrollHistoryPage" />
+
 
         <ShellContent
         Title="Payroll Edit"
