@@ -64,8 +64,6 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
 
         Employers = new ObservableCollection<EmployerLookupDto>();
         SearchResults = new ObservableCollection<PayrollRecordLookupDto>();
-        _ = LoadDeductionLimitsAsync(PayrollYear);
-        _ = SearchEmployersAsync();
     }
 
     private string _searchText = string.Empty;
@@ -414,7 +412,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
 
     private async Task SelectEmployerAsync(EmployerLookupDto? employer)
     {
-        if (employer == null)
+        if (employer == null || _isLoadingEmployers)
             return;
 
         try
