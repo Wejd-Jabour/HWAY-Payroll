@@ -13,6 +13,9 @@ public class EmployerLookupDto
     public string? EmployerGroup { get; set; }
     public int PaystubPeriod { get; set; } = 1;
     public decimal Fee { get; set; }
+    public decimal PD7Total { get; set; }
+    public int PD7TotalYear { get; set; }
 
     public string DisplayText => $"{RpNumber} - {EmployerName}";
+    public string PD7TotalDisplay => $"PD7 Total ({PD7TotalYear}): {PD7Total:0.00}";
 }

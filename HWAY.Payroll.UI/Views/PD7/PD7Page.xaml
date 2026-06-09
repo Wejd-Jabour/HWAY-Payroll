@@ -4,152 +4,260 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="HWAY.Payroll.UI.Views.PD7Page"
+    BackgroundColor="#F6F8FA"
     Title="PD7 Records">
 
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="14">
-            <Label Text="PD7 Entry" FontSize="24" FontAttributes="Bold"/>
+        <VerticalStackLayout Padding="24" Spacing="18">
 
-            <Label Text="Company"/>
-            <Entry
-                Placeholder="Enter RP number or employer name"
-                Text="{Binding SearchText}"
-                ReturnCommand="{Binding SearchCommand}" />
-
-            <Border
-                IsVisible="{Binding IsDropdownVisible}"
-                StrokeThickness="1"
-                Padding="0"
-                HeightRequest="220">
-
-                <CollectionView
-                    ItemsSource="{Binding Employers}"
-                    SelectionMode="None">
-
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Padding="12">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectEmployerCommand}"
-                                        CommandParameter="{Binding .}" />
-                                </Grid.GestureRecognizers>
-
-                                <VerticalStackLayout Spacing="2">
-                                    <Label
-                                        Text="{Binding RpNumber}"
-                                        FontAttributes="Bold"
-                                        FontSize="16" />
-                                    <Label
-                                        Text="{Binding EmployerName}"
-                                        FontSize="14" />
-                                </VerticalStackLayout>
-                            </Grid>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </Border>
-
-            <Border
-                StrokeThickness="1"
-                Padding="14">
-
-                <Grid
-                    ColumnDefinitions="140,*"
-                    RowDefinitions="Auto,Auto,Auto"
-                    RowSpacing="8">
-
-                    <Label Grid.Row="0" Grid.Column="0" Text="RP Number:" FontAttributes="Bold" />
-                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding SelectedEmployer.RpNumber}" />
-
-                    <Label Grid.Row="1" Grid.Column="0" Text="Employer Name:" FontAttributes="Bold" />
-                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEmployer.EmployerName}" />
-
-                    <Label Grid.Row="2" Grid.Column="0" Text="Fee:" FontAttributes="Bold" />
-                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding Fee, StringFormat='{0:0.00}'}" />
-                </Grid>
-            </Border>
-
-            <Grid
-                ColumnDefinitions="*,160"
-                ColumnSpacing="12">
-
-                <VerticalStackLayout Grid.Column="0" Spacing="6">
-                    <Label Text="Month"/>
-                    <Picker
-                        Title="Month"
-                        ItemsSource="{Binding Months}"
-                        ItemDisplayBinding="{Binding DisplayText}"
-                        SelectedItem="{Binding SelectedMonth}" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <VerticalStackLayout Grid.Column="0" Spacing="3">
+                    <Label Text="PD7 Records" Style="{StaticResource HwayPageTitle}" />
+                    <Label Text="Company remittance totals, fees, and transfer checks" Style="{StaticResource HwaySmallLabel}" />
                 </VerticalStackLayout>
 
-                <VerticalStackLayout Grid.Column="1" Spacing="6">
-                    <Label Text="Year"/>
-                    <Entry
-                        Placeholder="Year"
-                        Keyboard="Numeric"
-                        Text="{Binding Year}"
-                        TextChanged="OnNonNegativeNumericTextChanged" />
-                </VerticalStackLayout>
+                <ActivityIndicator
+                    Grid.Column="1"
+                    IsVisible="{Binding IsBusy}"
+                    IsRunning="{Binding IsBusy}"
+                    VerticalOptions="Center" />
             </Grid>
 
-            <Border
-                StrokeThickness="1"
-                Padding="14">
+            <Border Style="{StaticResource HwayCardBorder}">
+                <VerticalStackLayout Spacing="14">
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="Company Lookup" Style="{StaticResource HwaySectionTitle}" />
+                        <Label Text="Search by RP number or employer name" Style="{StaticResource HwaySmallLabel}" />
+                    </VerticalStackLayout>
 
-                <VerticalStackLayout Spacing="4">
-                    <Label Text="Periods" FontAttributes="Bold"/>
-                    <Label Text="{Binding PeriodSummary}"/>
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Company" Style="{StaticResource HwayFieldLabel}" />
+                        <Border Style="{StaticResource HwayInputBorder}">
+                            <Entry
+                                Placeholder="Enter RP number or employer name"
+                                Text="{Binding SearchText}"
+                                ReturnCommand="{Binding SearchCommand}"
+                                Style="{StaticResource HwayEntry}" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <Border
+                        IsVisible="{Binding IsDropdownVisible}"
+                        Style="{StaticResource HwayDropdownBorder}"
+                        HeightRequest="220">
+
+                        <CollectionView
+                            ItemsSource="{Binding Employers}"
+                            SelectionMode="None">
+
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Padding="14,12" ColumnDefinitions="150,*" ColumnSpacing="14">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectEmployerCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        </Grid.GestureRecognizers>
+
+                                        <Label
+                                            Grid.Column="0"
+                                            Text="{Binding RpNumber}"
+                                            FontAttributes="Bold"
+                                            TextColor="#0F172A"
+                                            VerticalOptions="Center" />
+                                        <Label
+                                            Grid.Column="1"
+                                            Text="{Binding EmployerName}"
+                                            TextColor="#334155"
+                                            VerticalOptions="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Border>
+
+                    <BoxView HeightRequest="1" BackgroundColor="#E2E8F0" />
+
+                    <FlexLayout
+                        Direction="Row"
+                        Wrap="Wrap"
+                        AlignItems="Start"
+                        JustifyContent="Start">
+
+                        <VerticalStackLayout WidthRequest="220" Spacing="2" Margin="0,0,18,8">
+                            <Label Text="RP Number" Style="{StaticResource HwayFieldLabel}" />
+                            <Label Text="{Binding SelectedEmployer.RpNumber}" Style="{StaticResource HwayValueLabel}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="320" Spacing="2" Margin="0,0,18,8">
+                            <Label Text="Employer Name" Style="{StaticResource HwayFieldLabel}" />
+                            <Label Text="{Binding SelectedEmployer.EmployerName}" Style="{StaticResource HwayValueLabel}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="160" Spacing="2" Margin="0,0,18,8">
+                            <Label Text="Fee" Style="{StaticResource HwayFieldLabel}" />
+                            <Label Text="{Binding Fee, StringFormat='{0:0.00}'}" Style="{StaticResource HwayValueLabel}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="220" Spacing="2" Margin="0,0,18,8">
+                            <Label Text="{Binding Year, StringFormat='PD7 Total ({0})'}" Style="{StaticResource HwayFieldLabel}" />
+                            <Label Text="{Binding CalendarYearPD7Total, StringFormat='{0:0.00}'}" Style="{StaticResource HwayAmountLabel}" />
+                        </VerticalStackLayout>
+                    </FlexLayout>
                 </VerticalStackLayout>
             </Border>
 
-            <Border
-                StrokeThickness="1"
-                Padding="15">
+            <Border Style="{StaticResource HwayCardBorder}">
+                <VerticalStackLayout Spacing="14">
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="Period Selection" Style="{StaticResource HwaySectionTitle}" />
+                        <Label Text="Choose the month and year to calculate" Style="{StaticResource HwaySmallLabel}" />
+                    </VerticalStackLayout>
 
-                <Grid
-                    ColumnDefinitions="170,*"
-                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                    RowSpacing="10"
-                    ColumnSpacing="12">
+                    <Grid ColumnDefinitions="*,160" ColumnSpacing="12">
+                        <VerticalStackLayout Grid.Column="0" Spacing="6">
+                            <Label Text="Month" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Picker
+                                    Title="Month"
+                                    ItemsSource="{Binding Months}"
+                                    ItemDisplayBinding="{Binding DisplayText}"
+                                    SelectedItem="{Binding SelectedMonth}"
+                                    Style="{StaticResource HwayPicker}" />
+                            </Border>
+                        </VerticalStackLayout>
 
-                    <Label Grid.Row="0" Grid.Column="0" Text="Gross" FontAttributes="Bold"/>
-                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding Gross, StringFormat='{0:0.00}'}"/>
+                        <VerticalStackLayout Grid.Column="1" Spacing="6">
+                            <Label Text="Year" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry
+                                    Placeholder="Year"
+                                    Keyboard="Numeric"
+                                    Text="{Binding Year}"
+                                    TextChanged="OnNonNegativeNumericTextChanged"
+                                    Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
 
-                    <Label Grid.Row="1" Grid.Column="0" Text="Active Employees" FontAttributes="Bold"/>
-                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding ActiveEmployees}"/>
-
-                    <Label Grid.Row="2" Grid.Column="0" Text="PD7 Total" FontAttributes="Bold"/>
-                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding PD7Total, StringFormat='{0:0.00}'}"/>
-
-                    <Label Grid.Row="3" Grid.Column="0" Text="Fee" FontAttributes="Bold"/>
-                    <Label Grid.Row="3" Grid.Column="1" Text="{Binding Fee, StringFormat='{0:0.00}'}"/>
-
-                    <Label Grid.Row="4" Grid.Column="0" Text="Transfer" FontAttributes="Bold"/>
-                    <Label Grid.Row="4" Grid.Column="1" Text="{Binding Transfer, StringFormat='{0:0.00}'}"/>
-
-                    <Label Grid.Row="5" Grid.Column="0" Text="Received" FontAttributes="Bold" VerticalOptions="Center"/>
-                    <Entry
-                        Grid.Row="5"
-                        Grid.Column="1"
-                        Placeholder="Received"
-                        Keyboard="Numeric"
-                        Text="{Binding Received}"
-                        BackgroundColor="{Binding ReceivedStatusColor}"
-                        TextChanged="OnNonNegativeNumericTextChanged" />
-
-                    <Label Grid.Row="6" Grid.Column="0" Text="Fee Check" FontAttributes="Bold"/>
-                    <Label Grid.Row="6" Grid.Column="1" Text="{Binding FeeCheckStatusText}" />
-                </Grid>
+                    <Border
+                        BackgroundColor="#F8FAFC"
+                        Stroke="#D9E2EC"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1"
+                        Padding="12">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Periods" Style="{StaticResource HwayFieldLabel}" />
+                            <Label Text="{Binding PeriodSummary}" Style="{StaticResource HwayValueLabel}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
             </Border>
 
-            <HorizontalStackLayout Spacing="10">
-                <Button Text="Save PD7" Command="{Binding SaveCommand}" BackgroundColor="Green" TextColor="White" HorizontalOptions="Fill"/>
-                <Button Text="Clear" Command="{Binding ClearCommand}" BackgroundColor="Gray" TextColor="White" HorizontalOptions="Fill"/>
-            </HorizontalStackLayout>
+            <Border Style="{StaticResource HwayCardBorder}">
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="Remittance Summary" Style="{StaticResource HwaySectionTitle}" />
 
-            <Label Text="{Binding Message}" TextColor="Red" HorizontalOptions="Center" FontAttributes="Bold"/>
-            <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}"/>
+                    <FlexLayout
+                        Direction="Row"
+                        Wrap="Wrap"
+                        AlignItems="Start"
+                        JustifyContent="Start">
+
+                        <VerticalStackLayout WidthRequest="190" Spacing="2" Margin="0,0,18,10">
+                            <Label Text="Gross" Style="{StaticResource HwayFieldLabel}" />
+                            <Label Text="{Binding Gross, StringFormat='{0:0.00}'}" Style="{StaticResource HwayAmountLabel}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="190" Spacing="2" Margin="0,0,18,10">
+                            <Label Text="Net Total" Style="{StaticResource HwayFieldLabel}" />
+                            <Label Text="{Binding NetTotal, StringFormat='{0:0.00}'}" Style="{StaticResource HwayAmountLabel}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="220" Spacing="2" Margin="0,0,18,10">
+                            <Label Text="Employer Contribution" Style="{StaticResource HwayFieldLabel}" />
+                            <Label Text="{Binding EmployerContribution, StringFormat='{0:0.00}'}" Style="{StaticResource HwayAmountLabel}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="170" Spacing="2" Margin="0,0,18,10">
+                            <Label Text="Active Employees" Style="{StaticResource HwayFieldLabel}" />
+                            <Label Text="{Binding ActiveEmployees}" Style="{StaticResource HwayAmountLabel}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="170" Spacing="2" Margin="0,0,18,10">
+                            <Label Text="PD7 Total" Style="{StaticResource HwayFieldLabel}" />
+                            <Label Text="{Binding PD7Total, StringFormat='{0:0.00}'}" Style="{StaticResource HwayAmountLabel}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="150" Spacing="2" Margin="0,0,18,10">
+                            <Label Text="Fee" Style="{StaticResource HwayFieldLabel}" />
+                            <Label Text="{Binding Fee, StringFormat='{0:0.00}'}" Style="{StaticResource HwayAmountLabel}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="170" Spacing="2" Margin="0,0,18,10">
+                            <Label Text="Transfer" Style="{StaticResource HwayFieldLabel}" />
+                            <Label Text="{Binding Transfer, StringFormat='{0:0.00}'}" Style="{StaticResource HwayAmountLabel}" />
+                        </VerticalStackLayout>
+                    </FlexLayout>
+
+                    <Border
+                        BackgroundColor="{Binding CalculationCheckStatusColor}"
+                        Stroke="#CBD5E1"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1"
+                        Padding="12">
+                        <Grid ColumnDefinitions="170,*" ColumnSpacing="12">
+                            <Label Grid.Column="0" Text="Calculation Check" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="{Binding CalculationCheckStatusText}" Style="{StaticResource HwayValueLabel}" VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+
+                    <Grid ColumnDefinitions="170,240,*" ColumnSpacing="12" RowSpacing="8">
+                        <Label Grid.Column="0" Text="Received" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                        <Border
+                            Grid.Column="1"
+                            BackgroundColor="{Binding ReceivedStatusColor}"
+                            Stroke="#CBD5E1"
+                            StrokeShape="RoundRectangle 8"
+                            StrokeThickness="1"
+                            Padding="10,0"
+                            MinimumHeightRequest="46">
+                            <Entry
+                                Placeholder="Received"
+                                Keyboard="Numeric"
+                                Text="{Binding Received}"
+                                TextChanged="OnNonNegativeNumericTextChanged"
+                                Style="{StaticResource HwayEntry}" />
+                        </Border>
+
+                        <HorizontalStackLayout Grid.Column="2" Spacing="18" VerticalOptions="Center">
+                            <VerticalStackLayout IsVisible="{Binding HasPaidSoFar}" WidthRequest="140" Spacing="2">
+                                <Label Text="Paid So Far" Style="{StaticResource HwayFieldLabel}" />
+                                <Label Text="{Binding TotalReceived, StringFormat='{0:0.00}'}" Style="{StaticResource HwayAmountLabel}" />
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout WidthRequest="220" Spacing="2">
+                                <Label Text="Transfer Check" Style="{StaticResource HwayFieldLabel}" />
+                                <Label Text="{Binding FeeCheckStatusText}" Style="{StaticResource HwayValueLabel}" />
+                            </VerticalStackLayout>
+                        </HorizontalStackLayout>
+                    </Grid>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Button
+                            Text="Save PD7"
+                            Command="{Binding SaveCommand}"
+                            Style="{StaticResource HwaySaveButton}" />
+
+                        <Button
+                            Text="Clear"
+                            Command="{Binding ClearCommand}"
+                            Style="{StaticResource HwaySecondaryButton}" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="{Binding Message}" Style="{StaticResource HwayErrorMessage}" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

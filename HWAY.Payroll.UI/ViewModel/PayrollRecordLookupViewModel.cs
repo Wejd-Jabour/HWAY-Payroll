@@ -5,6 +5,8 @@ using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
 using HWAY.Payroll.Domain;
 using HWAY.Payroll.Services;
+using HWAY.Payroll.Services.Calculations;
+using HWAY.Payroll.Services.PayPeriods;
 using HWAY.Payroll.Services.PayrollRecord;
 
 namespace HWAY.Payroll.UI.ViewModels;
@@ -12,16 +14,20 @@ namespace HWAY.Payroll.UI.ViewModels;
 public class PayrollRecordViewModel : INotifyPropertyChanged
 {
     private readonly IPayrollRecordLookupService _service;
+    private readonly IPayrollDeductionCalculator _deductionCalculator;
     private int _currentPayrollRecordId;
     private string _searchRpNumber = string.Empty;
     private PayrollRecordLookupDto? _selectedPayrollRecord;
 
-    public PayrollRecordViewModel(IPayrollRecordLookupService service)
+    public PayrollRecordViewModel(
+        IPayrollRecordLookupService service,
+        IPayrollDeductionCalculator deductionCalculator)
     {
         _service = service;
+        _deductionCalculator = deductionCalculator;
 
         SearchByRpNumberCommand = new Command(async () => await SearchByRpNumber());
-        CalculateAndOpenCraCommand = new Command(CalculateAndOpenCra);
+        CalculateAndOpenCraCommand = new Command(async () => await CalculatePayrollAsync());
         SaveCommand = new Command(async () => await SaveChanges());
         OpenCraWebsiteCommand = new Command(OpenCraWebsite);
 
@@ -214,6 +220,13 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
 
     public bool CanEditEi => CanContributeEi;
 
+    private string _message = string.Empty;
+    public string Message
+    {
+        get => _message;
+        set => SetProperty(ref _message, value);
+    }
+
     // -------------------------
     // UI STATE FLAGS
     // -------------------------
@@ -363,8 +376,14 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
     // -------------------------
     // CALCULATE AND OPEN CRA
     // -------------------------
-    private void CalculateAndOpenCra()
+    private async Task CalculatePayrollAsync()
     {
+        if (SelectedPayrollRecord is null)
+        {
+            Message = "Select an employee before calculating payroll.";
+            return;
+        }
+
         Gross = CalculateGross(Salary, Rate, RegularHours, OvertimeHours, PublicHolidayHours, StatHolidayHours);
 
         // Set Vacation Rate
@@ -384,8 +403,36 @@ public class PayrollRecordViewModel : INotifyPropertyChanged
 
         Vacation = Gross * vacationRate;
 
-        // Open CRA website
-        OpenCraWebsite();
+        try
+        {
+            var deductions = await _deductionCalculator.CalculateAsync(new PayrollDeductionCalculationRequest
+            {
+                PayDate = DateTime.Today,
+                PayPeriodsPerYear = PayPeriodRules.GetMaxPeriod(SelectedPayrollRecord.EmployerGroup),
+                CurrentPeriod = PayPeriodRules.NormalizePeriod(
+                    SelectedPayrollRecord.EmployerGroup,
+                    SelectedPayrollRecord.EmployerPaystubPeriod),
+                Province = SelectedPayrollRecord.EmployeeProvince,
+                GrossIncome = Gross,
+                PaidVacation = VacationSettings.IsPaidOut(VacationSetting) ? Vacation : 0m,
+                PensionableIncomeYtd = SelectedPayrollRecord.GrossYtd + SelectedPayrollRecord.VacationYtdUsed,
+                Cpp1Ytd = SelectedPayrollRecord.Cpp1Ytd,
+                Cpp2Ytd = SelectedPayrollRecord.Cpp2Ytd,
+                EiYtd = SelectedPayrollRecord.EiYtd,
+                CanContributeCpp = CanContributeCpp,
+                CanContributeEi = CanContributeEi
+            });
+
+            Tax1 = deductions.Tax;
+            Cpp1 = deductions.Cpp1;
+            Cpp2 = deductions.Cpp2;
+            Ei = deductions.Ei;
+            Message = "Payroll deductions calculated.";
+        }
+        catch (Exception ex)
+        {
+            Message = $"Unable to calculate payroll deductions: {ex.Message}";
+        }
     }
 
     // -------------------------

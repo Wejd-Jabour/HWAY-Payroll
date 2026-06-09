@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using HWAY.Payroll.Data.Context;
 using Microsoft.EntityFrameworkCore;
+using HWAY.Payroll.Services;
 using HWAY.Payroll.Services.Employers;
 using HWAY.Payroll.Services.PayrollRecord;
 using HWAY.Payroll.Services.PayrollRecordEdit;
 using HWAY.Payroll.Services.Paystub;
+using HWAY.Payroll.Services.Email;
 using HWAY.Payroll.Services.EmployeeInsert;
 using HWAY.Payroll.Services.EmployeeUpdate;
 using HWAY.Payroll.Services.EmployeeRemove;
@@ -13,6 +15,10 @@ using HWAY.Payroll.Services.EmployerInsert;
 using HWAY.Payroll.Services.EmployerUpdate;
 using HWAY.Payroll.Services.PayPeriods;
 using HWAY.Payroll.Services.PD7;
+using HWAY.Payroll.Services.PayrollHistory;
+using HWAY.Payroll.Services.T4;
+using HWAY.Payroll.Services.Calculations;
+using HWAY.Payroll.Services.YearEnd;
 using HWAY.Payroll.UI.ViewModels;
 using HWAY.Payroll.UI.Views;
 using HWAY.Payroll.UI.ViewModel;
@@ -45,6 +51,8 @@ public static class MauiProgram
         builder.Services.AddScoped<IPayrollRecordLookupService, PayrollRecordLookupService>();
         builder.Services.AddScoped<IPayrollRecordEditService, PayrollRecordEditService>();
         builder.Services.AddScoped<IPaystubPDFService, PaystubPDFService>();
+        builder.Services.AddScoped<IEmailSettingsService, FixedEmailSettingsService>();
+        builder.Services.AddScoped<IPaystubEmailService, SmtpPaystubEmailService>();
         builder.Services.AddScoped<IEmployeeInsertService, EmployeeInsertService>();
         builder.Services.AddScoped<IEmployeeUpdateService, EmployeeUpdateService>();
         builder.Services.AddScoped<IEmployeeRemoveService, EmployeeRemoveService>();
@@ -53,9 +61,15 @@ public static class MauiProgram
         builder.Services.AddScoped<IEmployerUpdateService, EmployerUpdateService>();
         builder.Services.AddScoped<IBiWeeklyScheduleService, BiWeeklyScheduleService>();
         builder.Services.AddScoped<IPayPeriodRangeService, PayPeriodRangeService>();
+        builder.Services.AddScoped<IPayrollDeductionLimitService, PayrollDeductionLimitService>();
+        builder.Services.AddScoped<ICalculationSettingsService, CalculationSettingsService>();
+        builder.Services.AddScoped<IPayrollDeductionCalculator, PayrollDeductionCalculator>();
+        builder.Services.AddScoped<IPayrollHistoryLookupService, PayrollHistoryLookupService>();
+        builder.Services.AddScoped<IYearEndResetService, YearEndResetService>();
 
         // PD7 lookup service
         builder.Services.AddScoped<IPD7LookupService, PD7LookupService>();
+        builder.Services.AddScoped<IT4LookupService, T4LookupService>();
 
         builder.Services.AddTransient<EmployerLookupViewModel>();
         builder.Services.AddTransient<EmployerLookupPage>();
@@ -66,6 +80,9 @@ public static class MauiProgram
 
         builder.Services.AddTransient<PayrollWorkspaceViewModel>();
         builder.Services.AddTransient<PayrollWorkspacePage>();
+
+        builder.Services.AddTransient<PayrollHistoryViewModel>();
+        builder.Services.AddTransient<PayrollHistoryPage>();
 
         // Temporary paystub preview page
         builder.Services.AddTransient<PaystubPreviewPage>();
@@ -104,6 +121,9 @@ public static class MauiProgram
         // PD7 view
         builder.Services.AddTransient<PD7ViewModel>();
         builder.Services.AddTransient<PD7Page>();
+
+        builder.Services.AddTransient<T4ViewModel>();
+        builder.Services.AddTransient<T4Page>();
 
         builder.Services.AddTransient<BiWeeklySettingsViewModel>();
         builder.Services.AddTransient<SettingsPage>();

@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Name="ThisPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="HWAY.Payroll.UI.Views.T4Page"
+    BackgroundColor="#F6F8FA"
+    Title="T4 Records">
+
+    <ContentPage.Resources>
+        <Style x:Key="SectionTitle" TargetType="Label">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextColor" Value="#1F2937" />
+        </Style>
+
+        <Style x:Key="SmallLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextColor" Value="#64748B" />
+        </Style>
+
+        <Style x:Key="FieldLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextColor" Value="#475569" />
+        </Style>
+
+        <Style x:Key="ValueLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="TextColor" Value="#111827" />
+        </Style>
+
+        <Style x:Key="AmountLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextColor" Value="#0F172A" />
+        </Style>
+
+        <Style x:Key="BoxNumberLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextColor" Value="#334155" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="18">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <VerticalStackLayout Grid.Column="0" Spacing="3">
+                    <Label
+                        Text="T4 Records"
+                        FontSize="28"
+                        FontAttributes="Bold"
+                        TextColor="#0F172A" />
+                    <Label
+                        Text="Company totals and employee T4 boxes"
+                        Style="{StaticResource SmallLabel}" />
+                </VerticalStackLayout>
+
+                <Button
+                    Grid.Column="1"
+                    Text="Clear"
+                    Command="{Binding ClearCommand}"
+                    BackgroundColor="#475569"
+                    TextColor="White"
+                    VerticalOptions="Center" />
+            </Grid>
+
+            <Border
+                BackgroundColor="#FFFFFF"
+                Stroke="#D9E2EC"
+                StrokeShape="RoundRectangle 8"
+                StrokeThickness="1"
+                Padding="18">
+
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="Company Lookup" Style="{StaticResource SectionTitle}" />
+
+                    <Grid ColumnDefinitions="*,160" ColumnSpacing="12">
+                        <VerticalStackLayout Grid.Column="0" Spacing="6">
+                            <Label Text="Company" Style="{StaticResource FieldLabel}" />
+                            <Entry
+                                Placeholder="Enter RP number or employer name"
+                                Text="{Binding SearchText}"
+                                ReturnCommand="{Binding SearchCommand}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="1" Spacing="6">
+                            <Label Text="Tax Year" Style="{StaticResource FieldLabel}" />
+                            <Entry
+                                Placeholder="Year"
+                                Keyboard="Numeric"
+                                Text="{Binding Year}"
+                                TextChanged="OnNonNegativeNumericTextChanged" />
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Border
+                        IsVisible="{Binding IsDropdownVisible}"
+                        BackgroundColor="#FFFFFF"
+                        Stroke="#CBD5E1"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1"
+                        Padding="0"
+                        HeightRequest="220">
+
+                        <CollectionView
+                            ItemsSource="{Binding Employers}"
+                            SelectionMode="None">
+
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Padding="14,12" ColumnDefinitions="150,*" ColumnSpacing="14">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectEmployerCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        </Grid.GestureRecognizers>
+
+                                        <Label
+                                            Grid.Column="0"
+                                            Text="{Binding RpNumber}"
+                                            FontAttributes="Bold"
+                                            TextColor="#0F172A"
+                                            VerticalOptions="Center" />
+                                        <Label
+                                            Grid.Column="1"
+                                            Text="{Binding EmployerName}"
+                                            TextColor="#334155"
+                                            VerticalOptions="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Border>
+
+                    <FlexLayout
+                        Direction="Row"
+                        Wrap="Wrap"
+                        AlignItems="Start"
+                        JustifyContent="Start">
+
+                        <VerticalStackLayout WidthRequest="260" Spacing="2" Margin="0,0,18,8">
+                            <Label Text="RP Number" Style="{StaticResource FieldLabel}" />
+                            <Label Text="{Binding SelectedEmployer.RpNumber}" Style="{StaticResource ValueLabel}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="320" Spacing="2" Margin="0,0,18,8">
+                            <Label Text="Employer Name" Style="{StaticResource FieldLabel}" />
+                            <Label Text="{Binding SelectedEmployer.EmployerName}" Style="{StaticResource ValueLabel}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="320" Spacing="2" Margin="0,0,18,8">
+                            <Label Text="Address" Style="{StaticResource FieldLabel}" />
+                            <Label Style="{StaticResource ValueLabel}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding SelectedEmployer.Address}" />
+                                        <Span Text=" " />
+                                        <Span Text="{Binding SelectedEmployer.City}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </VerticalStackLayout>
+                    </FlexLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <VerticalStackLayout
+                IsVisible="{Binding HasT4Results}"
+                Spacing="14">
+
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <VerticalStackLayout Grid.Column="0" Spacing="3">
+                        <Label Text="Company T4 Totals" Style="{StaticResource SectionTitle}" />
+                        <Label Text="{Binding TaxYearMaximums}" Style="{StaticResource SmallLabel}" />
+                    </VerticalStackLayout>
+
+                    <Border
+                        Grid.Column="1"
+                        BackgroundColor="#EEF6FF"
+                        Stroke="#BFDBFE"
+                        StrokeShape="RoundRectangle 8"
+                        Padding="10,6"
+                        VerticalOptions="Center">
+                        <Label Text="{Binding CalculationSource}" TextColor="#1D4ED8" FontSize="12" FontAttributes="Bold" />
+                    </Border>
+                </Grid>
+
+                <FlexLayout
+                    Direction="Row"
+                    Wrap="Wrap"
+                    AlignItems="Start"
+                    JustifyContent="Start">
+
+                    <Border BackgroundColor="#FFFFFF" Stroke="#D9E2EC" StrokeShape="RoundRectangle 8" Padding="12" WidthRequest="230" Margin="0,0,12,12">
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="14 - Employment Income" Style="{StaticResource BoxNumberLabel}" />
+                            <Label Text="{Binding Box14Total, StringFormat='{0:0.00}'}" Style="{StaticResource AmountLabel}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border BackgroundColor="#FFFFFF" Stroke="#D9E2EC" StrokeShape="RoundRectangle 8" Padding="12" WidthRequest="230" Margin="0,0,12,12">
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="24 - EI Insurable" Style="{StaticResource BoxNumberLabel}" />
+                            <Label Text="{Binding Box24Total, StringFormat='{0:0.00}'}" Style="{StaticResource AmountLabel}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border BackgroundColor="#FFFFFF" Stroke="#D9E2EC" StrokeShape="RoundRectangle 8" Padding="12" WidthRequest="230" Margin="0,0,12,12">
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="26 - CPP Pensionable" Style="{StaticResource BoxNumberLabel}" />
+                            <Label Text="{Binding Box26Total, StringFormat='{0:0.00}'}" Style="{StaticResource AmountLabel}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border BackgroundColor="#FFFFFF" Stroke="#D9E2EC" StrokeShape="RoundRectangle 8" Padding="12" WidthRequest="230" Margin="0,0,12,12">
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="22 - Tax" Style="{StaticResource BoxNumberLabel}" />
+                            <Label Text="{Binding Box22Total, StringFormat='{0:0.00}'}" Style="{StaticResource AmountLabel}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border BackgroundColor="#FFFFFF" Stroke="#D9E2EC" StrokeShape="RoundRectangle 8" Padding="12" WidthRequest="230" Margin="0,0,12,12">
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="16 - CPP1" Style="{StaticResource BoxNumberLabel}" />
+                            <Label Text="{Binding Box16Total, StringFormat='{0:0.00}'}" Style="{StaticResource AmountLabel}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border BackgroundColor="#FFFFFF" Stroke="#D9E2EC" StrokeShape="RoundRectangle 8" Padding="12" WidthRequest="230" Margin="0,0,12,12">
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="16A - CPP2" Style="{StaticResource BoxNumberLabel}" />
+                            <Label Text="{Binding Box16ATotal, StringFormat='{0:0.00}'}" Style="{StaticResource AmountLabel}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border BackgroundColor="#FFFFFF" Stroke="#D9E2EC" StrokeShape="RoundRectangle 8" Padding="12" WidthRequest="230" Margin="0,0,12,12">
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="18 - EI" Style="{StaticResource BoxNumberLabel}" />
+                            <Label Text="{Binding Box18Total, StringFormat='{0:0.00}'}" Style="{StaticResource AmountLabel}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </FlexLayout>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout
+                IsVisible="{Binding HasT4Results}"
+                BindableLayout.ItemsSource="{Binding Slips}"
+                Spacing="12">
+
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <Border
+                            BackgroundColor="#FFFFFF"
+                            Stroke="#D9E2EC"
+                            StrokeShape="RoundRectangle 8"
+                            StrokeThickness="1"
+                            Padding="16">
+
+                            <VerticalStackLayout Spacing="14">
+                                <Grid ColumnDefinitions="*,180" ColumnSpacing="12">
+                                    <VerticalStackLayout Grid.Column="0" Spacing="3">
+                                        <Label Text="{Binding EmployeeName}" FontSize="18" FontAttributes="Bold" TextColor="#111827" />
+                                        <Label Text="{Binding EmployeeNumber, StringFormat='Employee #: {0}'}" Style="{StaticResource SmallLabel}" />
+                                        <Label Text="{Binding Address}" Style="{StaticResource SmallLabel}" />
+                                        <Label Style="{StaticResource SmallLabel}">
+                                            <Label.FormattedText>
+                                                <FormattedString>
+                                                    <Span Text="{Binding City}"/>
+                                                    <Span Text=" "/>
+                                                    <Span Text="{Binding Province}"/>
+                                                    <Span Text=" "/>
+                                                    <Span Text="{Binding PostalCode}"/>
+                                                </FormattedString>
+                                            </Label.FormattedText>
+                                        </Label>
+                                    </VerticalStackLayout>
+
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" Padding="12,0,0,0">
+                                        <Label Text="SIN" Style="{StaticResource FieldLabel}" />
+                                        <Label Text="{Binding Sin}" Style="{StaticResource ValueLabel}" />
+                                    </VerticalStackLayout>
+                                </Grid>
+
+                                <BoxView HeightRequest="1" BackgroundColor="#E2E8F0" />
+
+                                <FlexLayout
+                                    Direction="Row"
+                                    Wrap="Wrap"
+                                    AlignItems="Start"
+                                    JustifyContent="Start">
+
+                                    <VerticalStackLayout WidthRequest="120" Spacing="2" Margin="0,0,10,8">
+                                        <Label Text="14" Style="{StaticResource BoxNumberLabel}" />
+                                        <Label Text="{Binding Box14EmploymentIncome, StringFormat='{0:0.00}'}" Style="{StaticResource ValueLabel}" />
+                                    </VerticalStackLayout>
+
+                                    <VerticalStackLayout WidthRequest="120" Spacing="2" Margin="0,0,10,8">
+                                        <Label Text="24" Style="{StaticResource BoxNumberLabel}" />
+                                        <Label Text="{Binding Box24EiInsurableEarnings, StringFormat='{0:0.00}'}" Style="{StaticResource ValueLabel}" />
+                                    </VerticalStackLayout>
+
+                                    <VerticalStackLayout WidthRequest="120" Spacing="2" Margin="0,0,10,8">
+                                        <Label Text="26" Style="{StaticResource BoxNumberLabel}" />
+                                        <Label Text="{Binding Box26CppQppPensionableEarnings, StringFormat='{0:0.00}'}" Style="{StaticResource ValueLabel}" />
+                                    </VerticalStackLayout>
+
+                                    <VerticalStackLayout WidthRequest="120" Spacing="2" Margin="0,0,10,8">
+                                        <Label Text="22" Style="{StaticResource BoxNumberLabel}" />
+                                        <Label Text="{Binding Box22IncomeTaxDeducted, StringFormat='{0:0.00}'}" Style="{StaticResource ValueLabel}" />
+                                    </VerticalStackLayout>
+
+                                    <VerticalStackLayout WidthRequest="120" Spacing="2" Margin="0,0,10,8">
+                                        <Label Text="16" Style="{StaticResource BoxNumberLabel}" />
+                                        <Label Text="{Binding Box16CppContributions, StringFormat='{0:0.00}'}" Style="{StaticResource ValueLabel}" />
+                                    </VerticalStackLayout>
+
+                                    <VerticalStackLayout WidthRequest="120" Spacing="2" Margin="0,0,10,8">
+                                        <Label Text="16A" Style="{StaticResource BoxNumberLabel}" />
+                                        <Label Text="{Binding Box16ACpp2Contributions, StringFormat='{0:0.00}'}" Style="{StaticResource ValueLabel}" />
+                                    </VerticalStackLayout>
+
+                                    <VerticalStackLayout WidthRequest="120" Spacing="2" Margin="0,0,10,8">
+                                        <Label Text="18" Style="{StaticResource BoxNumberLabel}" />
+                                        <Label Text="{Binding Box18EiPremiums, StringFormat='{0:0.00}'}" Style="{StaticResource ValueLabel}" />
+                                    </VerticalStackLayout>
+                                </FlexLayout>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <Label Text="{Binding Message}" TextColor="#B91C1C" HorizontalOptions="Center" FontAttributes="Bold"/>
+            <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

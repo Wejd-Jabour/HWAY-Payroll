@@ -1,169 +1,237 @@
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="HWAY.Payroll.UI.Views.PayrollRecordPage"
-             Title="Employee Payroll Lookup">
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="HWAY.Payroll.UI.Views.PayrollRecordPage"
+    BackgroundColor="#F6F8FA"
+    Title="Employee Payroll Lookup">
 
     <ScrollView>
-        <VerticalStackLayout Padding="25" Spacing="18">
+        <VerticalStackLayout Padding="24" Spacing="18">
 
-            <!-- Page Header -->
-            <Label Text="Employee Payroll Lookup"
-                   FontSize="26"
-                   FontAttributes="Bold"
-                   HorizontalOptions="Center" />
+            <VerticalStackLayout Spacing="3">
+                <Label Text="Employee Payroll Lookup" Style="{StaticResource HwayPageTitle}" />
+                <Label Text="Find employee payroll records by employer RP number" Style="{StaticResource HwaySmallLabel}" />
+            </VerticalStackLayout>
 
-            <!-- Employer Search Section -->
-            <Frame BorderColor="LightGray"
-                   CornerRadius="12"
-                   Padding="15">
+            <Border Style="{StaticResource HwayCardBorder}">
+                <VerticalStackLayout Spacing="14">
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="Employer Search" Style="{StaticResource HwaySectionTitle}" />
+                        <Label Text="Enter an RP number to load employee payroll records" Style="{StaticResource HwaySmallLabel}" />
+                    </VerticalStackLayout>
 
-                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <VerticalStackLayout Grid.Column="0" Spacing="6">
+                            <Label Text="RP Number" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry
+                                    Placeholder="RP Number"
+                                    Keyboard="Text"
+                                    Text="{Binding RpNumber}"
+                                    Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
 
-                    <Label Text="Enter RP Number"
-                           FontAttributes="Bold" />
-
-                    <Entry Placeholder="RP Number"
-                           Keyboard="Text"
-                           Text="{Binding RpNumber}" />
-
-                    <Button Text="Search Employees"
+                        <Button
+                            Grid.Column="1"
+                            Text="Search Employees"
                             Command="{Binding SearchByRpNumberCommand}"
-                            BackgroundColor="#512BD4"
-                            TextColor="White"
-                            CornerRadius="10" />
-
+                            Style="{StaticResource HwayPrimaryButton}"
+                            VerticalOptions="End" />
+                    </Grid>
                 </VerticalStackLayout>
-            </Frame>
+            </Border>
 
-            <CollectionView ItemsSource="{Binding SearchResults}"
-                            SelectionMode="Single"
-                            SelectedItem="{Binding SelectedPayrollRecord}"
-                            IsVisible="{Binding SearchResultsFound}"
-                            Margin="0,10,0,0">
+            <CollectionView
+                ItemsSource="{Binding SearchResults}"
+                SelectionMode="Single"
+                SelectedItem="{Binding SelectedPayrollRecord}"
+                IsVisible="{Binding SearchResultsFound}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Frame BorderColor="LightGray"
-                               CornerRadius="10"
-                               Padding="12"
-                               Margin="0,0,0,10">
-                            <VerticalStackLayout Spacing="4">
-                                <Label Text="{Binding EmployeeName}"
-                                       FontAttributes="Bold" />
-                                <Label Text="{Binding EmployeeNumber}" />
-                                <Label Text="{Binding RpNumber}" />
-                            </VerticalStackLayout>
-                        </Frame>
+                        <Border
+                            BackgroundColor="#FFFFFF"
+                            Stroke="#D9E2EC"
+                            StrokeShape="RoundRectangle 8"
+                            StrokeThickness="1"
+                            Padding="14"
+                            Margin="0,0,0,10">
+                            <Grid ColumnDefinitions="*,170" ColumnSpacing="16">
+                                <VerticalStackLayout Grid.Column="0" Spacing="3">
+                                    <Label
+                                        Text="{Binding EmployeeName}"
+                                        FontSize="16"
+                                        FontAttributes="Bold"
+                                        TextColor="#111827" />
+                                    <Label Text="{Binding EmployeeNumber, StringFormat='Employee #: {0}'}" Style="{StaticResource HwaySmallLabel}" />
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                    <Label Text="RP Number" Style="{StaticResource HwayFieldLabel}" />
+                                    <Label Text="{Binding RpNumber}" Style="{StaticResource HwayValueLabel}" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
-            <Label Text="No employees found for that RP number."
-                   TextColor="Red"
-                   HorizontalOptions="Center"
-                   IsVisible="{Binding EmployeeNotFound}" />
+            <Border
+                IsVisible="{Binding EmployeeNotFound}"
+                BackgroundColor="#FEF2F2"
+                Stroke="#FCA5A5"
+                StrokeShape="RoundRectangle 8"
+                StrokeThickness="1"
+                Padding="12">
+                <Label
+                    Text="No employees found for that RP number."
+                    TextColor="#B91C1C"
+                    FontAttributes="Bold" />
+            </Border>
 
-            <!-- Employee Details Section -->
-            <VerticalStackLayout IsVisible="{Binding EmployeeFound}"
-                                 Spacing="15">
+            <Border
+                IsVisible="{Binding EmployeeFound}"
+                Style="{StaticResource HwayCardBorder}">
 
-                <Label Text="Payroll Details"
-                       FontSize="22"
-                       FontAttributes="Bold"
-                       HorizontalOptions="Center" />
+                <VerticalStackLayout Spacing="14">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <VerticalStackLayout Grid.Column="0" Spacing="3">
+                            <Label Text="Payroll Details" Style="{StaticResource HwaySectionTitle}" />
+                            <Label Text="{Binding HireDateText, StringFormat='Hire date: {0}'}" Style="{StaticResource HwaySmallLabel}" />
+                        </VerticalStackLayout>
 
-                <!-- Salary -->
-                <Label Text="Salary" />
-                <Entry Text="{Binding Salary}"
-                       Keyboard="Numeric" />
+                        <Button
+                            Grid.Column="1"
+                            Text="Calculate Payroll Deductions"
+                            Command="{Binding CalculateAndOpenCraCommand}"
+                            Style="{StaticResource HwayPrimaryButton}"
+                            VerticalOptions="Center" />
+                    </Grid>
 
-                <!-- Rate -->
-                <Label Text="Rate" />
-                <Entry Text="{Binding Rate}"
-                       Keyboard="Numeric" />
+                    <FlexLayout
+                        Direction="Row"
+                        Wrap="Wrap"
+                        AlignItems="Start"
+                        JustifyContent="Start">
 
-                <!-- RegularHours -->
-                <Label Text="Regular Hours" />
-                <Entry Text="{Binding RegularHours}"
-                       Keyboard="Numeric" />
+                        <VerticalStackLayout WidthRequest="330" Spacing="10" Margin="0,0,24,8">
+                            <Label Text="Earnings" Style="{StaticResource HwaySubsectionTitle}" />
 
-                <Label Text="Overtime Hours" />
-                <Entry Text="{Binding OvertimeHours}"
-                       Keyboard="Numeric" />
+                            <Grid
+                                ColumnDefinitions="150,*"
+                                RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                                ColumnSpacing="10"
+                                RowSpacing="8">
 
-                <Label Text="Public Holiday Hours" />
-                <Entry Text="{Binding PublicHolidayHours}"
-                       Keyboard="Numeric" />
+                                <Label Grid.Row="0" Grid.Column="0" Text="Salary" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                                <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource HwayInputBorder}">
+                                    <Entry Text="{Binding Salary}" Keyboard="Numeric" Style="{StaticResource HwayEntry}" />
+                                </Border>
 
-                <Label Text="Statutory Holiday Hours" />
-                <Entry Text="{Binding StatHolidayHours}"
-                       Keyboard="Numeric" />
+                                <Label Grid.Row="1" Grid.Column="0" Text="Rate" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource HwayInputBorder}">
+                                    <Entry Text="{Binding Rate}" Keyboard="Numeric" Style="{StaticResource HwayEntry}" />
+                                </Border>
 
-                <Label Text="Hire Date" /> 
-                <Label Text="{Binding HireDateText}" />
+                                <Label Grid.Row="2" Grid.Column="0" Text="Regular Hours" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                                <Border Grid.Row="2" Grid.Column="1" Style="{StaticResource HwayInputBorder}">
+                                    <Entry Text="{Binding RegularHours}" Keyboard="Numeric" Style="{StaticResource HwayEntry}" />
+                                </Border>
 
-                <!-- Calculate Button -->
-                <Button Text="Calculate Payroll &amp; Open CRA"
-                        Command="{Binding CalculateAndOpenCraCommand}"
-                        BackgroundColor="Orange"
-                        TextColor="White"
-                        CornerRadius="10" />
+                                <Label Grid.Row="3" Grid.Column="0" Text="Overtime Hours" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                                <Border Grid.Row="3" Grid.Column="1" Style="{StaticResource HwayInputBorder}">
+                                    <Entry Text="{Binding OvertimeHours}" Keyboard="Numeric" Style="{StaticResource HwayEntry}" />
+                                </Border>
 
-                <!-- Gross -->
-                <Label Text="Gross" />
-                <Entry Text="{Binding Gross}"
-                       Keyboard="Numeric"
-                       IsReadOnly="True" />
+                                <Label Grid.Row="4" Grid.Column="0" Text="Public Holiday Hours" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                                <Border Grid.Row="4" Grid.Column="1" Style="{StaticResource HwayInputBorder}">
+                                    <Entry Text="{Binding PublicHolidayHours}" Keyboard="Numeric" Style="{StaticResource HwayEntry}" />
+                                </Border>
 
-                <!-- Vacation -->
-                <Label Text="Vacation" />
-                <Entry Text="{Binding Vacation}"
-                       Keyboard="Numeric"
-                       IsReadOnly="True" />
+                                <Label Grid.Row="5" Grid.Column="0" Text="Statutory Hours" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                                <Border Grid.Row="5" Grid.Column="1" Style="{StaticResource HwayInputBorder}">
+                                    <Entry Text="{Binding StatHolidayHours}" Keyboard="Numeric" Style="{StaticResource HwayEntry}" />
+                                </Border>
+                            </Grid>
+                        </VerticalStackLayout>
 
-                <Label Text="Vacation Setting" />
-                <Picker ItemsSource="{Binding VacationSettingOptions}"
-                        SelectedItem="{Binding VacationSetting}"
-                        Title="Vacation setting" />
+                        <VerticalStackLayout WidthRequest="330" Spacing="10" Margin="0,0,24,8">
+                            <Label Text="Pay and Vacation" Style="{StaticResource HwaySubsectionTitle}" />
 
-                <!-- Tax / Deductions -->
-                <Label Text="Tax1" />
-                <Entry Text="{Binding Tax1}"
-                       Keyboard="Numeric" />
+                            <Grid
+                                ColumnDefinitions="130,*"
+                                RowDefinitions="Auto,Auto,Auto"
+                                ColumnSpacing="10"
+                                RowSpacing="8">
 
-                <Label Text="CPP1" />
-                <Entry Text="{Binding Cpp1}"
-                       Keyboard="Numeric"
-                       IsEnabled="{Binding CanEditCpp}" />
+                                <Label Grid.Row="0" Grid.Column="0" Text="Gross" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                                <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource HwayReadOnlyInputBorder}">
+                                    <Entry Text="{Binding Gross}" Keyboard="Numeric" IsReadOnly="True" Style="{StaticResource HwayEntry}" />
+                                </Border>
 
-                <Label Text="CPP2" />
-                <Entry Text="{Binding Cpp2}"
-                       Keyboard="Numeric"
-                       IsEnabled="{Binding CanEditCpp}" />
+                                <Label Grid.Row="1" Grid.Column="0" Text="Vacation" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource HwayReadOnlyInputBorder}">
+                                    <Entry Text="{Binding Vacation}" Keyboard="Numeric" IsReadOnly="True" Style="{StaticResource HwayEntry}" />
+                                </Border>
 
-                <Label Text="EI" />
-                <Entry Text="{Binding Ei}"
-                       Keyboard="Numeric"
-                       IsEnabled="{Binding CanEditEi}" />
+                                <Label Grid.Row="2" Grid.Column="0" Text="Vacation Setting" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                                <Border Grid.Row="2" Grid.Column="1" Style="{StaticResource HwayInputBorder}">
+                                    <Picker
+                                        ItemsSource="{Binding VacationSettingOptions}"
+                                        SelectedItem="{Binding VacationSetting}"
+                                        Title="Vacation setting"
+                                        Style="{StaticResource HwayPicker}" />
+                                </Border>
+                            </Grid>
+                        </VerticalStackLayout>
 
-                <Label Text="Other Deduction" />
-                <Entry Text="{Binding OtherDeduction}"
-                       Keyboard="Numeric" />
+                        <VerticalStackLayout WidthRequest="330" Spacing="10" Margin="0,0,24,8">
+                            <Label Text="Deductions" Style="{StaticResource HwaySubsectionTitle}" />
 
-                <!-- Save Button -->
-                <Button Text="Save Changes"
+                            <Grid
+                                ColumnDefinitions="130,*"
+                                RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                                ColumnSpacing="10"
+                                RowSpacing="8">
+
+                                <Label Grid.Row="0" Grid.Column="0" Text="Tax" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                                <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource HwayInputBorder}">
+                                    <Entry Text="{Binding Tax1}" Keyboard="Numeric" Style="{StaticResource HwayEntry}" />
+                                </Border>
+
+                                <Label Grid.Row="1" Grid.Column="0" Text="CPP1" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource HwayInputBorder}">
+                                    <Entry Text="{Binding Cpp1}" Keyboard="Numeric" IsEnabled="{Binding CanEditCpp}" Style="{StaticResource HwayEntry}" />
+                                </Border>
+
+                                <Label Grid.Row="2" Grid.Column="0" Text="CPP2" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                                <Border Grid.Row="2" Grid.Column="1" Style="{StaticResource HwayInputBorder}">
+                                    <Entry Text="{Binding Cpp2}" Keyboard="Numeric" IsEnabled="{Binding CanEditCpp}" Style="{StaticResource HwayEntry}" />
+                                </Border>
+
+                                <Label Grid.Row="3" Grid.Column="0" Text="EI" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                                <Border Grid.Row="3" Grid.Column="1" Style="{StaticResource HwayInputBorder}">
+                                    <Entry Text="{Binding Ei}" Keyboard="Numeric" IsEnabled="{Binding CanEditEi}" Style="{StaticResource HwayEntry}" />
+                                </Border>
+
+                                <Label Grid.Row="4" Grid.Column="0" Text="Other Deduction" Style="{StaticResource HwayFieldLabel}" VerticalOptions="Center" />
+                                <Border Grid.Row="4" Grid.Column="1" Style="{StaticResource HwayInputBorder}">
+                                    <Entry Text="{Binding OtherDeduction}" Keyboard="Numeric" Style="{StaticResource HwayEntry}" />
+                                </Border>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </FlexLayout>
+
+                    <Label Text="{Binding Message}" Style="{StaticResource HwaySuccessMessage}" />
+
+                    <Button
+                        Text="Save Changes"
                         Command="{Binding SaveCommand}"
-                        BackgroundColor="Green"
-                        TextColor="White"
-                        CornerRadius="10" />
-
-            </VerticalStackLayout>
-
-            <!-- Employee Not Found -->
-            <Label Text="Employee not found."
-                   TextColor="Red"
-                   HorizontalOptions="Center"
-                   IsVisible="{Binding EmployeeNotFound}" />
-
+                        Style="{StaticResource HwaySaveButton}"
+                        HorizontalOptions="Start" />
+                </VerticalStackLayout>
+            </Border>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

@@ -16,6 +16,7 @@ public class EmployerLookupService : IEmployerLookupService
     public async Task<List<EmployerLookupDto>> SearchEmployersAsync(string? searchText)
     {
         searchText = searchText?.Trim();
+        var pd7TotalYear = DateTime.Today.Year;
 
         var query = _dbContext.Employers
             .AsNoTracking();
@@ -42,7 +43,11 @@ public class EmployerLookupService : IEmployerLookupService
                 PostalCode = employer.PostalCode,
                 EmployerGroup = employer.EmployerGroup,
                 PaystubPeriod = employer.PaystubPeriod,
-                Fee = employer.Fee
+                Fee = employer.Fee,
+                PD7Total = _dbContext.PD7Records
+                    .Where(pd7 => pd7.RPNumber == employer.RpNumber && pd7.Year == pd7TotalYear)
+                    .Sum(pd7 => (decimal?)pd7.PD7Total) ?? 0,
+                PD7TotalYear = pd7TotalYear
             })
             .ToListAsync();
     }
@@ -50,6 +55,7 @@ public class EmployerLookupService : IEmployerLookupService
     public async Task<EmployerLookupDto?> GetEmployerByRpNumberAsync(string rpNumber)
     {
         rpNumber = rpNumber.Trim();
+        var pd7TotalYear = DateTime.Today.Year;
 
         return await _dbContext.Employers
             .AsNoTracking()
@@ -64,7 +70,11 @@ public class EmployerLookupService : IEmployerLookupService
                 PostalCode = employer.PostalCode,
                 EmployerGroup = employer.EmployerGroup,
                 PaystubPeriod = employer.PaystubPeriod,
-                Fee = employer.Fee
+                Fee = employer.Fee,
+                PD7Total = _dbContext.PD7Records
+                    .Where(pd7 => pd7.RPNumber == employer.RpNumber && pd7.Year == pd7TotalYear)
+                    .Sum(pd7 => (decimal?)pd7.PD7Total) ?? 0,
+                PD7TotalYear = pd7TotalYear
             })
             .FirstOrDefaultAsync();
     }

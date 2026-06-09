@@ -13,7 +13,9 @@ The direct database host for this project is IPv6-only. On this machine, use the
 
 ## Configure The App
 
-Set one of these before running the app:
+The app includes the Supabase Session Pooler connection as its built-in default, so the packaged application can connect without manual environment setup.
+
+To override the built-in connection for development or a future Supabase project, set one of these before running the app:
 
 ```powershell
 $env:SUPABASE_DB_PASSWORD = "<supabase database password>"
@@ -38,6 +40,7 @@ Run `database/supabase_schema.sql` in the Supabase SQL editor. It creates:
 - `PayrollRecords`
 - `Record History`
 - `PD7`
+- `PayrollDeductionLimits`
 - `monthly`
 - `semi-monthly`
 - `bi-weekly A`
@@ -50,6 +53,8 @@ For an existing Supabase database that already has the base schema, run `databas
 For an existing Supabase database, run `database/20260604_add_employer_paystub_period.sql` to add the employer-level `Period #` tracker.
 
 For an existing Supabase database, run `database/20260606_create_record_history_table.sql` to add the passive `Record History` table populated by the Save All Employees flow.
+
+For an existing Supabase database, run `database/20260608_create_payroll_deduction_limits.sql` to add the yearly CPP/EI limit table used by payroll caps and T4 summaries.
 
 If the payroll period tables were created before the `P*` columns were corrected to dates, run `database/20260604_convert_pay_period_columns_to_date.sql`.
 

@@ -95,14 +95,59 @@ public class PD7ViewModel : INotifyPropertyChanged
     public decimal Gross
     {
         get => _gross;
-        set => SetProperty(ref _gross, value);
+        set
+        {
+            if (SetProperty(ref _gross, value))
+            {
+                NotifyCalculationCheckChanged();
+            }
+        }
+    }
+
+    private decimal _netTotal;
+    public decimal NetTotal
+    {
+        get => _netTotal;
+        set
+        {
+            if (SetProperty(ref _netTotal, value))
+            {
+                NotifyCalculationCheckChanged();
+            }
+        }
+    }
+
+    private decimal _employerContribution;
+    public decimal EmployerContribution
+    {
+        get => _employerContribution;
+        set
+        {
+            if (SetProperty(ref _employerContribution, value))
+            {
+                NotifyCalculationCheckChanged();
+            }
+        }
     }
 
     private decimal _pd7Total;
     public decimal PD7Total
     {
         get => _pd7Total;
-        set => SetProperty(ref _pd7Total, value);
+        set
+        {
+            if (SetProperty(ref _pd7Total, value))
+            {
+                NotifyCalculationCheckChanged();
+            }
+        }
+    }
+
+    private decimal _calendarYearPD7Total;
+    public decimal CalendarYearPD7Total
+    {
+        get => _calendarYearPD7Total;
+        set => SetProperty(ref _calendarYearPD7Total, value);
     }
 
     private int _activeEmployees;
@@ -140,6 +185,19 @@ public class PD7ViewModel : INotifyPropertyChanged
         }
     }
 
+    private decimal _paidSoFar;
+    public decimal PaidSoFar
+    {
+        get => _paidSoFar;
+        set
+        {
+            if (SetProperty(ref _paidSoFar, value))
+            {
+                UpdateFeeCheck();
+            }
+        }
+    }
+
     private decimal _received;
     public decimal Received
     {
@@ -153,6 +211,10 @@ public class PD7ViewModel : INotifyPropertyChanged
         }
     }
 
+    public decimal TotalReceived => RoundMoney(PaidSoFar + Received);
+    public decimal OutstandingBalance => Math.Max(RoundMoney(Transfer - TotalReceived), 0);
+    public bool HasPaidSoFar => RoundMoney(PaidSoFar) > 0;
+
     private bool _feeCheck;
     public bool FeeCheck
     {
@@ -160,11 +222,14 @@ public class PD7ViewModel : INotifyPropertyChanged
         set => SetProperty(ref _feeCheck, value);
     }
 
+    public bool CalculationCheck => RoundMoney(NetTotal + PD7Total) == RoundMoney(Gross + EmployerContribution);
+    public decimal CalculationCheckDifference => RoundMoney((NetTotal + PD7Total) - (Gross + EmployerContribution));
+
     public Color ReceivedStatusColor
     {
         get
         {
-            if (Transfer == 0 && Received == 0)
+            if (Transfer == 0 && TotalReceived == 0)
                 return Colors.Transparent;
 
             return FeeCheck
@@ -177,12 +242,38 @@ public class PD7ViewModel : INotifyPropertyChanged
     {
         get
         {
-            if (Transfer == 0 && Received == 0)
+            if (Transfer == 0 && TotalReceived == 0)
                 return "";
 
             return FeeCheck
-                ? "Received matches transfer"
-                : "Received does not match transfer";
+                ? "Total received matches transfer"
+                : "Total received does not match transfer";
+        }
+    }
+
+    public Color CalculationCheckStatusColor
+    {
+        get
+        {
+            if (!HasCalculationAmounts())
+                return Colors.Transparent;
+
+            return CalculationCheck
+                ? Color.FromArgb("#D8F3DC")
+                : Color.FromArgb("#F8D7DA");
+        }
+    }
+
+    public string CalculationCheckStatusText
+    {
+        get
+        {
+            if (!HasCalculationAmounts())
+                return "";
+
+            return CalculationCheck
+                ? "Net + PD7 matches gross + employer contribution"
+                : $"Calculation check off by {Math.Abs(CalculationCheckDifference):0.00}";
         }
     }
 
@@ -197,6 +288,7 @@ public class PD7ViewModel : INotifyPropertyChanged
                 Month = value?.Number ?? 0;
                 Period = "XX";
                 Received = 0;
+                PaidSoFar = 0;
 
                 if (!_suppressCalculations)
                 {
@@ -222,6 +314,7 @@ public class PD7ViewModel : INotifyPropertyChanged
             if (SetProperty(ref _year, value))
             {
                 Received = 0;
+                PaidSoFar = 0;
 
                 if (!_suppressCalculations)
                 {
@@ -296,6 +389,7 @@ public class PD7ViewModel : INotifyPropertyChanged
             RpNumber = SelectedEmployer.RpNumber;
             Fee = SelectedEmployer.Fee;
             Received = 0;
+            PaidSoFar = 0;
 
             _suppressSearchTextChanged = true;
             SearchText = SelectedEmployer.RpNumber;
@@ -331,15 +425,16 @@ public class PD7ViewModel : INotifyPropertyChanged
             IsBusy = true;
             Message = "";
 
+            var calculated = await _pd7LookupService.CalculatePd7Async(RpNumber, Month, Year);
+            ApplyCalculatedFields(calculated);
+
             var saved = await _pd7LookupService.GetByPeriodAsync(RpNumber, Month, Year);
             if (saved != null)
             {
                 ApplySavedFields(saved);
-                return;
             }
 
-            var calculated = await _pd7LookupService.CalculatePd7Async(RpNumber, Month, Year);
-            ApplyCalculatedFields(calculated);
+            await RefreshCalendarYearPD7TotalAsync();
         }
         catch (Exception ex)
         {
@@ -351,6 +446,17 @@ public class PD7ViewModel : INotifyPropertyChanged
             IsBusy = false;
             _isCalculating = false;
         }
+    }
+
+    private async Task RefreshCalendarYearPD7TotalAsync()
+    {
+        if (string.IsNullOrWhiteSpace(RpNumber) || Year < 1)
+        {
+            CalendarYearPD7Total = 0;
+            return;
+        }
+
+        CalendarYearPD7Total = await _pd7LookupService.GetCalendarYearPd7TotalAsync(RpNumber, Year);
     }
 
     private async Task SaveAsync()
@@ -380,29 +486,35 @@ public class PD7ViewModel : INotifyPropertyChanged
                 return;
             }
 
-            if (Fee < 0 || Gross < 0 || PD7Total < 0 || Transfer < 0 || Received < 0 || ActiveEmployees < 0)
+            if (Fee < 0 ||
+                Gross < 0 ||
+                NetTotal < 0 ||
+                EmployerContribution < 0 ||
+                PD7Total < 0 ||
+                Transfer < 0 ||
+                PaidSoFar < 0 ||
+                Received < 0 ||
+                ActiveEmployees < 0)
             {
                 Message = "Negative values are not allowed.";
                 return;
             }
 
-            var savedPd7 = await _pd7LookupService.GetByPeriodAsync(RpNumber, Month, Year);
-            if (savedPd7 == null)
-            {
-                var calculated = await _pd7LookupService.CalculatePd7Async(RpNumber, Month, Year);
-                ApplyCalculatedFields(calculated);
-            }
+            var calculated = await _pd7LookupService.CalculatePd7Async(RpNumber, Month, Year);
+            ApplyCalculatedFields(calculated);
 
             var dto = new PD7LookupDto
             {
                 RPNumber = RpNumber,
                 Fee = Fee,
                 Gross = Gross,
+                NetTotal = NetTotal,
+                EmployerContribution = EmployerContribution,
                 PD7Total = PD7Total,
                 ActiveEmployees = ActiveEmployees,
                 Period = PeriodSummary,
                 Transfer = Transfer,
-                Received = Received,
+                Received = TotalReceived,
                 FeeCheck = FeeCheck,
                 Month = Month,
                 Year = Year
@@ -433,6 +545,8 @@ public class PD7ViewModel : INotifyPropertyChanged
     {
         Fee = calculated.Fee;
         Gross = calculated.Gross;
+        NetTotal = calculated.NetTotal;
+        EmployerContribution = calculated.EmployerContribution;
         PD7Total = calculated.PD7Total;
         ActiveEmployees = calculated.ActiveEmployees;
         Period = calculated.Period;
@@ -443,27 +557,23 @@ public class PD7ViewModel : INotifyPropertyChanged
 
     private void ApplySavedFields(PD7LookupDto saved)
     {
-        Fee = saved.Fee;
-        Gross = saved.Gross;
-        PD7Total = saved.PD7Total;
-        ActiveEmployees = saved.ActiveEmployees;
-        Period = saved.Period;
-        Transfer = saved.Transfer;
-        Received = saved.Received;
-        FeeCheck = saved.FeeCheck;
-
-        OnPropertyChanged(nameof(ReceivedStatusColor));
-        OnPropertyChanged(nameof(FeeCheckStatusText));
+        PaidSoFar = saved.Received;
+        Received = 0;
+        UpdateFeeCheck();
     }
 
     private void ClearCalculatedFields()
     {
         Fee = SelectedEmployer?.Fee ?? 0;
         Gross = 0;
+        NetTotal = 0;
+        EmployerContribution = 0;
         PD7Total = 0;
+        CalendarYearPD7Total = 0;
         ActiveEmployees = 0;
         Period = "XX";
         Transfer = 0;
+        PaidSoFar = 0;
     }
 
     private void ClearForm()
@@ -476,10 +586,14 @@ public class PD7ViewModel : INotifyPropertyChanged
         RpNumber = "";
         Fee = 0;
         Gross = 0;
+        NetTotal = 0;
+        EmployerContribution = 0;
         PD7Total = 0;
+        CalendarYearPD7Total = 0;
         ActiveEmployees = 0;
         Period = "XX";
         Transfer = 0;
+        PaidSoFar = 0;
         Received = 0;
         FeeCheck = false;
         Year = DateTime.Today.Year;
@@ -496,10 +610,27 @@ public class PD7ViewModel : INotifyPropertyChanged
 
     private void UpdateFeeCheck()
     {
-        var hasAmountToCheck = Transfer != 0 || Received != 0;
-        FeeCheck = hasAmountToCheck && RoundMoney(Received) == RoundMoney(Transfer);
+        var totalReceived = TotalReceived;
+        var hasAmountToCheck = Transfer != 0 || totalReceived != 0;
+        FeeCheck = hasAmountToCheck && RoundMoney(totalReceived) == RoundMoney(Transfer);
+        OnPropertyChanged(nameof(TotalReceived));
+        OnPropertyChanged(nameof(OutstandingBalance));
+        OnPropertyChanged(nameof(HasPaidSoFar));
         OnPropertyChanged(nameof(ReceivedStatusColor));
         OnPropertyChanged(nameof(FeeCheckStatusText));
+    }
+
+    private void NotifyCalculationCheckChanged()
+    {
+        OnPropertyChanged(nameof(CalculationCheck));
+        OnPropertyChanged(nameof(CalculationCheckDifference));
+        OnPropertyChanged(nameof(CalculationCheckStatusColor));
+        OnPropertyChanged(nameof(CalculationCheckStatusText));
+    }
+
+    private bool HasCalculationAmounts()
+    {
+        return Gross != 0 || NetTotal != 0 || EmployerContribution != 0 || PD7Total != 0;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

@@ -14,15 +14,18 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
     private readonly AppDbContext _dbContext;
     private readonly IPD7LookupService _pd7LookupService;
     private readonly IPayPeriodRangeService _payPeriodRangeService;
+    private readonly IPayrollDeductionLimitService _deductionLimitService;
 
     public PayrollRecordLookupService(
         AppDbContext dbContext,
         IPD7LookupService pd7LookupService,
-        IPayPeriodRangeService payPeriodRangeService)
+        IPayPeriodRangeService payPeriodRangeService,
+        IPayrollDeductionLimitService deductionLimitService)
     {
         _dbContext = dbContext;
         _pd7LookupService = pd7LookupService;
         _payPeriodRangeService = payPeriodRangeService;
+        _deductionLimitService = deductionLimitService;
     }
 
     public async Task<List<PayrollRecordLookupDto>> SearchPayrollRecordsAsync(string? searchText)
@@ -54,6 +57,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
                 EmployerName = record.Employer!.EmployerName,
+                EmployerGroup = record.Employer.EmployerGroup ?? string.Empty,
+                EmployerPaystubPeriod = record.Employer.PaystubPeriod,
                 Period = record.Period,
 
                 EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
@@ -112,6 +117,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
                 EmployerName = record.Employer!.EmployerName,
+                EmployerGroup = record.Employer.EmployerGroup ?? string.Empty,
+                EmployerPaystubPeriod = record.Employer.PaystubPeriod,
                 Period = record.Period,
 
                 EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
@@ -169,6 +176,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 RpNumber = record.RpNumber,
                 EmployeeName = record.EmployeeName,
                 EmployerName = record.Employer!.EmployerName,
+                EmployerGroup = record.Employer.EmployerGroup ?? string.Empty,
+                EmployerPaystubPeriod = record.Employer.PaystubPeriod,
                 Period = record.Period,
 
                 EmployeeAddress = record.Employee != null ? record.Employee.Address ?? "" : "",
@@ -226,8 +235,10 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         var period = PayPeriodRules.NormalizePeriod(
             record.Employer?.EmployerGroup,
             record.Employer?.PaystubPeriod ?? record.Period);
+        var payrollYear = (dto.PayDate ?? DateTime.Today).Year;
+        var deductionLimits = await _deductionLimitService.GetLimitValuesForYearAsync(payrollYear);
 
-        ApplyPayrollUpdate(record, dto, period);
+        ApplyPayrollUpdate(record, dto, period, deductionLimits);
 
         await _dbContext.SaveChangesAsync();
     }
@@ -266,6 +277,8 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                 .Include(record => record.Employee)
                 .Where(record => record.RpNumber == rpNumber && recordIds.Contains(record.Id))
                 .ToDictionaryAsync(record => record.Id);
+            var deductionLimitsByYear = await LoadDeductionLimitCacheAsync(
+                updates.Select(update => (update.PayrollRecord.PayDate ?? DateTime.Today).Year));
 
             foreach (var update in updates)
             {
@@ -275,7 +288,12 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
                         $"Payroll record with Id {update.PayrollRecordId} was not found for RP number {rpNumber}.");
                 }
 
-                ApplyPayrollUpdate(record, update.PayrollRecord, savedPeriod);
+                var payrollYear = (update.PayrollRecord.PayDate ?? DateTime.Today).Year;
+                ApplyPayrollUpdate(
+                    record,
+                    update.PayrollRecord,
+                    savedPeriod,
+                    deductionLimitsByYear[payrollYear]);
                 _dbContext.RecordHistory.Add(CreateRecordHistory(
                     record,
                     update.PayrollRecord,
@@ -306,6 +324,19 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         });
     }
 
+    private async Task<Dictionary<int, PayrollDeductionLimitValues?>> LoadDeductionLimitCacheAsync(
+        IEnumerable<int> years)
+    {
+        var result = new Dictionary<int, PayrollDeductionLimitValues?>();
+
+        foreach (var year in years.Distinct())
+        {
+            result[year] = await _deductionLimitService.GetLimitValuesForYearAsync(year);
+        }
+
+        return result;
+    }
+
     private async Task<PD7LookupDto?> SaveAutomaticPd7IfClosingMonthAsync(
         string rpNumber,
         string? employerGroup,
@@ -330,24 +361,24 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
     private static void ApplyPayrollUpdate(
         DataPayrollRecord record,
         PayrollRecordUpdateDto dto,
-        int period)
+        int period,
+        PayrollDeductionLimitValues? deductionLimits)
     {
         record.Period = period;
         var salary = dto.Salary;
         var rate = salary > 0 ? 0 : dto.Rate;
         var eligibilityDate = (dto.PayDate ?? DateTime.Today).Date;
-        var payrollYear = eligibilityDate.Year;
         var canContributeCpp = EmployeePayrollEligibility.CanContributeCpp(
             record.Employee?.DateOfBirth,
             eligibilityDate);
         var cpp1 = canContributeCpp
-            ? PayrollDeductionCaps.ClampCpp1(dto.Cpp1, record.Cpp1Ytd, payrollYear)
+            ? PayrollDeductionCaps.ClampCpp1(dto.Cpp1, record.Cpp1Ytd, deductionLimits)
             : 0m;
         var cpp2 = canContributeCpp
-            ? PayrollDeductionCaps.ClampCpp2(dto.Cpp2, record.Cpp2Ytd, payrollYear)
+            ? PayrollDeductionCaps.ClampCpp2(dto.Cpp2, record.Cpp2Ytd, deductionLimits)
             : 0m;
         var ei = EmployeePayrollEligibility.CanContributeEi(record.Employee?.EiExempt == true)
-            ? PayrollDeductionCaps.ClampEi(dto.Ei, record.EiYtd, payrollYear)
+            ? PayrollDeductionCaps.ClampEi(dto.Ei, record.EiYtd, deductionLimits)
             : 0m;
         var vacationSetting = VacationSettings.Normalize(dto.VacationSetting);
         var vacationUsed = VacationSettings.IsPaidOut(vacationSetting)
