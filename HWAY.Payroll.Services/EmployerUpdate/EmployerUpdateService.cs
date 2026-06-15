@@ -88,13 +88,16 @@ public class EmployerUpdateService : IEmployerUpdateService
         if (employer == null)
             throw new Exception("Employer not found");
 
+        var employerGroup = PayPeriodRules.NormalizeEmployerGroup(dto.EmployerGroup);
+        PayPeriodRules.ValidatePeriod(employerGroup, dto.PaystubPeriod);
+
         employer.RpNumber = dto.RpNumber;
         employer.EmployerName = dto.EmployerName;
         employer.Address = dto.Address;
         employer.City = dto.City;
         employer.PostalCode = dto.PostalCode;
-        employer.EmployerGroup = dto.EmployerGroup;
-        employer.PaystubPeriod = PayPeriodRules.NormalizePeriod(dto.EmployerGroup, dto.PaystubPeriod);
+        employer.EmployerGroup = employerGroup;
+        employer.PaystubPeriod = dto.PaystubPeriod;
         employer.Fee = dto.Fee;
 
         await _dbContext.SaveChangesAsync();

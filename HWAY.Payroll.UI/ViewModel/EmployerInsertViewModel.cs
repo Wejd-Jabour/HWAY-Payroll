@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using HWAY.Payroll.Services.EmployerInsert;
+using HWAY.Payroll.Services.PayPeriods;
 using Microsoft.Maui.Controls;
 
 namespace HWAY.Payroll.UI.ViewModels;
@@ -48,7 +49,8 @@ public class EmployerInsertViewModel : INotifyPropertyChanged
     }
 
     public decimal Fee { get; set; }
-    
+    public int PaystubPeriod { get; set; } = 1;
+
 
     // 🔹 UI state
     private bool _isBusy;
@@ -76,7 +78,17 @@ public class EmployerInsertViewModel : INotifyPropertyChanged
         if (string.IsNullOrWhiteSpace(EmployerName))
             return Fail("Employer Name is required");
 
+        var maxPeriod = PayPeriodRules.GetMaxPeriod(EmployerGroup);
+        if (PaystubPeriod < 1 || PaystubPeriod > maxPeriod)
+            return Fail(GetPeriodValidationMessage());
+
         return true;
+    }
+
+    private string GetPeriodValidationMessage()
+    {
+        var maxPeriod = PayPeriodRules.GetMaxPeriod(EmployerGroup);
+        return $"Period # must be between 1 and {maxPeriod} for {SelectedEmployerGroupOption.DisplayName}.";
     }
 
     private bool _isSuccess;
@@ -112,6 +124,7 @@ public class EmployerInsertViewModel : INotifyPropertyChanged
                 City = City,
                 PostalCode = PostalCode,
                 EmployerGroup = EmployerGroup,
+                PaystubPeriod = PaystubPeriod,
                 Fee = Fee
             };
 
@@ -140,6 +153,7 @@ public class EmployerInsertViewModel : INotifyPropertyChanged
         City = null;
         PostalCode = null;
         EmployerGroup = EmployerGroupOption.Default.Code;
+        PaystubPeriod = 1;
         Fee = 0;
 
         OnPropertyChanged(nameof(RpNumber));
@@ -148,6 +162,7 @@ public class EmployerInsertViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(City));
         OnPropertyChanged(nameof(PostalCode));
         OnPropertyChanged(nameof(EmployerGroup));
+        OnPropertyChanged(nameof(PaystubPeriod));
         OnPropertyChanged(nameof(Fee));
     }
 

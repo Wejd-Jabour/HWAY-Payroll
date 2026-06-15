@@ -5,6 +5,7 @@ using System.Windows.Input;
 using HWAY.Payroll.Services.EmployerInsert;
 using HWAY.Payroll.Services.EmployerUpdate;
 using HWAY.Payroll.Services.EmployerRemove;
+using HWAY.Payroll.Services.PayPeriods;
 using HWAY.Payroll.UI.ViewModels;
 using Microsoft.Maui.Controls;
 
@@ -158,7 +159,7 @@ public class EmployerViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool CanEditPaystubPeriod => IsEditMode;
+    public bool CanEditPaystubPeriod => EmployerSelected;
 
     private bool _searchResultsFound = false;
     public bool SearchResultsFound
@@ -171,7 +172,13 @@ public class EmployerViewModel : INotifyPropertyChanged
     public bool EmployerSelected
     {
         get => _employerSelected;
-        set => SetProperty(ref _employerSelected, value);
+        set
+        {
+            if (SetProperty(ref _employerSelected, value))
+            {
+                OnPropertyChanged(nameof(CanEditPaystubPeriod));
+            }
+        }
     }
 
     // ===================== Commands =====================
@@ -321,6 +328,11 @@ public class EmployerViewModel : INotifyPropertyChanged
                 return;
             }
 
+            if (!ValidatePaystubPeriod())
+            {
+                return;
+            }
+
             if (IsEditMode)
             {
                 // Update existing employer
@@ -350,7 +362,7 @@ public class EmployerViewModel : INotifyPropertyChanged
                     City = City,
                     PostalCode = PostalCode,
                     EmployerGroup = EmployerGroup,
-                    PaystubPeriod = 1,
+                    PaystubPeriod = PaystubPeriod,
                     Fee = Fee
                 };
 
@@ -442,6 +454,18 @@ public class EmployerViewModel : INotifyPropertyChanged
         PaystubPeriod = 1;
         Fee = 0;
         SelectedEmployer = null;
+    }
+
+    private bool ValidatePaystubPeriod()
+    {
+        var maxPeriod = PayPeriodRules.GetMaxPeriod(EmployerGroup);
+        if (PaystubPeriod >= 1 && PaystubPeriod <= maxPeriod)
+        {
+            return true;
+        }
+
+        Message = $"Period # must be between 1 and {maxPeriod} for {SelectedEmployerGroupOption.DisplayName}.";
+        return false;
     }
 
     private void CaptureSearchState()

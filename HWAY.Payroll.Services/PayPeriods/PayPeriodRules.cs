@@ -46,6 +46,22 @@ public static class PayPeriodRules
         return period;
     }
 
+    public static void ValidatePeriod(string? employerGroup, int period)
+    {
+        var maxPeriod = GetMaxPeriod(employerGroup);
+
+        if (period < 1 || period > maxPeriod)
+        {
+            throw new InvalidOperationException(GetPeriodValidationMessage(employerGroup));
+        }
+    }
+
+    public static string GetPeriodValidationMessage(string? employerGroup)
+    {
+        var maxPeriod = GetMaxPeriod(employerGroup);
+        return $"Period # must be between 1 and {maxPeriod} for this employer group.";
+    }
+
     public static int GetNextPeriod(string? employerGroup, int period)
     {
         var normalizedPeriod = NormalizePeriod(employerGroup, period);

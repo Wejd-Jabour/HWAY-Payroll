@@ -72,6 +72,13 @@
                         </VerticalStackLayout>
 
                         <VerticalStackLayout WidthRequest="180" Spacing="6" Margin="0,0,18,10">
+                            <Label Text="Period #" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry Placeholder="Period #" Keyboard="Numeric" Text="{Binding PaystubPeriod}" Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout WidthRequest="180" Spacing="6" Margin="0,0,18,10">
                             <Label Text="Fee" Style="{StaticResource HwayFieldLabel}" />
                             <Border Style="{StaticResource HwayInputBorder}">
                                 <Entry Placeholder="Fee" Keyboard="Numeric" Text="{Binding Fee}" Style="{StaticResource HwayEntry}" />

@@ -1,6 +1,7 @@
 using HWAY.Payroll.Data.Context;
 using HWAY.Payroll.Data.Entities;
 using HWAY.Payroll.Services.EmployerInsert;
+using HWAY.Payroll.Services.PayPeriods;
 using Microsoft.EntityFrameworkCore;
 
 namespace HWAY.Payroll.Services.EmployerInsert;
@@ -16,6 +17,9 @@ public class EmployerInsertService : IEmployerInsertService
 
     public async Task<int> CreateEmployerAsync(EmployerInsertDto dto)
     {
+        var employerGroup = PayPeriodRules.NormalizeEmployerGroup(dto.EmployerGroup);
+        PayPeriodRules.ValidatePeriod(employerGroup, dto.PaystubPeriod);
+
         var exists = await _dbContext.Employers
             .AnyAsync(c =>
                 c.RpNumber == dto.RpNumber &&
@@ -31,8 +35,8 @@ public class EmployerInsertService : IEmployerInsertService
             Address = dto.Address,
             City = dto.City,
             PostalCode = dto.PostalCode,
-            EmployerGroup = dto.EmployerGroup,
-            PaystubPeriod = 1,
+            EmployerGroup = employerGroup,
+            PaystubPeriod = dto.PaystubPeriod,
             Fee = dto.Fee
         };
 

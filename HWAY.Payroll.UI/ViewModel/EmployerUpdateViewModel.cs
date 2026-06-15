@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using HWAY.Payroll.Services.EmployerUpdate;
+using HWAY.Payroll.Services.PayPeriods;
 using HWAY.Payroll.UI.Views;
 using Microsoft.Maui.Controls;
 
@@ -123,6 +124,9 @@ public class EmployerUpdateViewModel : INotifyPropertyChanged
     {
         try
         {
+            if (!Validate())
+                return;
+
             var dto = new EmployerUpdateDto
             {
                 RpNumber = RpNumber,
@@ -145,6 +149,25 @@ public class EmployerUpdateViewModel : INotifyPropertyChanged
             IsSuccess = false;
             Message = ex.Message;
         }
+    }
+
+    private bool Validate()
+    {
+        var maxPeriod = PayPeriodRules.GetMaxPeriod(EmployerGroup);
+        if (PaystubPeriod < 1 || PaystubPeriod > maxPeriod)
+        {
+            IsSuccess = false;
+            Message = GetPeriodValidationMessage();
+            return false;
+        }
+
+        return true;
+    }
+
+    private string GetPeriodValidationMessage()
+    {
+        var maxPeriod = PayPeriodRules.GetMaxPeriod(EmployerGroup);
+        return $"Period # must be between 1 and {maxPeriod} for {SelectedEmployerGroupOption.DisplayName}.";
     }
 
     private void LoadEmployer(EmployerLookupDto? employer)
