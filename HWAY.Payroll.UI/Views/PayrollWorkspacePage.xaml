@@ -280,8 +280,8 @@
 
                     <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
                         <Button
-                            Text="Send All Pay Stubs"
-                            Clicked="SendAllPaystubsButton_Clicked"
+                            Text="Print All Pay Stubs"
+                            Clicked="PrintAllPaystubsButton_Clicked"
                             Style="{StaticResource PrintActionButton}" />
 
                         <Button
@@ -523,8 +523,8 @@
 
                 <VerticalStackLayout Spacing="8" Margin="0,8,0,0">
                     <Button
-                        Text="Send All Pay Stubs"
-                        Clicked="SendAllPaystubsButton_Clicked"
+                        Text="Print All Pay Stubs"
+                        Clicked="PrintAllPaystubsButton_Clicked"
                         Style="{StaticResource PrintActionButton}"
                         HorizontalOptions="Fill" />
 

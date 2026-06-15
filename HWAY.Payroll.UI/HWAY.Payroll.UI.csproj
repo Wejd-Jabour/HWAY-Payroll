@@ -24,7 +24,7 @@
 		<Nullable>enable</Nullable>
 
 		<!-- Display name -->
-		<ApplicationTitle>HWAY.Payroll.UI</ApplicationTitle>
+		<ApplicationTitle>H-Way Payroll App</ApplicationTitle>
 
 		<!-- App Identifier -->
 		<ApplicationId>com.companyname.hway.payroll.ui</ApplicationId>
@@ -45,7 +45,7 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<MauiIcon Include="..\logo.png" />
 
 		<!-- Splash Screen -->
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />

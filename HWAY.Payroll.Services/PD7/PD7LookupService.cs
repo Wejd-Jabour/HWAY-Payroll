@@ -130,23 +130,20 @@ public class PD7LookupService : IPD7LookupService
         if (employer == null)
             throw new Exception("Employer not found.");
 
-        var periodTotals = await GetRecordHistoryTotalsAsync(rpNumber, month, year);
-
-        var activeEmployees = await _dbContext.Employees
-            .AsNoTracking()
-            .CountAsync(employee => employee.RpNumber == rpNumber);
-
-        if (activeEmployees == 0)
-        {
-            activeEmployees = await _dbContext.PayrollRecords
-                .AsNoTracking()
-                .CountAsync(record => record.RpNumber == rpNumber);
-        }
+        var periodSummary = await _payPeriodRangeService.GetPayPeriodMonthSummaryAsync(
+            employer.EmployerGroup,
+            month,
+            year);
+        var periodNumbers = periodSummary.Periods
+            .Select(period => period.Period)
+            .ToArray();
+        var periodTotals = await GetRecordHistoryTotalsAsync(rpNumber, periodNumbers, month, year);
 
         var gross = 0m;
         var netTotal = 0m;
         var employerContribution = 0m;
         var pd7Total = 0m;
+        var activeEmployees = 0;
 
         if (periodTotals != null)
         {
@@ -154,58 +151,8 @@ public class PD7LookupService : IPD7LookupService
             netTotal = RoundMoney(periodTotals.NetTotal);
             employerContribution = CalculateEmployerContribution(periodTotals.Cpp, periodTotals.Ei);
             pd7Total = CalculatePd7Total(periodTotals.Tax, periodTotals.Cpp, periodTotals.Ei);
+            activeEmployees = periodTotals.ActiveEmployees;
         }
-        else
-        {
-            var ytdTotals = await _dbContext.PayrollRecords
-                .AsNoTracking()
-                .Where(record => record.RpNumber == rpNumber)
-                .GroupBy(record => record.RpNumber)
-                .Select(group => new
-                {
-                    Gross = group.Sum(record => record.GrossYtd),
-                    NetTotal = group.Sum(record => record.NetYtd),
-                    Tax = group.Sum(record => record.TaxYtd),
-                    Cpp = group.Sum(record => record.Cpp1Ytd + record.Cpp2Ytd),
-                    Ei = group.Sum(record => record.EiYtd)
-                })
-                .FirstOrDefaultAsync();
-
-            var previousPd7Totals = await _dbContext.PD7Records
-                .AsNoTracking()
-                .Where(record =>
-                    record.RPNumber == rpNumber &&
-                    record.Year == year &&
-                    record.Month < month)
-                .GroupBy(record => record.RPNumber)
-                .Select(group => new
-                {
-                    Gross = group.Sum(record => record.Gross),
-                    PD7Total = group.Sum(record => record.PD7Total)
-                })
-                .FirstOrDefaultAsync();
-
-            var previousHistoryTotals = await GetPriorRecordHistoryTotalsAsync(rpNumber, month, year);
-            var employerContributionYtd = CalculateEmployerContribution(ytdTotals?.Cpp ?? 0, ytdTotals?.Ei ?? 0);
-
-            gross = CalculateCurrentMonthAmount(
-                ytdTotals?.Gross ?? 0,
-                previousPd7Totals?.Gross ?? 0);
-            netTotal = CalculateCurrentMonthAmount(
-                ytdTotals?.NetTotal ?? 0,
-                previousHistoryTotals?.NetTotal ?? 0);
-            employerContribution = CalculateCurrentMonthAmount(
-                employerContributionYtd,
-                previousHistoryTotals?.EmployerContribution ?? 0);
-            pd7Total = CalculateCurrentMonthAmount(
-                CalculatePd7Total(ytdTotals?.Tax ?? 0, ytdTotals?.Cpp ?? 0, ytdTotals?.Ei ?? 0),
-                previousPd7Totals?.PD7Total ?? 0);
-        }
-
-        var periodSummary = await _payPeriodRangeService.GetPayPeriodMonthSummaryAsync(
-            employer.EmployerGroup,
-            month,
-            year);
 
         return new PD7LookupDto
         {
@@ -306,12 +253,6 @@ public class PD7LookupService : IPD7LookupService
         return true;
     }
 
-    private static decimal CalculateCurrentMonthAmount(decimal ytdAmount, decimal previousMonthsAmount)
-    {
-        var amount = ytdAmount - previousMonthsAmount;
-        return amount < 0 ? 0 : RoundMoney(amount);
-    }
-
     private static PD7LookupDto MapToDto(DataPD7 p)
     {
         return new PD7LookupDto
@@ -330,44 +271,36 @@ public class PD7LookupService : IPD7LookupService
         };
     }
 
-    private async Task<PeriodPayrollTotals?> GetRecordHistoryTotalsAsync(string rpNumber, int month, int year)
-    {
-        return await _dbContext.RecordHistory
-            .AsNoTracking()
-            .Where(record =>
-                record.RpNumber == rpNumber &&
-                record.Month == month &&
-                record.Year == year)
-            .GroupBy(record => record.RpNumber)
-            .Select(group => new PeriodPayrollTotals
-            {
-                Gross = group.Sum(record => record.Gross),
-                NetTotal = group.Sum(record => record.NetPay),
-                Tax = group.Sum(record => record.Tax1),
-                Cpp = group.Sum(record => record.Cpp1 + record.Cpp2),
-                Ei = group.Sum(record => record.Ei)
-            })
-            .FirstOrDefaultAsync();
-    }
-
-    private async Task<PriorPeriodPayrollTotals?> GetPriorRecordHistoryTotalsAsync(
+    private async Task<PeriodPayrollTotals?> GetRecordHistoryTotalsAsync(
         string rpNumber,
+        int[] periods,
         int month,
         int year)
     {
+        if (periods.Length == 0)
+        {
+            return null;
+        }
+
+        var monthStart = new DateTime(year, month, 1);
+        var nextMonthStart = monthStart.AddMonths(1);
+
         return await _dbContext.RecordHistory
             .AsNoTracking()
             .Where(record =>
                 record.RpNumber == rpNumber &&
-                record.Year == year &&
-                record.Month < month)
+                periods.Contains(record.Period) &&
+                record.PeriodEnding >= monthStart &&
+                record.PeriodEnding < nextMonthStart)
             .GroupBy(record => record.RpNumber)
-            .Select(group => new PriorPeriodPayrollTotals
+            .Select(group => new PeriodPayrollTotals
             {
+                Gross = group.Sum(record => record.Gross + record.PaidVacation),
                 NetTotal = group.Sum(record => record.NetPay),
-                EmployerContribution =
-                    group.Sum(record => record.Cpp1 + record.Cpp2) +
-                    (1.4m * group.Sum(record => record.Ei))
+                Tax = group.Sum(record => record.Tax1),
+                Cpp = group.Sum(record => record.Cpp1 + record.Cpp2),
+                Ei = group.Sum(record => record.Ei),
+                ActiveEmployees = group.Select(record => record.EmployeeNumber).Distinct().Count()
             })
             .FirstOrDefaultAsync();
     }
@@ -391,11 +324,6 @@ public class PD7LookupService : IPD7LookupService
         public decimal Tax { get; set; }
         public decimal Cpp { get; set; }
         public decimal Ei { get; set; }
-    }
-
-    private sealed class PriorPeriodPayrollTotals
-    {
-        public decimal NetTotal { get; set; }
-        public decimal EmployerContribution { get; set; }
+        public int ActiveEmployees { get; set; }
     }
 }

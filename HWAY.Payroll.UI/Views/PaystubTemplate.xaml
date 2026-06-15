@@ -49,7 +49,7 @@
 
         <!-- Logo and title -->
         <Image
-            Source="hway_logo.png"
+            Source="paystub_picture.png"
             Aspect="AspectFit"
             AbsoluteLayout.LayoutBounds="100,112,95,95" />
 

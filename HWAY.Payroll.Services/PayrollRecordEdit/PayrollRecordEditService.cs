@@ -25,141 +25,149 @@ public class PayrollRecordEditService : IPayrollRecordEditService
 
     public async Task<PayrollRecordEditResultDto> UpdatePayrollRecordAsync(int payrollRecordId, PayrollRecordEditDto dto)
     {
-        var record = await _dbContext.PayrollRecords
-            .Include(r => r.Employer)
-            .Include(r => r.Employee)
-            .Where(r => r.Id == payrollRecordId)
-            .FirstOrDefaultAsync();
+        var executionStrategy = _dbContext.Database.CreateExecutionStrategy();
 
-        if (record == null)
-            throw new InvalidOperationException($"Payroll record with Id {payrollRecordId} not found.");
-
-        if (!string.Equals(record.EmployeeNumber, dto.EmployeeNumber.Trim(), StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("Selected employee does not match the payroll record being edited.");
-
-        if (!string.Equals(record.RpNumber, dto.RpNumber.Trim(), StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("Selected company does not match the payroll record being edited.");
-
-        var employee = await _dbContext.Employees
-            .Where(e => e.EmployeeNumber == record.EmployeeNumber)
-            .FirstOrDefaultAsync();
-
-        if (employee == null)
-            throw new InvalidOperationException($"Employee with number {record.EmployeeNumber} not found.");
-
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync();
-
-        var salary = dto.Salary;
-        var rate = salary > 0 ? 0 : dto.Rate;
-        var payrollYear = DateTime.Today.Year;
-        var deductionLimits = await _deductionLimitService.GetLimitValuesForYearAsync(payrollYear);
-        var cpp1YtdBeforeCurrent = Math.Max(record.Cpp1Ytd - record.Cpp1, 0m);
-        var cpp2YtdBeforeCurrent = Math.Max(record.Cpp2Ytd - record.Cpp2, 0m);
-        var eiYtdBeforeCurrent = Math.Max(record.EiYtd - record.Ei, 0m);
-        var canContributeCpp = EmployeePayrollEligibility.CanContributeCpp(
-            employee.DateOfBirth,
-            DateTime.Today);
-        var cpp1 = canContributeCpp
-            ? PayrollDeductionCaps.ClampCpp1(dto.Cpp1, cpp1YtdBeforeCurrent, deductionLimits)
-            : 0m;
-        var cpp2 = canContributeCpp
-            ? PayrollDeductionCaps.ClampCpp2(dto.Cpp2, cpp2YtdBeforeCurrent, deductionLimits)
-            : 0m;
-        var ei = EmployeePayrollEligibility.CanContributeEi(employee.EiExempt)
-            ? PayrollDeductionCaps.ClampEi(dto.Ei, eiYtdBeforeCurrent, deductionLimits)
-            : 0m;
-        var vacationSetting = VacationSettings.Normalize(dto.VacationSetting);
-        var oldVacationUsed = VacationSettings.IsPaidOut(record.VacationSetting) ? record.Vacation : 0m;
-        var vacationUsed = VacationSettings.IsPaidOut(vacationSetting) ? dto.Vacation : 0m;
-
-        var netPay = CalculateNetPay(
-            dto.Gross,
-            dto.Vacation,
-            vacationSetting,
-            dto.Tax1,
-            cpp1,
-            cpp2,
-            ei,
-            dto.OtherDeduction);
-
-        var oldGross = record.Gross;
-        var oldNetPay = record.NetPay;
-        var oldTax1 = record.Tax1;
-        var oldCpp1 = record.Cpp1;
-        var oldCpp2 = record.Cpp2;
-        var oldEi = record.Ei;
-        var oldOtherDeduction = record.OtherDeduction;
-        var oldVacation = record.Vacation;
-
-        record.Salary = salary;
-        record.Rate = rate;
-        record.RegularHours = dto.RegularHours;
-        record.OvertimeHours = dto.OvertimeHours;
-        record.PublicHolidayHours = dto.PublicHolidayHours;
-        record.StatHolidayHours = dto.StatHolidayHours;
-        record.Gross = dto.Gross;
-        record.Vacation = dto.Vacation;
-        record.VacationSetting = vacationSetting;
-        record.Tax1 = dto.Tax1;
-        record.Cpp1 = cpp1;
-        record.Cpp2 = cpp2;
-        record.Ei = ei;
-        record.OtherDeduction = dto.OtherDeduction;
-        record.NetPay = netPay;
-
-        record.GrossYtd = ApplyDelta(record.GrossYtd, oldGross, dto.Gross);
-        record.NetYtd = ApplyDelta(record.NetYtd, oldNetPay, netPay);
-        record.TaxYtd = ApplyDelta(record.TaxYtd, oldTax1, dto.Tax1);
-        record.Cpp1Ytd = ApplyDelta(record.Cpp1Ytd, oldCpp1, cpp1);
-        record.Cpp2Ytd = ApplyDelta(record.Cpp2Ytd, oldCpp2, cpp2);
-        record.EiYtd = ApplyDelta(record.EiYtd, oldEi, ei);
-        record.OtherDeductionYtd = ApplyDelta(record.OtherDeductionYtd, oldOtherDeduction, dto.OtherDeduction);
-        record.VacationYtd = ApplyDelta(record.VacationYtd, oldVacation, dto.Vacation);
-        record.VacationYtdUsed = ApplyDelta(record.VacationYtdUsed, oldVacationUsed, vacationUsed);
-        record.VacationYtdBalance = record.VacationYtd - record.VacationYtdUsed;
-
-        var latestHistory = await _dbContext.RecordHistory
-            .Where(history => history.PayrollRecordId == record.Id)
-            .OrderByDescending(history => history.PayDate)
-            .ThenByDescending(history => history.SavedAt)
-            .ThenByDescending(history => history.Id)
-            .FirstOrDefaultAsync();
-
-        if (latestHistory != null)
+        return await executionStrategy.ExecuteAsync(async () =>
         {
-            ApplyLatestHistoryCorrection(latestHistory, record, dto, vacationSetting, vacationUsed, netPay);
-        }
+            var record = await _dbContext.PayrollRecords
+                .Include(r => r.Employer)
+                .Include(r => r.Employee)
+                .Where(r => r.Id == payrollRecordId)
+                .FirstOrDefaultAsync();
 
-        await _dbContext.SaveChangesAsync();
+            if (record == null)
+                throw new InvalidOperationException($"Payroll record with Id {payrollRecordId} not found.");
 
-        var result = new PayrollRecordEditResultDto
-        {
-            HistoryUpdated = latestHistory != null,
-            Pd7Month = latestHistory?.Month,
-            Pd7Year = latestHistory?.Year
-        };
+            if (!string.Equals(record.EmployeeNumber, dto.EmployeeNumber.Trim(), StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Selected employee does not match the payroll record being edited.");
 
-        if (latestHistory != null)
-        {
-            var existingPd7 = await _pd7LookupService.GetByPeriodAsync(
-                record.RpNumber,
-                latestHistory.Month,
-                latestHistory.Year);
+            if (!string.Equals(record.RpNumber, dto.RpNumber.Trim(), StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Selected company does not match the payroll record being edited.");
 
-            if (existingPd7 != null)
+            var employee = await _dbContext.Employees
+                .Where(e => e.EmployeeNumber == record.EmployeeNumber)
+                .FirstOrDefaultAsync();
+
+            if (employee == null)
+                throw new InvalidOperationException($"Employee with number {record.EmployeeNumber} not found.");
+
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+            var salary = dto.Salary;
+            var rate = salary > 0 ? 0 : dto.Rate;
+            var payrollYear = DateTime.Today.Year;
+            var deductionLimits = await _deductionLimitService.GetLimitValuesForYearAsync(payrollYear);
+            var cpp1YtdBeforeCurrent = Math.Max(record.Cpp1Ytd - record.Cpp1, 0m);
+            var cpp2YtdBeforeCurrent = Math.Max(record.Cpp2Ytd - record.Cpp2, 0m);
+            var eiYtdBeforeCurrent = Math.Max(record.EiYtd - record.Ei, 0m);
+            var canContributeCpp = EmployeePayrollEligibility.CanContributeCpp(
+                employee.DateOfBirth,
+                DateTime.Today);
+            var cpp1 = canContributeCpp
+                ? PayrollDeductionCaps.ClampCpp1(dto.Cpp1, cpp1YtdBeforeCurrent, deductionLimits)
+                : 0m;
+            var cpp2 = canContributeCpp
+                ? PayrollDeductionCaps.ClampCpp2(dto.Cpp2, cpp2YtdBeforeCurrent, deductionLimits)
+                : 0m;
+            var ei = EmployeePayrollEligibility.CanContributeEi(employee.EiExempt)
+                ? PayrollDeductionCaps.ClampEi(dto.Ei, eiYtdBeforeCurrent, deductionLimits)
+                : 0m;
+            var vacationSetting = VacationSettings.Normalize(dto.VacationSetting);
+            var oldVacationUsed = VacationSettings.IsPaidOut(record.VacationSetting) ? record.Vacation : 0m;
+            var vacationUsed = VacationSettings.IsPaidOut(vacationSetting) ? dto.Vacation : 0m;
+
+            var netPay = CalculateNetPay(
+                dto.Gross,
+                dto.Vacation,
+                vacationSetting,
+                dto.Tax1,
+                cpp1,
+                cpp2,
+                ei,
+                dto.OtherDeduction);
+
+            var oldGross = record.Gross;
+            var oldNetPay = record.NetPay;
+            var oldTax1 = record.Tax1;
+            var oldCpp1 = record.Cpp1;
+            var oldCpp2 = record.Cpp2;
+            var oldEi = record.Ei;
+            var oldOtherDeduction = record.OtherDeduction;
+            var oldVacation = record.Vacation;
+
+            record.Salary = salary;
+            record.Rate = rate;
+            record.RegularHours = dto.RegularHours;
+            record.OvertimeHours = dto.OvertimeHours;
+            record.PublicHolidayHours = dto.PublicHolidayHours;
+            record.StatHolidayHours = dto.StatHolidayHours;
+            record.Gross = dto.Gross;
+            record.Vacation = dto.Vacation;
+            record.VacationSetting = vacationSetting;
+            record.Tax1 = dto.Tax1;
+            record.Cpp1 = cpp1;
+            record.Cpp2 = cpp2;
+            record.Ei = ei;
+            record.OtherDeduction = dto.OtherDeduction;
+            record.NetPay = netPay;
+
+            record.GrossYtd = ApplyDelta(record.GrossYtd, oldGross, dto.Gross);
+            record.NetYtd = ApplyDelta(record.NetYtd, oldNetPay, netPay);
+            record.TaxYtd = ApplyDelta(record.TaxYtd, oldTax1, dto.Tax1);
+            record.Cpp1Ytd = ApplyDelta(record.Cpp1Ytd, oldCpp1, cpp1);
+            record.Cpp2Ytd = ApplyDelta(record.Cpp2Ytd, oldCpp2, cpp2);
+            record.EiYtd = ApplyDelta(record.EiYtd, oldEi, ei);
+            record.OtherDeductionYtd = ApplyDelta(record.OtherDeductionYtd, oldOtherDeduction, dto.OtherDeduction);
+            record.VacationYtd = ApplyDelta(record.VacationYtd, oldVacation, dto.Vacation);
+            record.VacationYtdUsed = ApplyDelta(record.VacationYtdUsed, oldVacationUsed, vacationUsed);
+            record.VacationYtdBalance = record.VacationYtd - record.VacationYtdUsed;
+
+            var latestHistory = await _dbContext.RecordHistory
+                .Where(history => history.PayrollRecordId == record.Id)
+                .OrderByDescending(history => history.PayDate)
+                .ThenByDescending(history => history.SavedAt)
+                .ThenByDescending(history => history.Id)
+                .FirstOrDefaultAsync();
+
+            if (latestHistory != null)
             {
-                await _pd7LookupService.SaveAutomaticPd7Async(
-                    record.RpNumber,
-                    latestHistory.Month,
-                    latestHistory.Year);
-
-                result.Pd7Updated = true;
+                ApplyLatestHistoryCorrection(latestHistory, record, dto, vacationSetting, vacationUsed, netPay);
             }
-        }
 
-        await transaction.CommitAsync();
+            await _dbContext.SaveChangesAsync();
 
-        return result;
+            var result = new PayrollRecordEditResultDto
+            {
+                HistoryUpdated = latestHistory != null,
+                Pd7Month = latestHistory?.PeriodEnding.Month,
+                Pd7Year = latestHistory?.PeriodEnding.Year
+            };
+
+            if (latestHistory != null)
+            {
+                var pd7Month = latestHistory.PeriodEnding.Month;
+                var pd7Year = latestHistory.PeriodEnding.Year;
+
+                var existingPd7 = await _pd7LookupService.GetByPeriodAsync(
+                    record.RpNumber,
+                    pd7Month,
+                    pd7Year);
+
+                if (existingPd7 != null)
+                {
+                    await _pd7LookupService.SaveAutomaticPd7Async(
+                        record.RpNumber,
+                        pd7Month,
+                        pd7Year);
+
+                    result.Pd7Updated = true;
+                }
+            }
+
+            await transaction.CommitAsync();
+
+            return result;
+        });
     }
 
     private static void ApplyLatestHistoryCorrection(

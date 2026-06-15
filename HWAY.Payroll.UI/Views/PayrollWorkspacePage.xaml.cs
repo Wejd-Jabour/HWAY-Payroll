@@ -1,6 +1,4 @@
 ﻿using HWAY.Payroll.Services.Paystub;
-using System.Net.Mail;
-using HWAY.Payroll.Services.Email;
 using HWAY.Payroll.UI.ViewModels;
 
 namespace HWAY.Payroll.UI.Views;
@@ -9,21 +7,14 @@ public partial class PayrollWorkspacePage : ContentPage
 {
     private readonly PayrollWorkspaceViewModel _viewModel;
     private readonly IPaystubPDFService _paystubPdfService;
-    private readonly IPaystubEmailService _paystubEmailService;
-    private readonly IEmailSettingsService _emailSettingsService;
-
     public PayrollWorkspacePage(
         PayrollWorkspaceViewModel viewModel,
-        IPaystubPDFService paystubPdfService,
-        IPaystubEmailService paystubEmailService,
-        IEmailSettingsService emailSettingsService)
+        IPaystubPDFService paystubPdfService)
     {
         InitializeComponent();
 
         _viewModel = viewModel;
         _paystubPdfService = paystubPdfService;
-        _paystubEmailService = paystubEmailService;
-        _emailSettingsService = emailSettingsService;
         BindingContext = _viewModel;
     }
 
@@ -189,7 +180,7 @@ public partial class PayrollWorkspacePage : ContentPage
         await _paystubPdfService.ExportFromViewAsync(paystubView, fileName);
     }
 
-    private async void SendAllPaystubsButton_Clicked(object sender, EventArgs e)
+    private async void PrintAllPaystubsButton_Clicked(object sender, EventArgs e)
     {
         if (_viewModel.IsBusy)
             return;
@@ -198,50 +189,14 @@ public partial class PayrollWorkspacePage : ContentPage
 
         if (rows.Count == 0)
         {
-            await DisplayAlert("Pay Stubs", "There are no employee pay stubs to send.", "OK");
+            await DisplayAlert("Pay Stubs", "There are no employee pay stubs to print.", "OK");
             return;
         }
 
-        var settings = await _emailSettingsService.GetSettingsAsync();
-
-        if (!settings.IsConfigured)
-        {
-            await DisplayAlert(
-                "Email Settings",
-                "The configured SMTP email settings are incomplete.",
-                "OK");
-            return;
-        }
-
-        var rowsWithEmail = rows
-            .Where(row => IsValidEmailAddress(row.EmployeeEmailAddress))
-            .ToList();
-        var skippedRows = rows.Count - rowsWithEmail.Count;
-
-        if (rowsWithEmail.Count == 0)
-        {
-            await DisplayAlert("Pay Stubs", "None of the employee rows have a valid email address.", "OK");
-            return;
-        }
-
-        if (skippedRows > 0)
-        {
-            var continueSending = await DisplayAlert(
-                "Missing Emails",
-                $"{skippedRows} employee pay stub(s) will be skipped because the email address is missing or invalid.",
-                "Send Available",
-                "Cancel");
-
-            if (!continueSending)
-                return;
-        }
-
-        await SendPaystubsAsync(rowsWithEmail, skippedRows);
+        await PrintAllPaystubsAsync(rows);
     }
 
-    private async Task SendPaystubsAsync(
-        IReadOnlyList<EmployeePayrollRowViewModel> rows,
-        int skippedRows)
+    private async Task PrintAllPaystubsAsync(IReadOnlyList<EmployeePayrollRowViewModel> rows)
     {
         var statusLabel = new Label
         {
@@ -272,25 +227,25 @@ public partial class PayrollWorkspacePage : ContentPage
 
         var progressPage = new ContentPage
         {
-            Title = "Send Pay Stubs",
+            Title = "Print Pay Stubs",
             Padding = new Thickness(20),
             Content = progressGrid
         };
 
-        var sent = 0;
-        var failures = new List<string>();
-
         try
         {
             _viewModel.IsBusy = true;
-            _viewModel.Message = "Sending pay stubs...";
+            _viewModel.Message = "Opening pay stubs for printing...";
 
             await Navigation.PushModalAsync(progressPage);
+
+            var opened = 0;
+            var failures = new List<string>();
 
             for (var index = 0; index < rows.Count; index++)
             {
                 var row = rows[index];
-                statusLabel.Text = $"Sending {index + 1} of {rows.Count}: {row.EmployeeName}";
+                statusLabel.Text = $"Opening {index + 1} of {rows.Count}: {row.EmployeeName}";
 
                 try
                 {
@@ -306,25 +261,36 @@ public partial class PayrollWorkspacePage : ContentPage
                     paystubHost.Content = paystubView;
                     await Task.Delay(300);
 
-                    var fileName = BuildPaystubFileName(row.EmployeeName);
-                    var filePath = await _paystubPdfService.GenerateFromViewAsync(paystubView, fileName);
+                    await _paystubPdfService.ExportFromViewAsync(
+                        paystubView,
+                        BuildPaystubFileName(row.EmployeeName));
 
-                    await _paystubEmailService.SendPaystubAsync(new PaystubEmailMessage
-                    {
-                        RecipientEmail = row.EmployeeEmailAddress,
-                        RecipientName = row.EmployeeName,
-                        Subject = BuildPaystubEmailSubject(row),
-                        Body = BuildPaystubEmailBody(row),
-                        AttachmentPath = filePath
-                    });
-
-                    sent++;
+                    opened++;
                 }
                 catch (Exception ex)
                 {
                     failures.Add($"{row.EmployeeName}: {ex.Message}");
                 }
             }
+
+            _viewModel.Message = BuildPrintAllSummary(opened, failures.Count);
+
+            if (failures.Count > 0)
+            {
+                await DisplayAlert(
+                    "Pay Stubs",
+                    BuildPrintAllAlertMessage(opened, failures),
+                    "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            _viewModel.Message = $"Unable to print all pay stubs: {ex.Message}";
+
+            await DisplayAlert(
+                "Pay Stubs",
+                $"Unable to print all pay stubs: {ex.Message}",
+                "OK");
         }
         finally
         {
@@ -335,13 +301,6 @@ public partial class PayrollWorkspacePage : ContentPage
 
             _viewModel.IsBusy = false;
         }
-
-        _viewModel.Message = BuildSendSummary(sent, skippedRows, failures.Count);
-
-        await DisplayAlert(
-            "Pay Stubs",
-            BuildSendAlertMessage(sent, skippedRows, failures),
-            "OK");
     }
 
     private static string BuildPaystubFileName(string employeeName)
@@ -352,44 +311,18 @@ public partial class PayrollWorkspacePage : ContentPage
         return $"{safeEmployeeName}_{currentDate}.pdf";
     }
 
-    private static string BuildPaystubEmailSubject(EmployeePayrollRowViewModel row) =>
-        $"Pay stub - {row.PayDate:yyyy-MM-dd}";
+    private static string BuildPrintAllSummary(int opened, int failed) =>
+        $"Opened {opened} pay stub PDF(s) for printing. Failed {failed}.";
 
-    private static string BuildPaystubEmailBody(EmployeePayrollRowViewModel row) =>
-        $"Hello {row.EmployeeName},\n\nPlease find attached your pay stub for pay date {row.PayDate:yyyy-MM-dd}.\n\nThank you.";
-
-    private static string BuildSendSummary(int sent, int skipped, int failed) =>
-        $"Sent {sent} pay stub(s). Skipped {skipped}. Failed {failed}.";
-
-    private static string BuildSendAlertMessage(int sent, int skipped, IReadOnlyList<string> failures)
+    private static string BuildPrintAllAlertMessage(int opened, IReadOnlyList<string> failures)
     {
-        var message = BuildSendSummary(sent, skipped, failures.Count);
-
-        if (failures.Count == 0)
-            return message;
-
+        var message = BuildPrintAllSummary(opened, failures.Count);
         var failureDetails = string.Join("\n", failures.Take(5));
         var moreFailures = failures.Count > 5
             ? $"\n...and {failures.Count - 5} more."
             : "";
 
         return $"{message}\n\n{failureDetails}{moreFailures}";
-    }
-
-    private static bool IsValidEmailAddress(string emailAddress)
-    {
-        if (string.IsNullOrWhiteSpace(emailAddress))
-            return false;
-
-        try
-        {
-            var parsed = new MailAddress(emailAddress);
-            return parsed.Address.Equals(emailAddress.Trim(), StringComparison.OrdinalIgnoreCase);
-        }
-        catch
-        {
-            return false;
-        }
     }
 
     private static string MakeSafeFileNamePart(string value)
