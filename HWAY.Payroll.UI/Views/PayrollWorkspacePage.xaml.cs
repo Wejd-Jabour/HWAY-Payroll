@@ -205,12 +205,31 @@ public partial class PayrollWorkspacePage : ContentPage
             FontAttributes = FontAttributes.Bold,
             TextColor = Color.FromArgb("#0F172A")
         };
+
+        var closeButton = new Button
+        {
+            Text = "Close Preview",
+            HorizontalOptions = LayoutOptions.End,
+            BackgroundColor = Color.FromArgb("#475569"),
+            TextColor = Colors.White,
+            IsEnabled = false
+        };
+
         var paystubHost = new ContentView();
         var scrollView = new ScrollView
         {
             Orientation = ScrollOrientation.Both,
             BackgroundColor = Colors.White,
             Content = paystubHost
+        };
+        var headerGrid = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Star },
+                new ColumnDefinition { Width = GridLength.Auto }
+            },
+            ColumnSpacing = 12
         };
         var progressGrid = new Grid
         {
@@ -222,7 +241,10 @@ public partial class PayrollWorkspacePage : ContentPage
             RowSpacing = 12
         };
 
-        progressGrid.Add(statusLabel, 0, 0);
+        headerGrid.Add(statusLabel, 0, 0);
+        headerGrid.Add(closeButton, 1, 0);
+
+        progressGrid.Add(headerGrid, 0, 0);
         progressGrid.Add(scrollView, 0, 1);
 
         var progressPage = new ContentPage
@@ -230,6 +252,12 @@ public partial class PayrollWorkspacePage : ContentPage
             Title = "Print Pay Stubs",
             Padding = new Thickness(20),
             Content = progressGrid
+        };
+
+        closeButton.Clicked += async (_, _) =>
+        {
+            closeButton.IsEnabled = false;
+            await Navigation.PopModalAsync();
         };
 
         try
@@ -274,6 +302,7 @@ public partial class PayrollWorkspacePage : ContentPage
             }
 
             _viewModel.Message = BuildPrintAllSummary(opened, failures.Count);
+            statusLabel.Text = BuildPrintAllSummary(opened, failures.Count);
 
             if (failures.Count > 0)
             {
@@ -286,6 +315,7 @@ public partial class PayrollWorkspacePage : ContentPage
         catch (Exception ex)
         {
             _viewModel.Message = $"Unable to print all pay stubs: {ex.Message}";
+            statusLabel.Text = $"Unable to print all pay stubs: {ex.Message}";
 
             await DisplayAlert(
                 "Pay Stubs",
@@ -294,12 +324,8 @@ public partial class PayrollWorkspacePage : ContentPage
         }
         finally
         {
-            if (Navigation.ModalStack.Contains(progressPage))
-            {
-                await Navigation.PopModalAsync();
-            }
-
             _viewModel.IsBusy = false;
+            closeButton.IsEnabled = true;
         }
     }
 
