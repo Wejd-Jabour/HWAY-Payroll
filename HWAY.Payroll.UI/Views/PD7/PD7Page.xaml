@@ -26,60 +26,6 @@
             <Border Style="{StaticResource HwayCardBorder}">
                 <VerticalStackLayout Spacing="14">
                     <VerticalStackLayout Spacing="3">
-                        <Label Text="Period Selection" Style="{StaticResource HwaySectionTitle}" />
-                        <Label Text="Choose the month and year for PD7 records" Style="{StaticResource HwaySmallLabel}" />
-                    </VerticalStackLayout>
-
-                    <Grid ColumnDefinitions="*,160,Auto" ColumnSpacing="12">
-                        <VerticalStackLayout Grid.Column="0" Spacing="6">
-                            <Label Text="Month" Style="{StaticResource HwayFieldLabel}" />
-                            <Border Style="{StaticResource HwayInputBorder}">
-                                <Picker
-                                    Title="Month"
-                                    ItemsSource="{Binding Months}"
-                                    ItemDisplayBinding="{Binding DisplayText}"
-                                    SelectedItem="{Binding SelectedMonth}"
-                                    Style="{StaticResource HwayPicker}" />
-                            </Border>
-                        </VerticalStackLayout>
-
-                        <VerticalStackLayout Grid.Column="1" Spacing="6">
-                            <Label Text="Year" Style="{StaticResource HwayFieldLabel}" />
-                            <Border Style="{StaticResource HwayInputBorder}">
-                                <Picker
-                                    Title="Year"
-                                    ItemsSource="{Binding YearOptions}"
-                                    SelectedItem="{Binding Year, Mode=TwoWay}"
-                                    Style="{StaticResource HwayPicker}" />
-                            </Border>
-                        </VerticalStackLayout>
-
-                        <Button
-                            Grid.Column="2"
-                            Text="Print PD7"
-                            Command="{Binding ExportPd7CsvCommand}"
-                            Style="{StaticResource HwayPrimaryButton}"
-                            MinimumHeightRequest="46"
-                            VerticalOptions="End" />
-                    </Grid>
-
-                    <Border
-                        BackgroundColor="#F8FAFC"
-                        Stroke="#D9E2EC"
-                        StrokeShape="RoundRectangle 8"
-                        StrokeThickness="1"
-                        Padding="12">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="Periods" Style="{StaticResource HwayFieldLabel}" />
-                            <Label Text="{Binding PeriodSummary}" Style="{StaticResource HwayValueLabel}" />
-                        </VerticalStackLayout>
-                    </Border>
-                </VerticalStackLayout>
-            </Border>
-
-            <Border Style="{StaticResource HwayCardBorder}">
-                <VerticalStackLayout Spacing="14">
-                    <VerticalStackLayout Spacing="3">
                         <Label Text="Company Lookup" Style="{StaticResource HwaySectionTitle}" />
                         <Label Text="Search by RP number or employer name" Style="{StaticResource HwaySmallLabel}" />
                     </VerticalStackLayout>
@@ -158,6 +104,78 @@
                             <Label Text="{Binding CalendarYearPD7Total, StringFormat='{0:0.00}'}" Style="{StaticResource HwayAmountLabel}" />
                         </VerticalStackLayout>
                     </FlexLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource HwayCardBorder}">
+                <VerticalStackLayout Spacing="14">
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="Period Selection" Style="{StaticResource HwaySectionTitle}" />
+                        <Label Text="Choose the month and year for PD7 records" Style="{StaticResource HwaySmallLabel}" />
+                    </VerticalStackLayout>
+
+                    <Grid ColumnDefinitions="*,160,Auto" ColumnSpacing="12">
+                        <VerticalStackLayout Grid.Column="0" Spacing="6">
+                            <Label Text="Month" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Picker
+                                    Title="Month"
+                                    ItemsSource="{Binding Months}"
+                                    ItemDisplayBinding="{Binding DisplayText}"
+                                    SelectedItem="{Binding SelectedMonth}"
+                                    Style="{StaticResource HwayPicker}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="1" Spacing="6">
+                            <Label Text="Year" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Picker
+                                    Title="Year"
+                                    ItemsSource="{Binding YearOptions}"
+                                    SelectedItem="{Binding Year, Mode=TwoWay}"
+                                    Style="{StaticResource HwayPicker}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <Button
+                            Grid.Column="2"
+                            Text="Print PD7"
+                            Command="{Binding ExportPd7CsvCommand}"
+                            Style="{StaticResource HwayPrimaryButton}"
+                            MinimumHeightRequest="46"
+                            VerticalOptions="End" />
+                    </Grid>
+
+                    <Border
+                        BackgroundColor="#EEF6FF"
+                        Stroke="#BFDBFE"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1"
+                        Padding="14,10"
+                        HorizontalOptions="Start">
+                        <HorizontalStackLayout Spacing="10">
+                            <BoxView
+                                WidthRequest="4"
+                                HeightRequest="34"
+                                BackgroundColor="#2563EB"
+                                CornerRadius="2"
+                                VerticalOptions="Center" />
+
+                            <VerticalStackLayout Spacing="2">
+                                <Label
+                                    Text="Periods"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    TextColor="#1D4ED8" />
+                                <Label
+                                    Text="{Binding PeriodSummary}"
+                                    FontSize="16"
+                                    FontAttributes="Bold"
+                                    TextColor="#0F172A" />
+                            </VerticalStackLayout>
+                        </HorizontalStackLayout>
+                    </Border>
                 </VerticalStackLayout>
             </Border>
 
