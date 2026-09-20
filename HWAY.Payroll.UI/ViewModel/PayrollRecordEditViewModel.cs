@@ -74,7 +74,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
         {
             if (SetProperty(ref _searchText, value) && !_suppressSearchTextChanged)
             {
-                IsDropdownVisible = false;
+                _ = SearchEmployersAsync();
             }
         }
     }
@@ -379,6 +379,28 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
 
     private PayrollRecordLookupDto? _selectedPayrollRecord;
 
+    public async Task InitializeAsync()
+    {
+        if (_isLoadingEmployers)
+            return;
+
+        _suppressSearchTextChanged = true;
+
+        SearchText = string.Empty;
+        SelectedEmployer = null;
+        IsDropdownVisible = false;
+        ClearSelectedPayrollRecord();
+        SearchResults.Clear();
+        SearchResultsFound = false;
+        EmployeeFound = false;
+        EmployeeNotFound = false;
+        Message = string.Empty;
+
+        _suppressSearchTextChanged = false;
+
+        await SearchEmployersAsync();
+    }
+
     private async Task SearchEmployersAsync()
     {
         if (_isLoadingEmployers)
@@ -462,6 +484,44 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
         SearchResultsFound = SearchResults.Count > 0;
         EmployeeNotFound = !SearchResultsFound;
         Message = SearchResultsFound ? string.Empty : "No employees found for this company.";
+    }
+
+    private void ClearSelectedPayrollRecord()
+    {
+        SelectedPayrollRecord = null;
+        _currentPayrollRecordId = 0;
+        EmployeeNumber = string.Empty;
+        RpNumber = string.Empty;
+        EmployeeName = string.Empty;
+        EmployerName = string.Empty;
+        Salary = 0;
+        Rate = 0;
+        RegularHours = 0;
+        OvertimeHours = 0;
+        PublicHolidayHours = 0;
+        StatHolidayHours = 0;
+        Gross = 0;
+        Vacation = 0;
+        VacationSetting = VacationSettings.Accumulate;
+        Tax1 = 0;
+        Cpp1 = 0;
+        Cpp2 = 0;
+        Ei = 0;
+        OtherDeduction = 0;
+        NetPay = 0;
+        _grossYtdBeforeCurrent = 0;
+        _vacationYtdUsedBeforeCurrent = 0;
+        _cpp1YtdBeforeCurrent = 0;
+        _cpp2YtdBeforeCurrent = 0;
+        _eiYtdBeforeCurrent = 0;
+        _dateOfBirth = null;
+        _eiExempt = false;
+        _requiresRecalculate = false;
+        OnPropertyChanged(nameof(CanContributeCpp));
+        OnPropertyChanged(nameof(CanContributeEi));
+        OnPropertyChanged(nameof(CanEditCpp1));
+        OnPropertyChanged(nameof(CanEditCpp2));
+        OnPropertyChanged(nameof(CanEditEi));
     }
 
     private void LoadSelectedPayrollRecord(PayrollRecordLookupDto? selectedRecord)

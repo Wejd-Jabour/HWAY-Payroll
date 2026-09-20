@@ -5,13 +5,21 @@ namespace HWAY.Payroll.UI.Views;
 
 public partial class EmployerLookupPage : ContentPage
 {
+    private readonly EmployerLookupViewModel _viewModel;
     private readonly IPaystubPDFService _pdfService;
 
     public EmployerLookupPage(EmployerLookupViewModel viewModel, IPaystubPDFService pdfService)
     {
         InitializeComponent();
-        BindingContext = viewModel;
+        _viewModel = viewModel;
+        BindingContext = _viewModel;
         _pdfService = pdfService;
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await _viewModel.InitializeAsync();
     }
 
     private async void OpenWebsiteButton_Clicked(object sender, EventArgs e)

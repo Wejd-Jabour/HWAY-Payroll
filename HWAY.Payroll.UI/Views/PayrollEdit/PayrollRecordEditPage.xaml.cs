@@ -17,6 +17,12 @@ public partial class PayrollRecordEditPage : ContentPage
         BindingContext = _viewModel;
     }
 
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await _viewModel.InitializeAsync();
+    }
+
     private async void PreviewPaystubButton_Clicked(object sender, EventArgs e)
     {
         var paystub = await _viewModel.BuildPaystubPreviewAsync();

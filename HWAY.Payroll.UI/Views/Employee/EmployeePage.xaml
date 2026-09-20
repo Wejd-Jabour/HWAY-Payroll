@@ -30,6 +30,26 @@
                         <Label Text="Choose an employer before searching or adding employees" Style="{StaticResource HwaySmallLabel}" />
                     </VerticalStackLayout>
 
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <VerticalStackLayout Grid.Column="0" Spacing="6">
+                            <Label Text="Company" Style="{StaticResource HwayFieldLabel}" />
+                            <Border Style="{StaticResource HwayInputBorder}">
+                                <Entry
+                                    Placeholder="Enter RP number or employer name"
+                                    Text="{Binding EmployerSearchText}"
+                                    ReturnCommand="{Binding SearchEmployersCommand}"
+                                    Style="{StaticResource HwayEntry}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <Button
+                            Grid.Column="1"
+                            Text="Search Companies"
+                            Command="{Binding SearchEmployersCommand}"
+                            Style="{StaticResource HwayPrimaryButton}"
+                            VerticalOptions="End" />
+                    </Grid>
+
                     <Border Style="{StaticResource HwayDropdownBorder}" HeightRequest="220">
                         <CollectionView
                             ItemsSource="{Binding Employers}"

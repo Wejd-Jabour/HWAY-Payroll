@@ -35,8 +35,6 @@ public class PayrollHistoryViewModel : INotifyPropertyChanged
         SelectEmployerCommand = new Command<EmployerLookupDto>(async employer => await SelectEmployerAsync(employer));
         RefreshHistoryCommand = new Command(async () => await RefreshHistoryAsync());
         ClearCommand = new Command(ClearForm);
-
-        _ = LoadInitialEmployersAsync();
     }
 
     public ObservableCollection<EmployerLookupDto> Employers { get; }
@@ -207,8 +205,25 @@ public class PayrollHistoryViewModel : INotifyPropertyChanged
         set => SetProperty(ref _netPay, value);
     }
 
-    private async Task LoadInitialEmployersAsync()
+    public async Task InitializeAsync()
     {
+        if (IsBusy || _isLoadingEmployers || _isRefreshingHistory)
+            return;
+
+        _suppressSearchTextChanged = true;
+        _suppressFilterRefresh = true;
+
+        SearchText = string.Empty;
+        EmployeeSearchText = string.Empty;
+        SelectedEmployer = null;
+        ClearFilterOptions();
+        ClearResults();
+        IsDropdownVisible = false;
+        Message = string.Empty;
+
+        _suppressFilterRefresh = false;
+        _suppressSearchTextChanged = false;
+
         await SearchEmployersAsync();
     }
 

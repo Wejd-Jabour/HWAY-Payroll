@@ -16,6 +16,7 @@ public class EmployerLookupViewModel : INotifyPropertyChanged
     private bool _isBusy;
     private bool _isPaystubVisible;
     private bool _canShowPaystub;
+    private bool _suppressSearchTextChanged;
 
     public EmployerLookupViewModel(IEmployerLookupService employerLookupService)
     {
@@ -26,8 +27,6 @@ public class EmployerLookupViewModel : INotifyPropertyChanged
         SearchCommand = new Command(async () => await SearchEmployersAsync());
         SelectEmployerCommand = new Command<EmployerLookupDto>(async employer => await SelectEmployerAsync(employer));
         ShowPaystubCommand = new Command(ShowPaystub);
-
-        _ = LoadInitialEmployersAsync();
     }
 
     public ObservableCollection<EmployerLookupDto> Employers { get; }
@@ -41,7 +40,7 @@ public class EmployerLookupViewModel : INotifyPropertyChanged
         get => _searchText;
         set
         {
-            if (SetProperty(ref _searchText, value))
+            if (SetProperty(ref _searchText, value) && !_suppressSearchTextChanged)
             {
                 _ = SearchEmployersAsync();
             }
@@ -78,8 +77,18 @@ public class EmployerLookupViewModel : INotifyPropertyChanged
         set => SetProperty(ref _canShowPaystub, value);
     }
 
-    private async Task LoadInitialEmployersAsync()
+    public async Task InitializeAsync()
     {
+        if (IsBusy)
+            return;
+
+        _suppressSearchTextChanged = true;
+        SearchText = string.Empty;
+        SelectedEmployer = null;
+        IsPaystubVisible = false;
+        CanShowPaystub = false;
+        _suppressSearchTextChanged = false;
+
         await SearchEmployersAsync();
     }
 
@@ -116,7 +125,9 @@ public class EmployerLookupViewModel : INotifyPropertyChanged
 
         SelectedEmployer = await _employerLookupService.GetEmployerByRpNumberAsync(employer.RpNumber);
 
+        _suppressSearchTextChanged = true;
         SearchText = employer.RpNumber;
+        _suppressSearchTextChanged = false;
 
         IsDropdownVisible = false;
 

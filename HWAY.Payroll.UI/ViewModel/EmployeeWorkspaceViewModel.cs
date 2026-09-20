@@ -16,6 +16,7 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
     private readonly IEmployeeInsertService _employeeInsertService;
     private readonly IEmployeeRemoveService _employeeRemoveService;
     private readonly IEmployerLookupService _employerLookupService;
+    private bool _suppressEmployerSearchTextChanged;
 
     public EmployeeWorkspaceViewModel(
         IEmployeeUpdateService employeeUpdateService,
@@ -32,6 +33,7 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
         Employees = new ObservableCollection<EmployeeLookupDto>();
 
         SearchCommand = new Command(async () => await SearchEmployeesAsync());
+        SearchEmployersCommand = new Command(async () => await SearchEmployersAsync());
         SelectEmployerCommand = new Command<EmployerLookupDto>(async (employer) => await SelectEmployerAsync(employer));
         SelectEmployeeCommand = new Command<EmployeeLookupDto>(SelectEmployee);
         SaveCommand = new Command(async () => await SaveEmployeeAsync());
@@ -49,6 +51,19 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
     {
         get => _searchText;
         set => SetProperty(ref _searchText, value);
+    }
+
+    private string _employerSearchText = "";
+    public string EmployerSearchText
+    {
+        get => _employerSearchText;
+        set
+        {
+            if (SetProperty(ref _employerSearchText, value) && !_suppressEmployerSearchTextChanged)
+            {
+                _ = SearchEmployersAsync();
+            }
+        }
     }
 
     public ObservableCollection<EmployerLookupDto> Employers { get; }
@@ -240,6 +255,7 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
 
     // ===================== Commands =====================
     public ICommand SearchCommand { get; }
+    public ICommand SearchEmployersCommand { get; }
     public ICommand SelectEmployerCommand { get; }
     public ICommand SelectEmployeeCommand { get; }
     public ICommand SaveCommand { get; }
@@ -257,12 +273,11 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
             IsBusy = true;
             Message = "";
 
-            // Load all employers in the top selection box
-            var employers = await _employerLookupService.SearchEmployersAsync("");
+            _suppressEmployerSearchTextChanged = true;
+            EmployerSearchText = "";
+            _suppressEmployerSearchTextChanged = false;
 
-            Employers.Clear();
-            foreach (var employer in employers)
-                Employers.Add(employer);
+            await LoadEmployerOptionsAsync();
 
             SearchResultsFound = false;
             SelectedEmployer = null;
@@ -277,8 +292,40 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
         }
         finally
         {
+            _suppressEmployerSearchTextChanged = false;
             IsBusy = false;
         }
+    }
+
+    private async Task SearchEmployersAsync()
+    {
+        if (IsBusy) return;
+
+        try
+        {
+            IsBusy = true;
+            Message = "";
+
+            await LoadEmployerOptionsAsync();
+            Message = Employers.Count == 0 ? "No companies found" : "";
+        }
+        catch (Exception ex)
+        {
+            Message = $"Error loading companies: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task LoadEmployerOptionsAsync()
+    {
+        var employers = await _employerLookupService.SearchEmployersAsync(EmployerSearchText);
+
+        Employers.Clear();
+        foreach (var employer in employers)
+            Employers.Add(employer);
     }
 
     private async Task SearchEmployeesAsync()
@@ -308,6 +355,9 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
             return;
 
         SelectedEmployer = employer;
+        _suppressEmployerSearchTextChanged = true;
+        EmployerSearchText = employer.RpNumber;
+        _suppressEmployerSearchTextChanged = false;
         SearchText = "";
         ClearForm();
         IsEditMode = false;

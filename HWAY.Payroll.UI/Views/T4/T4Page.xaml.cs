@@ -13,6 +13,12 @@ public partial class T4Page : ContentPage
         BindingContext = viewModel;
     }
 
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await _viewModel.InitializeAsync();
+    }
+
     private void OnNonNegativeNumericTextChanged(object sender, TextChangedEventArgs e)
     {
         if (sender is not Entry entry)

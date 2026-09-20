@@ -77,8 +77,6 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
         ReloadDeductionLimitsCommand = new Command(async () => await LoadDeductionLimitsAsync());
         SaveDeductionLimitCommand = new Command(async () => await SaveDeductionLimitAsync());
         ResetYearCommand = new Command(async () => await ResetYearAsync());
-
-        _ = LoadInitialSettingsAsync();
     }
 
     public BiWeeklyScheduleEditor ScheduleA { get; }
@@ -218,11 +216,12 @@ public sealed class BiWeeklySettingsViewModel : INotifyPropertyChanged
         set => SetProperty(ref _newCalculation, value);
     }
 
-    private async Task LoadInitialSettingsAsync()
+    public async Task InitializeAsync()
     {
         await LoadSavedSchedulesAsync();
         await LoadCalculationsAsync();
         await LoadDeductionLimitsAsync();
+        ResetYear = DateTime.Today.Year;
     }
 
     private async Task ResetYearAsync()

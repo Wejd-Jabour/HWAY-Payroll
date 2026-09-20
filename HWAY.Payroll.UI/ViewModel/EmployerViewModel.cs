@@ -16,6 +16,7 @@ public class EmployerViewModel : INotifyPropertyChanged
     private readonly IEmployerUpdateService _employerUpdateService;
     private readonly IEmployerInsertService _employerInsertService;
     private readonly IEmployerRemoveService _employerRemoveService;
+    private bool _suppressSearchTextChanged;
 
     public EmployerViewModel(
         IEmployerUpdateService employerUpdateService,
@@ -44,7 +45,13 @@ public class EmployerViewModel : INotifyPropertyChanged
     public string SearchText
     {
         get => _searchText;
-        set => SetProperty(ref _searchText, value);
+        set
+        {
+            if (SetProperty(ref _searchText, value) && !_suppressSearchTextChanged)
+            {
+                _ = SearchEmployersAsync();
+            }
+        }
     }
 
     public ObservableCollection<EmployerLookupDto> Employers { get; }
@@ -199,14 +206,15 @@ public class EmployerViewModel : INotifyPropertyChanged
             IsBusy = true;
             Message = "";
 
-            // Load all employers on initialization
-            var employers = await _employerUpdateService.SearchEmployersAsync("");
+            _suppressSearchTextChanged = true;
+            SearchText = "";
+            ClearForm();
+            IsEditMode = false;
+            EmployerSelected = false;
+            _suppressSearchTextChanged = false;
 
-            Employers.Clear();
-            foreach (var employer in employers)
-                Employers.Add(employer);
-
-            SearchResultsFound = employers.Count > 0;
+            await LoadEmployersAsync();
+            Message = "";
         }
         catch (Exception ex)
         {
@@ -214,6 +222,7 @@ public class EmployerViewModel : INotifyPropertyChanged
         }
         finally
         {
+            _suppressSearchTextChanged = false;
             IsBusy = false;
         }
     }
@@ -227,14 +236,8 @@ public class EmployerViewModel : INotifyPropertyChanged
             IsBusy = true;
             Message = "";
 
-            var results = await _employerUpdateService.SearchEmployersAsync(SearchText);
-
-            Employers.Clear();
-            foreach (var employer in results)
-                Employers.Add(employer);
-
-            SearchResultsFound = results.Count > 0;
-            Message = results.Count == 0 ? "No employers found" : "";
+            await LoadEmployersAsync();
+            Message = Employers.Count == 0 ? "No employers found" : "";
         }
         catch (Exception ex)
         {
@@ -244,6 +247,17 @@ public class EmployerViewModel : INotifyPropertyChanged
         {
             IsBusy = false;
         }
+    }
+
+    private async Task LoadEmployersAsync()
+    {
+        var results = await _employerUpdateService.SearchEmployersAsync(SearchText);
+
+        Employers.Clear();
+        foreach (var employer in results)
+            Employers.Add(employer);
+
+        SearchResultsFound = results.Count > 0;
     }
 
     private void SelectEmployer(EmployerLookupDto? employer)
@@ -272,7 +286,9 @@ public class EmployerViewModel : INotifyPropertyChanged
 
             IsEditMode = true;
             EmployerSelected = true;
+            _suppressSearchTextChanged = true;
             SearchText = ""; // Clear search to show form
+            _suppressSearchTextChanged = false;
             Employers.Clear();
             SearchResultsFound = false;
         }
@@ -292,7 +308,9 @@ public class EmployerViewModel : INotifyPropertyChanged
         ClearForm();
         IsEditMode = false;
         EmployerSelected = true;
+        _suppressSearchTextChanged = true;
         SearchText = "";
+        _suppressSearchTextChanged = false;
         Employers.Clear();
         SearchResultsFound = false;
     }
@@ -333,6 +351,8 @@ public class EmployerViewModel : INotifyPropertyChanged
                 return;
             }
 
+            var savedRpNumber = RpNumber.Trim();
+
             if (IsEditMode)
             {
                 // Update existing employer
@@ -370,15 +390,16 @@ public class EmployerViewModel : INotifyPropertyChanged
                 Message = "Employer created successfully";
             }
 
-            // Refresh search if there's search text
-            if (!string.IsNullOrWhiteSpace(SearchText))
-            {
-                await SearchEmployersAsync();
-            }
+            var successMessage = Message;
 
             ClearForm();
             EmployerSelected = false;
             IsEditMode = false;
+            _suppressSearchTextChanged = true;
+            SearchText = savedRpNumber;
+            _suppressSearchTextChanged = false;
+            await LoadEmployersAsync();
+            Message = successMessage;
         }
         catch (Exception ex)
         {
@@ -418,20 +439,16 @@ public class EmployerViewModel : INotifyPropertyChanged
             await _employerRemoveService.RemoveEmployerAsync(dto);
             Message = "Employer deleted successfully";
 
-            // Refresh search if there's search text
-            if (!string.IsNullOrWhiteSpace(SearchText))
-            {
-                await SearchEmployersAsync();
-            }
-            else
-            {
-                // Load all employers again
-                await InitializeAsync();
-            }
+            var successMessage = Message;
 
             ClearForm();
             EmployerSelected = false;
             IsEditMode = false;
+            _suppressSearchTextChanged = true;
+            SearchText = "";
+            _suppressSearchTextChanged = false;
+            await LoadEmployersAsync();
+            Message = successMessage;
         }
         catch (Exception ex)
         {
@@ -477,7 +494,9 @@ public class EmployerViewModel : INotifyPropertyChanged
 
     private void RestoreSearchState()
     {
+        _suppressSearchTextChanged = true;
         SearchText = _previousSearchText;
+        _suppressSearchTextChanged = false;
 
         Employers.Clear();
         foreach (var employer in _previousEmployers)

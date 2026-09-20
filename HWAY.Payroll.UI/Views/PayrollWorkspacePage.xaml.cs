@@ -18,6 +18,12 @@ public partial class PayrollWorkspacePage : ContentPage
         BindingContext = _viewModel;
     }
 
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await _viewModel.InitializeAsync();
+    }
+
     private async void PreviewPaystubButton_Clicked(object sender, EventArgs e)
     {
         if (sender is not Button button || button.BindingContext is not EmployeePayrollRowViewModel row)

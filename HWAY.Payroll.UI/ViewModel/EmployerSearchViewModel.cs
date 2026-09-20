@@ -12,6 +12,7 @@ namespace HWAY.Payroll.UI.ViewModels;
 public class EmployerSearchViewModel : INotifyPropertyChanged
 {
     private readonly IEmployerUpdateService _employerUpdateService;
+    private bool _suppressSearchTextChanged;
 
     public EmployerSearchViewModel(IEmployerUpdateService employerUpdateService)
     {
@@ -28,7 +29,13 @@ public class EmployerSearchViewModel : INotifyPropertyChanged
     public string SearchText
     {
         get => _searchText;
-        set => SetProperty(ref _searchText, value);
+        set
+        {
+            if (SetProperty(ref _searchText, value) && !_suppressSearchTextChanged)
+            {
+                _ = SearchEmployersAsync();
+            }
+        }
     }
 
     // 🔹 List
@@ -37,6 +44,15 @@ public class EmployerSearchViewModel : INotifyPropertyChanged
     // 🔹 Commands
     public ICommand SearchCommand { get; }
     public ICommand SelectEmployerCommand { get; }
+
+    public async Task InitializeAsync()
+    {
+        _suppressSearchTextChanged = true;
+        SearchText = "";
+        _suppressSearchTextChanged = false;
+
+        await SearchEmployersAsync();
+    }
 
     private async Task SearchEmployersAsync()
     {

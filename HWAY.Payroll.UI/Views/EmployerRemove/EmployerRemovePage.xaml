@@ -26,6 +26,7 @@
                             <Entry
                                 Placeholder="Search by RP Number or Employer Name"
                                 Text="{Binding SearchText}"
+                                ReturnCommand="{Binding SearchCommand}"
                                 Style="{StaticResource HwayEntry}" />
                         </Border>
 

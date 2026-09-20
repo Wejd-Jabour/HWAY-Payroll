@@ -19,6 +19,7 @@ public class PD7ViewModel : INotifyPropertyChanged
     private bool _suppressSearchTextChanged;
     private bool _suppressCalculations;
     private bool _isCalculating;
+    private bool _isLoadingEmployers;
 
     public PD7ViewModel(
         IPD7LookupService pd7LookupService,
@@ -35,7 +36,7 @@ public class PD7ViewModel : INotifyPropertyChanged
         SelectEmployerCommand = new Command<EmployerLookupDto>(async employer => await SelectEmployerAsync(employer));
         ExportPd7CsvCommand = new Command(async () => await ExportPd7CsvAsync());
         SaveCommand = new Command(async () => await SaveAsync());
-        ClearCommand = new Command(ClearForm);
+        ClearCommand = new Command(async () => await InitializeAsync());
 
         _suppressCalculations = true;
         Period = "XX";
@@ -43,7 +44,6 @@ public class PD7ViewModel : INotifyPropertyChanged
         SelectedMonth = Months.First(month => month.Number == DateTime.Today.Month);
         _suppressCalculations = false;
 
-        _ = LoadInitialEmployersAsync();
     }
 
     public ObservableCollection<EmployerLookupDto> Employers { get; }
@@ -344,30 +344,18 @@ public class PD7ViewModel : INotifyPropertyChanged
         set => SetProperty(ref _message, value);
     }
 
-    private async Task LoadInitialEmployersAsync()
+    public async Task InitializeAsync()
     {
-        await SearchEmployersAsync();
-    }
-
-    private async Task SearchEmployersAsync()
-    {
-        if (IsBusy)
+        if (_isLoadingEmployers || _isCalculating)
             return;
+
+        ResetFormState();
 
         try
         {
             IsBusy = true;
+            await LoadEmployerOptionsAsync();
             Message = "";
-
-            var results = await _employerLookupService.SearchEmployersAsync(SearchText);
-
-            Employers.Clear();
-            foreach (var employer in results)
-            {
-                Employers.Add(employer);
-            }
-
-            IsDropdownVisible = Employers.Count > 0;
         }
         catch (Exception ex)
         {
@@ -378,6 +366,53 @@ public class PD7ViewModel : INotifyPropertyChanged
         {
             IsBusy = false;
         }
+    }
+
+    private async Task SearchEmployersAsync()
+    {
+        if (_isLoadingEmployers)
+            return;
+
+        var shouldSetBusy = !IsBusy;
+
+        try
+        {
+            _isLoadingEmployers = true;
+            if (shouldSetBusy)
+            {
+                IsBusy = true;
+            }
+
+            Message = "";
+            await LoadEmployerOptionsAsync();
+        }
+        catch (Exception ex)
+        {
+            Message = $"Error loading employers: {ex.Message}";
+            IsDropdownVisible = false;
+        }
+        finally
+        {
+            if (shouldSetBusy)
+            {
+                IsBusy = false;
+            }
+
+            _isLoadingEmployers = false;
+        }
+    }
+
+    private async Task LoadEmployerOptionsAsync()
+    {
+        var results = await _employerLookupService.SearchEmployersAsync(SearchText);
+
+        Employers.Clear();
+        foreach (var employer in results)
+        {
+            Employers.Add(employer);
+        }
+
+        IsDropdownVisible = Employers.Count > 0;
     }
 
     private async Task SelectEmployerAsync(EmployerLookupDto? employer)
@@ -569,7 +604,8 @@ public class PD7ViewModel : INotifyPropertyChanged
             var saved = await _pd7LookupService.CreatePd7Async(dto);
             if (saved)
             {
-                ClearForm();
+                ResetFormState();
+                await LoadEmployerOptionsAsync();
                 Message = "PD7 saved successfully.";
             }
             else
@@ -622,7 +658,7 @@ public class PD7ViewModel : INotifyPropertyChanged
         PaidSoFar = 0;
     }
 
-    private void ClearForm()
+    private void ResetFormState()
     {
         _suppressCalculations = true;
         _suppressSearchTextChanged = true;
@@ -651,7 +687,6 @@ public class PD7ViewModel : INotifyPropertyChanged
         _suppressCalculations = false;
 
         UpdateFeeCheck();
-        _ = SearchEmployersAsync();
     }
 
     private void UpdateFeeCheck()

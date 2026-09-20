@@ -13,6 +13,7 @@ public class EmployerRemoveViewModel : INotifyPropertyChanged
 {
     private readonly IEmployerRemoveService _employerRemoveService;
     private readonly IEmployerUpdateService _employerUpdateService;
+    private bool _suppressSearchTextChanged;
 
         public EmployerRemoveViewModel(
         IEmployerRemoveService employerRemoveService,
@@ -32,7 +33,13 @@ public class EmployerRemoveViewModel : INotifyPropertyChanged
     public string SearchText
     {
         get => _searchText;
-        set => SetProperty(ref _searchText, value);
+        set
+        {
+            if (SetProperty(ref _searchText, value) && !_suppressSearchTextChanged)
+            {
+                _ = SearchEmployersAsync();
+            }
+        }
     }
 
     // 🔹 List of employers
@@ -57,8 +64,41 @@ public class EmployerRemoveViewModel : INotifyPropertyChanged
     public ICommand SearchCommand { get; }
     public ICommand DeleteCommand { get; }
 
+    public async Task InitializeAsync()
+    {
+        if (IsBusy)
+            return;
+
+        _suppressSearchTextChanged = true;
+        SearchText = "";
+        _suppressSearchTextChanged = false;
+        Message = "";
+
+        await SearchEmployersAsync();
+    }
+
     // 🔍 Search employees
     private async Task SearchEmployersAsync()
+    {
+        if (IsBusy)
+            return;
+
+        try
+        {
+            IsBusy = true;
+            await LoadEmployersAsync();
+        }
+        catch (Exception ex)
+        {
+            Message = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task LoadEmployersAsync()
     {
         var results = await _employerUpdateService.SearchEmployersAsync(SearchText);
 
@@ -73,6 +113,12 @@ public class EmployerRemoveViewModel : INotifyPropertyChanged
     {
         if (employer == null || IsBusy)
             return;
+
+        if (Application.Current?.MainPage is null)
+        {
+            Message = "Unable to show delete confirmation.";
+            return;
+        }
 
         bool confirm = await Application.Current.MainPage.DisplayAlert(
             "Confirm Delete",
@@ -95,7 +141,7 @@ public class EmployerRemoveViewModel : INotifyPropertyChanged
 
             await _employerRemoveService.RemoveEmployerAsync(dto);
 
-            Employers.Remove(employer);
+            await LoadEmployersAsync();
 
             Message = "Employer deleted successfully.";
         }

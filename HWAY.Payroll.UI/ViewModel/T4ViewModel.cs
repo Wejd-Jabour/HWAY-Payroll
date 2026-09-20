@@ -14,6 +14,7 @@ public class T4ViewModel : INotifyPropertyChanged
     private readonly IEmployerLookupService _employerLookupService;
     private bool _suppressSearchTextChanged;
     private bool _isCalculating;
+    private bool _isLoadingEmployers;
 
     public T4ViewModel(
         IT4LookupService t4LookupService,
@@ -27,10 +28,9 @@ public class T4ViewModel : INotifyPropertyChanged
 
         SearchCommand = new Command(async () => await SearchEmployersAsync());
         SelectEmployerCommand = new Command<EmployerLookupDto>(async employer => await SelectEmployerAsync(employer));
-        ClearCommand = new Command(ClearForm);
+        ClearCommand = new Command(async () => await InitializeAsync());
 
         Year = DateTime.Today.Year;
-        _ = LoadInitialEmployersAsync();
     }
 
     public ObservableCollection<EmployerLookupDto> Employers { get; }
@@ -176,30 +176,18 @@ public class T4ViewModel : INotifyPropertyChanged
         }
     }
 
-    private async Task LoadInitialEmployersAsync()
+    public async Task InitializeAsync()
     {
-        await SearchEmployersAsync();
-    }
-
-    private async Task SearchEmployersAsync()
-    {
-        if (IsBusy)
+        if (_isLoadingEmployers || _isCalculating)
             return;
+
+        ResetFormState();
 
         try
         {
             IsBusy = true;
+            await LoadEmployerOptionsAsync();
             Message = string.Empty;
-
-            var results = await _employerLookupService.SearchEmployersAsync(SearchText);
-
-            Employers.Clear();
-            foreach (var employer in results)
-            {
-                Employers.Add(employer);
-            }
-
-            IsDropdownVisible = Employers.Count > 0;
         }
         catch (Exception ex)
         {
@@ -210,6 +198,53 @@ public class T4ViewModel : INotifyPropertyChanged
         {
             IsBusy = false;
         }
+    }
+
+    private async Task SearchEmployersAsync()
+    {
+        if (_isLoadingEmployers)
+            return;
+
+        var shouldSetBusy = !IsBusy;
+
+        try
+        {
+            _isLoadingEmployers = true;
+            if (shouldSetBusy)
+            {
+                IsBusy = true;
+            }
+
+            Message = string.Empty;
+            await LoadEmployerOptionsAsync();
+        }
+        catch (Exception ex)
+        {
+            Message = $"Error loading employers: {ex.Message}";
+            IsDropdownVisible = false;
+        }
+        finally
+        {
+            if (shouldSetBusy)
+            {
+                IsBusy = false;
+            }
+
+            _isLoadingEmployers = false;
+        }
+    }
+
+    private async Task LoadEmployerOptionsAsync()
+    {
+        var results = await _employerLookupService.SearchEmployersAsync(SearchText);
+
+        Employers.Clear();
+        foreach (var employer in results)
+        {
+            Employers.Add(employer);
+        }
+
+        IsDropdownVisible = Employers.Count > 0;
     }
 
     private async Task SelectEmployerAsync(EmployerLookupDto? employer)
@@ -314,17 +349,16 @@ public class T4ViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasT4Results));
     }
 
-    private void ClearForm()
+    private void ResetFormState()
     {
         _suppressSearchTextChanged = true;
         SearchText = string.Empty;
         SelectedEmployer = null;
+        IsDropdownVisible = false;
         Year = DateTime.Today.Year;
         ClearCalculatedFields();
         Message = string.Empty;
         _suppressSearchTextChanged = false;
-
-        _ = SearchEmployersAsync();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

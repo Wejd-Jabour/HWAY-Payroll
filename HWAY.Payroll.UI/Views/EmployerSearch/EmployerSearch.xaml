@@ -23,6 +23,7 @@
                             <Entry
                                 Placeholder="Search by RP or Employer Name"
                                 Text="{Binding SearchText}"
+                                ReturnCommand="{Binding SearchCommand}"
                                 Style="{StaticResource HwayEntry}" />
                         </Border>
                     </VerticalStackLayout>

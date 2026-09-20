@@ -53,8 +53,6 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         SaveAllRowsCommand = new Command(async () => await SaveAllRowsAsync());
         PreviewRowPaystubCommand = new Command<EmployeePayrollRowViewModel>(PreviewRowPaystub);
         OpenCraWebsiteCommand = new Command(OpenCraWebsite);
-
-        _ = LoadInitialEmployersAsync();
     }
 
     public ObservableCollection<EmployerLookupDto> Employers { get; }
@@ -120,8 +118,21 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         set => SetProperty(ref _message, value);
     }
 
-    private async Task LoadInitialEmployersAsync()
+    public async Task InitializeAsync()
     {
+        if (IsBusy)
+            return;
+
+        _suppressSearchTextChanged = true;
+        SearchText = string.Empty;
+        _suppressSearchTextChanged = false;
+
+        SelectedEmployer = null;
+        EmployeePayrollRows.Clear();
+        SearchResultsFound = false;
+        EmployeeNotFound = false;
+        Message = string.Empty;
+
         await SearchEmployersAsync();
     }
 

@@ -74,6 +74,12 @@ public class EmployeeRemoveViewModel : INotifyPropertyChanged
         if (employee == null || IsBusy)
             return;
 
+        if (Application.Current?.MainPage is null)
+        {
+            Message = "Unable to show delete confirmation.";
+            return;
+        }
+
         bool confirm = await Application.Current.MainPage.DisplayAlert(
             "Confirm Delete",
             $"Delete {employee.FirstName} {employee.LastName}?",
@@ -95,7 +101,7 @@ public class EmployeeRemoveViewModel : INotifyPropertyChanged
 
             await _employeeRemoveService.RemoveEmployeeAsync(dto);
 
-            Employees.Remove(employee);
+            await SearchEmployeesAsync();
 
             Message = "Employee deleted successfully.";
         }
