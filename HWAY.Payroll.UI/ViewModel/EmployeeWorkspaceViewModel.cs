@@ -58,8 +58,23 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
     public EmployerLookupDto? SelectedEmployer
     {
         get => _selectedEmployer;
-        set => SetProperty(ref _selectedEmployer, value);
+        set
+        {
+            if (SetProperty(ref _selectedEmployer, value))
+            {
+                OnPropertyChanged(nameof(HasSelectedEmployer));
+                OnPropertyChanged(nameof(NeedsEmployerSelection));
+                OnPropertyChanged(nameof(SelectedEmployerSummary));
+                OnPropertyChanged(nameof(IsRpNumberReadOnly));
+            }
+        }
     }
+
+    public bool HasSelectedEmployer => SelectedEmployer is not null;
+    public bool NeedsEmployerSelection => !HasSelectedEmployer;
+    public string SelectedEmployerSummary => SelectedEmployer is null
+        ? ""
+        : $"{SelectedEmployer.RpNumber} - {SelectedEmployer.EmployerName}";
 
     private EmployeeLookupDto? _selectedEmployee;
     public EmployeeLookupDto? SelectedEmployee
@@ -198,8 +213,16 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
     public bool IsEditMode
     {
         get => _isEditMode;
-        set => SetProperty(ref _isEditMode, value);
+        set
+        {
+            if (SetProperty(ref _isEditMode, value))
+            {
+                OnPropertyChanged(nameof(IsRpNumberReadOnly));
+            }
+        }
     }
+
+    public bool IsRpNumberReadOnly => IsEditMode || HasSelectedEmployer;
 
     private bool _searchResultsFound = false;
     public bool SearchResultsFound
@@ -243,6 +266,9 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
 
             SearchResultsFound = false;
             SelectedEmployer = null;
+            EmployeeSelected = false;
+            SearchText = "";
+            Employees.Clear();
             Message = "";
         }
         catch (Exception ex)
@@ -264,14 +290,7 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
             IsBusy = true;
             Message = "";
 
-            var results = await _employeeUpdateService.SearchEmployeesAsync(SearchText);
-
-            Employees.Clear();
-            foreach (var emp in results)
-                Employees.Add(emp);
-
-            SearchResultsFound = results.Count > 0;
-            Message = results.Count == 0 ? "No employees found" : "";
+            await LoadEmployeesForSelectedEmployerAsync();
         }
         catch (Exception ex)
         {
@@ -289,7 +308,10 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
             return;
 
         SelectedEmployer = employer;
-        SearchText = employer.RpNumber;
+        SearchText = "";
+        ClearForm();
+        IsEditMode = false;
+        EmployeeSelected = false;
         await SearchEmployeesAsync();
     }
 
@@ -342,8 +364,15 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
 
     private void NewEmployee()
     {
+        if (SelectedEmployer == null)
+        {
+            Message = "Select a company before adding an employee";
+            return;
+        }
+
         CaptureSearchState();
         ClearForm();
+        RpNumber = SelectedEmployer.RpNumber;
         IsEditMode = false;
         EmployeeSelected = true;
         SearchText = "";
@@ -376,6 +405,17 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
                 return;
             }
 
+            if (!IsEditMode && SelectedEmployer == null)
+            {
+                Message = "Select a company before adding an employee";
+                return;
+            }
+
+            if (!IsEditMode && SelectedEmployer != null)
+            {
+                RpNumber = SelectedEmployer.RpNumber;
+            }
+
             if (string.IsNullOrWhiteSpace(EmployeeNumber))
             {
                 Message = "Employee Number is required";
@@ -405,6 +445,8 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
                 Message = "Birth date cannot be in the future";
                 return;
             }
+
+            var savedEmployeeNumber = EmployeeNumber.Trim();
 
             if (IsEditMode)
             {
@@ -453,15 +495,19 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
                 Message = "Employee created successfully";
             }
 
-            // Refresh search if there's search text
-            if (!string.IsNullOrWhiteSpace(SearchText))
-            {
-                await SearchEmployeesAsync();
-            }
+            var successMessage = Message;
 
             ClearForm();
             EmployeeSelected = false;
             IsEditMode = false;
+            SearchText = savedEmployeeNumber;
+
+            if (SelectedEmployer != null)
+            {
+                await LoadEmployeesForSelectedEmployerAsync(showNoResultsMessage: false);
+            }
+
+            Message = successMessage;
         }
         catch (Exception ex)
         {
@@ -509,20 +555,19 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
             await _employeeRemoveService.RemoveEmployeeAsync(dto);
             Message = "Employee deleted successfully";
 
-            // Refresh search if there's search text
-            if (!string.IsNullOrWhiteSpace(SearchText))
-            {
-                await SearchEmployeesAsync();
-            }
-            else
-            {
-                // Load all employees again
-                await InitializeAsync();
-            }
+            var successMessage = Message;
 
             ClearForm();
             EmployeeSelected = false;
             IsEditMode = false;
+            SearchText = "";
+
+            if (SelectedEmployer != null)
+            {
+                await LoadEmployeesForSelectedEmployerAsync(showNoResultsMessage: false);
+            }
+
+            Message = successMessage;
         }
         catch (Exception ex)
         {
@@ -552,6 +597,28 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
         DateOfBirthDisplay = DateTime.Today.AddYears(-18);
         EiExempt = false;
         SelectedEmployee = null;
+    }
+
+    private async Task LoadEmployeesForSelectedEmployerAsync(bool showNoResultsMessage = true)
+    {
+        if (SelectedEmployer == null)
+        {
+            Employees.Clear();
+            SearchResultsFound = false;
+            Message = "Select a company before searching employees";
+            return;
+        }
+
+        var results = await _employeeUpdateService.SearchEmployeesAsync(SearchText, SelectedEmployer.RpNumber);
+
+        Employees.Clear();
+        foreach (var emp in results)
+            Employees.Add(emp);
+
+        SearchResultsFound = results.Count > 0;
+        Message = results.Count == 0 && showNoResultsMessage
+            ? "No employees found for this company"
+            : "";
     }
 
     private void CaptureSearchState()
@@ -584,7 +651,10 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
         if (Equals(field, value)) return false;
 
         field = value;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        OnPropertyChanged(name);
         return true;
     }
+
+    private void OnPropertyChanged([CallerMemberName] string name = "")
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

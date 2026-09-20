@@ -14,18 +14,27 @@ public class EmployeeUpdateService : IEmployeeUpdateService
         _dbContext = dbContext;
     }
 
-    public async Task<List<EmployeeLookupDto>> SearchEmployeesAsync(string? searchText)
+    public Task<List<EmployeeLookupDto>> SearchEmployeesAsync(string? searchText)
+        => SearchEmployeesAsync(searchText, null);
+
+    public async Task<List<EmployeeLookupDto>> SearchEmployeesAsync(string? searchText, string? rpNumber)
     {
         searchText = searchText?.Trim();
+        rpNumber = rpNumber?.Trim();
 
         var query = _dbContext.Employees.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(rpNumber))
+        {
+            query = query.Where(employee => employee.RpNumber == rpNumber);
+        }
 
         if (!string.IsNullOrWhiteSpace(searchText))
         {
             var normalizedSearchText = searchText.ToLowerInvariant();
 
             query = query.Where(employee =>
-                employee.RpNumber.ToLower().Contains(normalizedSearchText) ||
+                (string.IsNullOrWhiteSpace(rpNumber) && employee.RpNumber.ToLower().Contains(normalizedSearchText)) ||
                 employee.EmployeeNumber.ToLower().Contains(normalizedSearchText) ||
                 employee.FirstName.ToLower().Contains(normalizedSearchText) ||
                 employee.LastName.ToLower().Contains(normalizedSearchText) ||

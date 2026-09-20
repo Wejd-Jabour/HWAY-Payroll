@@ -27,7 +27,7 @@
                 <VerticalStackLayout Spacing="14">
                     <VerticalStackLayout Spacing="3">
                         <Label Text="Employer Filter" Style="{StaticResource HwaySectionTitle}" />
-                        <Label Text="Choose an employer or search employees directly" Style="{StaticResource HwaySmallLabel}" />
+                        <Label Text="Choose an employer before searching or adding employees" Style="{StaticResource HwaySmallLabel}" />
                     </VerticalStackLayout>
 
                     <Border Style="{StaticResource HwayDropdownBorder}" HeightRequest="220">
@@ -60,14 +60,22 @@
                         </CollectionView>
                     </Border>
 
+                    <Label
+                        IsVisible="{Binding HasSelectedEmployer}"
+                        Text="{Binding SelectedEmployerSummary, StringFormat='Selected: {0}'}"
+                        Style="{StaticResource HwayValueLabel}" />
+
                     <BoxView HeightRequest="1" BackgroundColor="#E2E8F0" />
 
-                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+                    <Grid
+                        IsVisible="{Binding HasSelectedEmployer}"
+                        ColumnDefinitions="*,Auto,Auto"
+                        ColumnSpacing="12">
                         <VerticalStackLayout Grid.Column="0" Spacing="6">
                             <Label Text="Employee Search" Style="{StaticResource HwayFieldLabel}" />
                             <Border Style="{StaticResource HwayInputBorder}">
                                 <Entry
-                                    Placeholder="Search by RP number, Employee #, or Name"
+                                    Placeholder="Search by Employee # or Name"
                                     Text="{Binding SearchText}"
                                     ReturnCommand="{Binding SearchCommand}"
                                     Style="{StaticResource HwayEntry}" />
@@ -165,7 +173,7 @@
                         <VerticalStackLayout WidthRequest="300" Spacing="6" Margin="0,0,18,10">
                             <Label Text="RP Number" Style="{StaticResource HwayFieldLabel}" />
                             <Border Style="{StaticResource HwayInputBorder}">
-                                <Entry Placeholder="RP Number" Text="{Binding RpNumber}" IsReadOnly="{Binding IsEditMode}" Style="{StaticResource HwayEntry}" />
+                                <Entry Placeholder="RP Number" Text="{Binding RpNumber}" IsReadOnly="{Binding IsRpNumberReadOnly}" Style="{StaticResource HwayEntry}" />
                             </Border>
                         </VerticalStackLayout>
 
