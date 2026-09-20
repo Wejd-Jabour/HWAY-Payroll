@@ -2,6 +2,9 @@ using HWAY.Payroll.Data.Context;
 using HWAY.Payroll.Services.PayPeriods;
 using DataPD7 = HWAY.Payroll.Data.Entities.PD7;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Maui.Storage;
+using System.Globalization;
+using System.Text;
 
 namespace HWAY.Payroll.Services.PD7;
 
@@ -130,8 +133,138 @@ public class PD7LookupService : IPD7LookupService
         if (employer == null)
             throw new Exception("Employer not found.");
 
-        var periodSummary = await _payPeriodRangeService.GetPayPeriodMonthSummaryAsync(
+        return await CalculatePd7ForEmployerAsync(
+            employer.RpNumber,
             employer.EmployerGroup,
+            employer.Fee,
+            month,
+            year);
+    }
+
+    public async Task<string> ExportMonthlyPd7CsvAsync(int month, int year)
+    {
+        if (month < 1 || month > 12)
+            throw new Exception("Month must be between 1 and 12.");
+
+        if (year < 1)
+            throw new Exception("Year is required.");
+
+        var employers = await _dbContext.Employers
+            .AsNoTracking()
+            .OrderBy(employer => employer.RpNumber)
+            .Select(employer => new
+            {
+                employer.RpNumber,
+                employer.EmployerName,
+                employer.EmployerGroup,
+                employer.Fee
+            })
+            .ToListAsync();
+
+        if (employers.Count == 0)
+            throw new Exception("There are no companies on file.");
+
+        var rpNumbers = employers
+            .Select(employer => employer.RpNumber)
+            .ToArray();
+
+        var savedByRpNumber = await _dbContext.PD7Records
+            .AsNoTracking()
+            .Where(record =>
+                record.Month == month &&
+                record.Year == year &&
+                rpNumbers.Contains(record.RPNumber))
+            .ToDictionaryAsync(record => record.RPNumber);
+
+        var yearTotalsByRpNumber = await _dbContext.PD7Records
+            .AsNoTracking()
+            .Where(record =>
+                record.Year == year &&
+                rpNumbers.Contains(record.RPNumber))
+            .GroupBy(record => record.RPNumber)
+            .Select(group => new
+            {
+                RPNumber = group.Key,
+                PD7Total = group.Sum(record => record.PD7Total)
+            })
+            .ToDictionaryAsync(
+                total => total.RPNumber,
+                total => RoundMoney(total.PD7Total));
+
+        var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month);
+        var csv = new StringBuilder();
+
+        AppendCsvRow(csv,
+            "RP Number",
+            "Employer Name",
+            "Fee",
+            $"PD7 Total ({year})",
+            "Year",
+            "Month",
+            "Periods",
+            "Gross",
+            "Net Total",
+            "Employer Contributions",
+            "Active Employees",
+            "PD7 Total For Month",
+            "Transfer",
+            "Received",
+            "Calculation Check",
+            "Transfer Check");
+
+        foreach (var employer in employers)
+        {
+            var calculated = await CalculatePd7ForEmployerAsync(
+                employer.RpNumber,
+                employer.EmployerGroup,
+                employer.Fee,
+                month,
+                year);
+
+            savedByRpNumber.TryGetValue(employer.RpNumber, out var saved);
+            yearTotalsByRpNumber.TryGetValue(employer.RpNumber, out var yearTotal);
+
+            var received = RoundMoney(saved?.Received ?? 0);
+            var calculationCheck = RoundMoney(calculated.NetTotal + calculated.PD7Total) ==
+                RoundMoney(calculated.Gross + calculated.EmployerContribution);
+            var transferCheck = (calculated.Transfer != 0 || received != 0) &&
+                RoundMoney(received) == RoundMoney(calculated.Transfer);
+
+            AppendCsvRow(csv,
+                employer.RpNumber,
+                employer.EmployerName,
+                calculated.Fee,
+                yearTotal,
+                year,
+                $"{month:00} - {monthName}",
+                calculated.Period,
+                calculated.Gross,
+                calculated.NetTotal,
+                calculated.EmployerContribution,
+                calculated.ActiveEmployees,
+                calculated.PD7Total,
+                calculated.Transfer,
+                received,
+                calculationCheck ? "Yes" : "No",
+                transferCheck ? "Yes" : "No");
+        }
+
+        var fileName = $"PD7_{year}_{month:00}_{MakeSafeFileName(monthName)}.csv";
+        var filePath = Path.Combine(FileSystem.AppDataDirectory, fileName);
+        await File.WriteAllTextAsync(filePath, csv.ToString(), new UTF8Encoding(true));
+
+        return filePath;
+    }
+
+    private async Task<PD7LookupDto> CalculatePd7ForEmployerAsync(
+        string rpNumber,
+        string? employerGroup,
+        decimal fee,
+        int month,
+        int year)
+    {
+        var periodSummary = await _payPeriodRangeService.GetPayPeriodMonthSummaryAsync(
+            employerGroup,
             month,
             year);
         var periodNumbers = periodSummary.Periods
@@ -156,15 +289,15 @@ public class PD7LookupService : IPD7LookupService
 
         return new PD7LookupDto
         {
-            RPNumber = employer.RpNumber,
-            Fee = RoundMoney(employer.Fee),
+            RPNumber = rpNumber,
+            Fee = RoundMoney(fee),
             Gross = gross,
             NetTotal = netTotal,
             EmployerContribution = employerContribution,
             PD7Total = pd7Total,
             ActiveEmployees = activeEmployees,
             Period = periodSummary.PeriodSummary,
-            Transfer = RoundMoney(employer.Fee + pd7Total),
+            Transfer = RoundMoney(fee + pd7Total),
             Month = month,
             Year = year
         };
@@ -316,6 +449,34 @@ public class PD7LookupService : IPD7LookupService
     }
 
     private static decimal RoundMoney(decimal value) => Math.Round(value, 2, MidpointRounding.AwayFromZero);
+
+    private static void AppendCsvRow(StringBuilder csv, params object?[] values)
+    {
+        csv.AppendLine(string.Join(",", values.Select(FormatCsvValue)));
+    }
+
+    private static string FormatCsvValue(object? value)
+    {
+        var text = value switch
+        {
+            null => "",
+            decimal decimalValue => decimalValue.ToString("0.00", CultureInfo.InvariantCulture),
+            int intValue => intValue.ToString(CultureInfo.InvariantCulture),
+            _ => value.ToString() ?? ""
+        };
+
+        return text.Contains('"') || text.Contains(',') || text.Contains('\n') || text.Contains('\r')
+            ? $"\"{text.Replace("\"", "\"\"")}\""
+            : text;
+    }
+
+    private static string MakeSafeFileName(string fileName)
+    {
+        foreach (var invalidChar in Path.GetInvalidFileNameChars())
+            fileName = fileName.Replace(invalidChar, '_');
+
+        return fileName;
+    }
 
     private sealed class PeriodPayrollTotals
     {

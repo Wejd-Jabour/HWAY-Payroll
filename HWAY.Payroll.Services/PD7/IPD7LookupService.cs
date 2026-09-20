@@ -10,6 +10,7 @@ public interface IPD7LookupService
     Task<PD7LookupDto?> GetByPeriodAsync(string rpNumber, int month, int year);
     Task<decimal> GetCalendarYearPd7TotalAsync(string rpNumber, int year);
     Task<PD7LookupDto> CalculatePd7Async(string rpNumber, int month, int year);
+    Task<string> ExportMonthlyPd7CsvAsync(int month, int year);
     Task<PD7LookupDto> SaveAutomaticPd7Async(string rpNumber, int month, int year);
     Task<bool> CreatePd7Async(PD7LookupDto dto);
 }

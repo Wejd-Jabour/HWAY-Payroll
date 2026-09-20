@@ -5,8 +5,10 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using HWAY.Payroll.Services.Employers;
 using HWAY.Payroll.Services.PD7;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Storage;
 
 namespace HWAY.Payroll.UI.ViewModel;
 
@@ -27,9 +29,11 @@ public class PD7ViewModel : INotifyPropertyChanged
 
         Employers = new ObservableCollection<EmployerLookupDto>();
         Months = MonthOption.All;
+        YearOptions = BuildYearOptions();
 
         SearchCommand = new Command(async () => await SearchEmployersAsync());
         SelectEmployerCommand = new Command<EmployerLookupDto>(async employer => await SelectEmployerAsync(employer));
+        ExportPd7CsvCommand = new Command(async () => await ExportPd7CsvAsync());
         SaveCommand = new Command(async () => await SaveAsync());
         ClearCommand = new Command(ClearForm);
 
@@ -44,9 +48,11 @@ public class PD7ViewModel : INotifyPropertyChanged
 
     public ObservableCollection<EmployerLookupDto> Employers { get; }
     public IReadOnlyList<MonthOption> Months { get; }
+    public IReadOnlyList<int> YearOptions { get; }
 
     public ICommand SearchCommand { get; }
     public ICommand SelectEmployerCommand { get; }
+    public ICommand ExportPd7CsvCommand { get; }
     public ICommand SaveCommand { get; }
     public ICommand ClearCommand { get; }
 
@@ -459,6 +465,46 @@ public class PD7ViewModel : INotifyPropertyChanged
         CalendarYearPD7Total = await _pd7LookupService.GetCalendarYearPd7TotalAsync(RpNumber, Year);
     }
 
+    private async Task ExportPd7CsvAsync()
+    {
+        if (IsBusy)
+            return;
+
+        if (SelectedMonth == null || Month < 1 || Month > 12)
+        {
+            Message = "Select a month first.";
+            return;
+        }
+
+        if (Year < 1)
+        {
+            Message = "Select a year first.";
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            Message = "Creating PD7 CSV...";
+
+            var filePath = await _pd7LookupService.ExportMonthlyPd7CsvAsync(Month, Year);
+            Message = $"PD7 CSV created for {SelectedMonth.Name} {Year}.";
+
+            await Launcher.OpenAsync(new OpenFileRequest
+            {
+                File = new ReadOnlyFile(filePath)
+            });
+        }
+        catch (Exception ex)
+        {
+            Message = $"Unable to print PD7 CSV: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
     private async Task SaveAsync()
     {
         if (IsBusy) return;
@@ -649,6 +695,16 @@ public class PD7ViewModel : INotifyPropertyChanged
     }
 
     private static decimal RoundMoney(decimal value) => Math.Round(value, 2, MidpointRounding.AwayFromZero);
+
+    private static IReadOnlyList<int> BuildYearOptions()
+    {
+        var currentYear = DateTime.Today.Year;
+
+        return Enumerable
+            .Range(currentYear - 10, 12)
+            .Reverse()
+            .ToList();
+    }
 }
 
 public sealed class MonthOption
