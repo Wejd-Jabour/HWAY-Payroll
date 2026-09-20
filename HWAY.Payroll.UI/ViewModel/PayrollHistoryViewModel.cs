@@ -66,8 +66,16 @@ public class PayrollHistoryViewModel : INotifyPropertyChanged
     public EmployerLookupDto? SelectedEmployer
     {
         get => _selectedEmployer;
-        set => SetProperty(ref _selectedEmployer, value);
+        set
+        {
+            if (SetProperty(ref _selectedEmployer, value))
+            {
+                OnPropertyChanged(nameof(HasSelectedEmployer));
+            }
+        }
     }
+
+    public bool HasSelectedEmployer => SelectedEmployer is not null;
 
     private PayrollHistoryTermOptionDto? _selectedTerm;
     public PayrollHistoryTermOptionDto? SelectedTerm

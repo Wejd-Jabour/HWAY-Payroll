@@ -107,7 +107,9 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Border Style="{StaticResource HwayCardBorder}">
+            <Border
+                IsVisible="{Binding HasSelectedEmployer}"
+                Style="{StaticResource HwayCardBorder}">
                 <VerticalStackLayout Spacing="14">
                     <VerticalStackLayout Spacing="3">
                         <Label Text="History Filters" Style="{StaticResource HwaySectionTitle}" />

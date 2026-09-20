@@ -204,7 +204,9 @@
                         </VerticalStackLayout>
                     </FlexLayout>
 
-                    <VerticalStackLayout Spacing="6">
+                    <VerticalStackLayout
+                        IsVisible="{Binding HasSelectedEmployer}"
+                        Spacing="6">
                         <Label Text="Employee" Style="{StaticResource FieldLabel}" />
                         <Border Style="{StaticResource InputBorder}">
                             <Picker

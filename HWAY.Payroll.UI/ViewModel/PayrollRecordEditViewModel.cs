@@ -83,8 +83,16 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
     public EmployerLookupDto? SelectedEmployer
     {
         get => _selectedEmployer;
-        set => SetProperty(ref _selectedEmployer, value);
+        set
+        {
+            if (SetProperty(ref _selectedEmployer, value))
+            {
+                OnPropertyChanged(nameof(HasSelectedEmployer));
+            }
+        }
     }
+
+    public bool HasSelectedEmployer => SelectedEmployer is not null;
 
     private bool _isDropdownVisible;
     public bool IsDropdownVisible
