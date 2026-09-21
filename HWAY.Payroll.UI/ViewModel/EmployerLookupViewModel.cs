@@ -26,6 +26,7 @@ public class EmployerLookupViewModel : INotifyPropertyChanged
 
         SearchCommand = new Command(async () => await SearchEmployersAsync());
         SelectEmployerCommand = new Command<EmployerLookupDto>(async employer => await SelectEmployerAsync(employer));
+        DeselectEmployerCommand = new Command(async () => await InitializeAsync());
         ShowPaystubCommand = new Command(ShowPaystub);
     }
 
@@ -33,6 +34,7 @@ public class EmployerLookupViewModel : INotifyPropertyChanged
 
     public ICommand SearchCommand { get; }
     public ICommand SelectEmployerCommand { get; }
+    public ICommand DeselectEmployerCommand { get; }
     public ICommand ShowPaystubCommand { get; }
 
     public string SearchText
@@ -50,8 +52,18 @@ public class EmployerLookupViewModel : INotifyPropertyChanged
     public EmployerLookupDto? SelectedEmployer
     {
         get => _selectedEmployer;
-        set => SetProperty(ref _selectedEmployer, value);
+        set
+        {
+            if (SetProperty(ref _selectedEmployer, value))
+            {
+                OnPropertyChanged(nameof(HasSelectedEmployer));
+                OnPropertyChanged(nameof(NeedsEmployerSelection));
+            }
+        }
     }
+
+    public bool HasSelectedEmployer => SelectedEmployer is not null;
+    public bool NeedsEmployerSelection => !HasSelectedEmployer;
 
     public bool IsDropdownVisible
     {
@@ -110,7 +122,7 @@ public class EmployerLookupViewModel : INotifyPropertyChanged
                 Employers.Add(employer);
             }
 
-            IsDropdownVisible = Employers.Count > 0;
+            IsDropdownVisible = NeedsEmployerSelection && Employers.Count > 0;
         }
         finally
         {

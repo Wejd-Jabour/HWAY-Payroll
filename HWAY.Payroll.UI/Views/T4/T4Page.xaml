@@ -59,8 +59,9 @@
 
                 <Button
                     Grid.Column="1"
-                    Text="Clear"
-                    Command="{Binding ClearCommand}"
+                    Text="Back"
+                    Command="{Binding DeselectEmployerCommand}"
+                    IsVisible="{Binding HasSelectedEmployer}"
                     BackgroundColor="#475569"
                     TextColor="White"
                     VerticalOptions="Center" />
@@ -77,7 +78,10 @@
                     <Label Text="Company Lookup" Style="{StaticResource SectionTitle}" />
 
                     <Grid ColumnDefinitions="*,160" ColumnSpacing="12">
-                        <VerticalStackLayout Grid.Column="0" Spacing="6">
+                        <VerticalStackLayout
+                            Grid.Column="0"
+                            IsVisible="{Binding NeedsEmployerSelection}"
+                            Spacing="6">
                             <Label Text="Company" Style="{StaticResource FieldLabel}" />
                             <Entry
                                 Placeholder="Enter RP number or employer name"
@@ -135,6 +139,7 @@
                     </Border>
 
                     <FlexLayout
+                        IsVisible="{Binding HasSelectedEmployer}"
                         Direction="Row"
                         Wrap="Wrap"
                         AlignItems="Start"

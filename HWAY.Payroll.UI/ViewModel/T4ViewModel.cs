@@ -28,6 +28,7 @@ public class T4ViewModel : INotifyPropertyChanged
 
         SearchCommand = new Command(async () => await SearchEmployersAsync());
         SelectEmployerCommand = new Command<EmployerLookupDto>(async employer => await SelectEmployerAsync(employer));
+        DeselectEmployerCommand = new Command(async () => await InitializeAsync());
         ClearCommand = new Command(async () => await InitializeAsync());
 
         Year = DateTime.Today.Year;
@@ -38,6 +39,7 @@ public class T4ViewModel : INotifyPropertyChanged
 
     public ICommand SearchCommand { get; }
     public ICommand SelectEmployerCommand { get; }
+    public ICommand DeselectEmployerCommand { get; }
     public ICommand ClearCommand { get; }
 
     private string _searchText = string.Empty;
@@ -57,8 +59,18 @@ public class T4ViewModel : INotifyPropertyChanged
     public EmployerLookupDto? SelectedEmployer
     {
         get => _selectedEmployer;
-        set => SetProperty(ref _selectedEmployer, value);
+        set
+        {
+            if (SetProperty(ref _selectedEmployer, value))
+            {
+                OnPropertyChanged(nameof(HasSelectedEmployer));
+                OnPropertyChanged(nameof(NeedsEmployerSelection));
+            }
+        }
     }
+
+    public bool HasSelectedEmployer => SelectedEmployer is not null;
+    public bool NeedsEmployerSelection => !HasSelectedEmployer;
 
     private bool _isDropdownVisible;
     public bool IsDropdownVisible
@@ -244,7 +256,7 @@ public class T4ViewModel : INotifyPropertyChanged
             Employers.Add(employer);
         }
 
-        IsDropdownVisible = Employers.Count > 0;
+        IsDropdownVisible = NeedsEmployerSelection && Employers.Count > 0;
     }
 
     private async Task SelectEmployerAsync(EmployerLookupDto? employer)

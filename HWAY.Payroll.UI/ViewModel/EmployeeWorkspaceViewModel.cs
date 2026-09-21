@@ -40,6 +40,7 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
         DeleteCommand = new Command(async () => await DeleteEmployeeAsync());
         ClearFormCommand = new Command(CancelForm);
         NewEmployeeCommand = new Command(() => NewEmployee());
+        DeselectEmployerCommand = new Command(async () => await InitializeAsync());
         InitializeCommand = new Command(async () => await InitializeAsync());
     }
 
@@ -262,6 +263,7 @@ public class EmployeeWorkspaceViewModel : INotifyPropertyChanged
     public ICommand DeleteCommand { get; }
     public ICommand ClearFormCommand { get; }
     public ICommand NewEmployeeCommand { get; }
+    public ICommand DeselectEmployerCommand { get; }
 
     // ===================== Methods =====================
     public async Task InitializeAsync()

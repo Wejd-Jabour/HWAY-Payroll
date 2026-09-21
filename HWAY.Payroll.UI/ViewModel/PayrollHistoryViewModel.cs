@@ -33,6 +33,7 @@ public class PayrollHistoryViewModel : INotifyPropertyChanged
 
         SearchCommand = new Command(async () => await SearchEmployersAsync());
         SelectEmployerCommand = new Command<EmployerLookupDto>(async employer => await SelectEmployerAsync(employer));
+        DeselectEmployerCommand = new Command(ClearForm);
         RefreshHistoryCommand = new Command(async () => await RefreshHistoryAsync());
         ClearCommand = new Command(ClearForm);
     }
@@ -46,6 +47,7 @@ public class PayrollHistoryViewModel : INotifyPropertyChanged
 
     public ICommand SearchCommand { get; }
     public ICommand SelectEmployerCommand { get; }
+    public ICommand DeselectEmployerCommand { get; }
     public ICommand RefreshHistoryCommand { get; }
     public ICommand ClearCommand { get; }
 
@@ -71,11 +73,13 @@ public class PayrollHistoryViewModel : INotifyPropertyChanged
             if (SetProperty(ref _selectedEmployer, value))
             {
                 OnPropertyChanged(nameof(HasSelectedEmployer));
+                OnPropertyChanged(nameof(NeedsEmployerSelection));
             }
         }
     }
 
     public bool HasSelectedEmployer => SelectedEmployer is not null;
+    public bool NeedsEmployerSelection => !HasSelectedEmployer;
 
     private PayrollHistoryTermOptionDto? _selectedTerm;
     public PayrollHistoryTermOptionDto? SelectedTerm
@@ -254,7 +258,7 @@ public class PayrollHistoryViewModel : INotifyPropertyChanged
                 Employers.Add(employer);
             }
 
-            IsDropdownVisible = Employers.Count > 0;
+            IsDropdownVisible = NeedsEmployerSelection && Employers.Count > 0;
         }
         catch (Exception ex)
         {
@@ -550,7 +554,7 @@ public class PayrollHistoryViewModel : INotifyPropertyChanged
         SelectedEmployer = null;
         ClearFilterOptions();
         ClearResults();
-        IsDropdownVisible = Employers.Count > 0;
+        IsDropdownVisible = NeedsEmployerSelection && Employers.Count > 0;
         Message = string.Empty;
 
         _suppressFilterRefresh = false;

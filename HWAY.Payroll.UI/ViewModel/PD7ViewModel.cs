@@ -34,6 +34,7 @@ public class PD7ViewModel : INotifyPropertyChanged
 
         SearchCommand = new Command(async () => await SearchEmployersAsync());
         SelectEmployerCommand = new Command<EmployerLookupDto>(async employer => await SelectEmployerAsync(employer));
+        DeselectEmployerCommand = new Command(async () => await InitializeAsync());
         ExportPd7CsvCommand = new Command(async () => await ExportPd7CsvAsync());
         SaveCommand = new Command(async () => await SaveAsync());
         ClearCommand = new Command(async () => await InitializeAsync());
@@ -52,6 +53,7 @@ public class PD7ViewModel : INotifyPropertyChanged
 
     public ICommand SearchCommand { get; }
     public ICommand SelectEmployerCommand { get; }
+    public ICommand DeselectEmployerCommand { get; }
     public ICommand ExportPd7CsvCommand { get; }
     public ICommand SaveCommand { get; }
     public ICommand ClearCommand { get; }
@@ -73,8 +75,18 @@ public class PD7ViewModel : INotifyPropertyChanged
     public EmployerLookupDto? SelectedEmployer
     {
         get => _selectedEmployer;
-        set => SetProperty(ref _selectedEmployer, value);
+        set
+        {
+            if (SetProperty(ref _selectedEmployer, value))
+            {
+                OnPropertyChanged(nameof(HasSelectedEmployer));
+                OnPropertyChanged(nameof(NeedsEmployerSelection));
+            }
+        }
     }
+
+    public bool HasSelectedEmployer => SelectedEmployer is not null;
+    public bool NeedsEmployerSelection => !HasSelectedEmployer;
 
     private bool _isDropdownVisible;
     public bool IsDropdownVisible
@@ -412,7 +424,7 @@ public class PD7ViewModel : INotifyPropertyChanged
             Employers.Add(employer);
         }
 
-        IsDropdownVisible = Employers.Count > 0;
+        IsDropdownVisible = NeedsEmployerSelection && Employers.Count > 0;
     }
 
     private async Task SelectEmployerAsync(EmployerLookupDto? employer)
@@ -680,7 +692,7 @@ public class PD7ViewModel : INotifyPropertyChanged
         FeeCheck = false;
         Year = DateTime.Today.Year;
         SelectedMonth = Months.First(month => month.Number == DateTime.Today.Month);
-        IsDropdownVisible = Employers.Count > 0;
+        IsDropdownVisible = NeedsEmployerSelection && Employers.Count > 0;
         Message = "";
 
         _suppressSearchTextChanged = false;

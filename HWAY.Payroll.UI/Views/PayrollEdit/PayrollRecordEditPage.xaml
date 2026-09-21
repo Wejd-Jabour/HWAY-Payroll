@@ -104,14 +104,24 @@
     <ScrollView>
         <VerticalStackLayout Padding="24" Spacing="18">
 
-            <VerticalStackLayout Spacing="3">
-                <Label
-                    Text="Edit Payroll Record"
-                    Style="{StaticResource PageTitle}" />
-                <Label
-                    Text="Search, adjust, recalculate, and save existing payroll records"
-                    Style="{StaticResource SmallLabel}" />
-            </VerticalStackLayout>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <VerticalStackLayout Grid.Column="0" Spacing="3">
+                    <Label
+                        Text="Edit Payroll Record"
+                        Style="{StaticResource PageTitle}" />
+                    <Label
+                        Text="Search, adjust, recalculate, and save existing payroll records"
+                        Style="{StaticResource SmallLabel}" />
+                </VerticalStackLayout>
+
+                <Button
+                    Grid.Column="1"
+                    Text="Back"
+                    Command="{Binding DeselectEmployerCommand}"
+                    IsVisible="{Binding HasSelectedEmployer}"
+                    Style="{StaticResource SecondaryActionButton}"
+                    VerticalOptions="Center" />
+            </Grid>
 
             <Border Style="{StaticResource CardBorder}">
                 <VerticalStackLayout Spacing="14">
@@ -120,7 +130,10 @@
                         <Label Text="Select the company first, then choose the employee payroll record to correct" Style="{StaticResource SmallLabel}" />
                     </VerticalStackLayout>
 
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <Grid
+                        IsVisible="{Binding NeedsEmployerSelection}"
+                        ColumnDefinitions="*,Auto"
+                        ColumnSpacing="12">
                         <VerticalStackLayout Grid.Column="0" Spacing="6">
                             <Label Text="Company" Style="{StaticResource FieldLabel}" />
                             <Border Style="{StaticResource InputBorder}">
@@ -180,9 +193,13 @@
                         </CollectionView>
                     </Border>
 
-                    <BoxView HeightRequest="1" BackgroundColor="#E2E8F0" />
+                    <BoxView
+                        IsVisible="{Binding HasSelectedEmployer}"
+                        HeightRequest="1"
+                        BackgroundColor="#E2E8F0" />
 
                     <FlexLayout
+                        IsVisible="{Binding HasSelectedEmployer}"
                         Direction="Row"
                         Wrap="Wrap"
                         AlignItems="Start"

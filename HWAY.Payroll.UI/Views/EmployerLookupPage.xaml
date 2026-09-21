@@ -16,11 +16,21 @@
                     <Label Text="Find employer details and preview the paystub view" Style="{StaticResource HwaySmallLabel}" />
                 </VerticalStackLayout>
 
-                <ActivityIndicator
+                <HorizontalStackLayout
                     Grid.Column="1"
-                    IsVisible="{Binding IsBusy}"
-                    IsRunning="{Binding IsBusy}"
-                    VerticalOptions="Center" />
+                    Spacing="10"
+                    VerticalOptions="Center">
+                    <Button
+                        Text="Back"
+                        Command="{Binding DeselectEmployerCommand}"
+                        IsVisible="{Binding HasSelectedEmployer}"
+                        Style="{StaticResource HwaySecondaryButton}" />
+
+                    <ActivityIndicator
+                        IsVisible="{Binding IsBusy}"
+                        IsRunning="{Binding IsBusy}"
+                        VerticalOptions="Center" />
+                </HorizontalStackLayout>
             </Grid>
 
             <Border Style="{StaticResource HwayCardBorder}">
@@ -30,7 +40,9 @@
                         <Label Text="Search by RP number or employer name" Style="{StaticResource HwaySmallLabel}" />
                     </VerticalStackLayout>
 
-                    <VerticalStackLayout Spacing="6">
+                    <VerticalStackLayout
+                        IsVisible="{Binding NeedsEmployerSelection}"
+                        Spacing="6">
                         <Label Text="Company" Style="{StaticResource HwayFieldLabel}" />
                         <Border Style="{StaticResource HwayInputBorder}">
                             <Entry
@@ -76,9 +88,14 @@
                         </CollectionView>
                     </Border>
 
-                    <BoxView HeightRequest="1" BackgroundColor="#E2E8F0" />
+                    <BoxView
+                        IsVisible="{Binding HasSelectedEmployer}"
+                        HeightRequest="1"
+                        BackgroundColor="#E2E8F0" />
 
-                    <VerticalStackLayout Spacing="10">
+                    <VerticalStackLayout
+                        IsVisible="{Binding HasSelectedEmployer}"
+                        Spacing="10">
                         <Label Text="Selected Employer" Style="{StaticResource HwaySectionTitle}" />
 
                         <FlexLayout
@@ -119,7 +136,9 @@
                         </FlexLayout>
                     </VerticalStackLayout>
 
-                    <HorizontalStackLayout Spacing="10">
+                    <HorizontalStackLayout
+                        IsVisible="{Binding HasSelectedEmployer}"
+                        Spacing="10">
                         <Button
                             Text="Open Website"
                             Clicked="OpenWebsiteButton_Clicked"

@@ -58,6 +58,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
 
         SearchCommand = new Command(async () => await SearchEmployersAsync());
         SelectEmployerCommand = new Command<EmployerLookupDto>(async employer => await SelectEmployerAsync(employer));
+        DeselectEmployerCommand = new Command(async () => await InitializeAsync());
         SaveCommand = new Command(async () => await SaveChanges());
         CalculatePayrollCommand = new Command(async () => await CalculatePayrollAsync());
         OpenCraWebsiteCommand = new Command(OpenCraWebsite);
@@ -88,11 +89,13 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
             if (SetProperty(ref _selectedEmployer, value))
             {
                 OnPropertyChanged(nameof(HasSelectedEmployer));
+                OnPropertyChanged(nameof(NeedsEmployerSelection));
             }
         }
     }
 
     public bool HasSelectedEmployer => SelectedEmployer is not null;
+    public bool NeedsEmployerSelection => !HasSelectedEmployer;
 
     private bool _isDropdownVisible;
     public bool IsDropdownVisible
@@ -365,6 +368,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
 
     public ICommand SearchCommand { get; }
     public ICommand SelectEmployerCommand { get; }
+    public ICommand DeselectEmployerCommand { get; }
     public ICommand SaveCommand { get; }
     public ICommand CalculatePayrollCommand { get; }
     public ICommand OpenCraWebsiteCommand { get; }
@@ -427,7 +431,7 @@ public class PayrollRecordEditViewModel : INotifyPropertyChanged
                 Employers.Add(employer);
             }
 
-            IsDropdownVisible = Employers.Count > 0;
+            IsDropdownVisible = NeedsEmployerSelection && Employers.Count > 0;
         }
         catch (Exception ex)
         {

@@ -48,6 +48,7 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
 
         SearchCommand = new Command(async () => await SearchEmployersAsync());
         SelectEmployerCommand = new Command<EmployerLookupDto>(async employer => await SelectEmployerAsync(employer));
+        DeselectEmployerCommand = new Command(async () => await InitializeAsync());
 
         CalculateRowCommand = new Command<EmployeePayrollRowViewModel>(async row => await CalculateRowAsync(row));
         SaveAllRowsCommand = new Command(async () => await SaveAllRowsAsync());
@@ -61,6 +62,7 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
 
     public ICommand SearchCommand { get; }
     public ICommand SelectEmployerCommand { get; }
+    public ICommand DeselectEmployerCommand { get; }
 
     public ICommand CalculateRowCommand { get; }
     public ICommand SaveAllRowsCommand { get; }
@@ -85,8 +87,18 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
     public EmployerLookupDto? SelectedEmployer
     {
         get => _selectedEmployer;
-        set => SetProperty(ref _selectedEmployer, value);
+        set
+        {
+            if (SetProperty(ref _selectedEmployer, value))
+            {
+                OnPropertyChanged(nameof(HasSelectedEmployer));
+                OnPropertyChanged(nameof(NeedsEmployerSelection));
+            }
+        }
     }
+
+    public bool HasSelectedEmployer => SelectedEmployer is not null;
+    public bool NeedsEmployerSelection => !HasSelectedEmployer;
 
     public bool IsDropdownVisible
     {
@@ -152,7 +164,7 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
             foreach (var employer in results)
                 Employers.Add(employer);
 
-            IsDropdownVisible = Employers.Count > 0;
+            IsDropdownVisible = NeedsEmployerSelection && Employers.Count > 0;
         }
         finally
         {
