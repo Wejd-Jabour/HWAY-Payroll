@@ -215,6 +215,8 @@ public class PayrollWorkspaceViewModel : INotifyPropertyChanged
         var payPeriodRange = await _payPeriodRangeService.GetPayPeriodRangeAsync(
             SelectedEmployer.EmployerGroup,
             currentPeriod);
+
+        await _payrollRecordService.EnsurePayrollRecordsForEmployerAsync(SelectedEmployer.RpNumber);
         var results = await _payrollRecordService.SearchPayrollRecordsByRpNumberAsync(SelectedEmployer.RpNumber);
 
         foreach (var record in results)

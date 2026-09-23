@@ -1,7 +1,10 @@
 using HWAY.Payroll.Data.Context;
 using HWAY.Payroll.Data.Entities;
+using HWAY.Payroll.Domain;
 using HWAY.Payroll.Services.EmployeeInsert;
+using HWAY.Payroll.Services.PayPeriods;
 using Microsoft.EntityFrameworkCore;
+using DataPayrollRecord = HWAY.Payroll.Data.Entities.PayrollRecord;
 
 namespace HWAY.Payroll.Services.EmployeeInsert;
 
@@ -16,18 +19,28 @@ public class EmployeeInsertService : IEmployeeInsertService
 
     public async Task<int> CreateEmployeeAsync(EmployeeInsertDto dto)
     {
+        var rpNumber = dto.RpNumber.Trim();
+        var employeeNumber = dto.EmployeeNumber.Trim();
+        var employer = await _dbContext.Employers
+            .FirstOrDefaultAsync(e => e.RpNumber == rpNumber);
+
+        if (employer == null)
+            throw new Exception("Employer not found for this RP number");
+
         var exists = await _dbContext.Employees
             .AnyAsync(e =>
-                e.RpNumber == dto.RpNumber &&
-                e.EmployeeNumber == dto.EmployeeNumber);
+                e.RpNumber == rpNumber &&
+                e.EmployeeNumber == employeeNumber);
 
         if (exists)
             throw new Exception("Employee number already exists for this RP number");
+
+        var employeeName = BuildEmployeeName(dto.FirstName, dto.LastName);
         
         var employee = new Employee
         {
-            RpNumber = dto.RpNumber,
-            EmployeeNumber = dto.EmployeeNumber,
+            RpNumber = rpNumber,
+            EmployeeNumber = employeeNumber,
             FirstName = dto.FirstName,
             LastName = dto.LastName,
             Sin = dto.Sin,
@@ -41,9 +54,28 @@ public class EmployeeInsertService : IEmployeeInsertService
             EiExempt = dto.EiExempt
         };
 
+        var payrollRecord = new DataPayrollRecord
+        {
+            RpNumber = rpNumber,
+            EmployeeNumber = employeeNumber,
+            EmployeeName = employeeName,
+            Period = PayPeriodRules.NormalizePeriod(employer.EmployerGroup, employer.PaystubPeriod),
+            VacationSetting = VacationSettings.Accumulate,
+            Employee = employee,
+            Employer = employer
+        };
+
         _dbContext.Employees.Add(employee);
+        _dbContext.PayrollRecords.Add(payrollRecord);
         await _dbContext.SaveChangesAsync();
 
         return employee.Id;
+    }
+
+    private static string BuildEmployeeName(string firstName, string lastName)
+    {
+        return string.Join(" ", new[] { firstName, lastName }
+            .Where(value => !string.IsNullOrWhiteSpace(value)))
+            .Trim();
     }
 }

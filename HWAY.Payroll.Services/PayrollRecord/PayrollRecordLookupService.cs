@@ -102,6 +102,63 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
             .ToListAsync();
     }
 
+    public async Task<int> EnsurePayrollRecordsForEmployerAsync(string rpNumber)
+    {
+        rpNumber = rpNumber.Trim();
+
+        var employer = await _dbContext.Employers
+            .AsNoTracking()
+            .Where(e => e.RpNumber == rpNumber)
+            .Select(e => new
+            {
+                e.RpNumber,
+                e.EmployerGroup,
+                e.PaystubPeriod
+            })
+            .FirstOrDefaultAsync();
+
+        if (employer == null)
+            throw new InvalidOperationException($"Employer with RP number {rpNumber} not found.");
+
+        var currentPeriod = PayPeriodRules.NormalizePeriod(
+            employer.EmployerGroup,
+            employer.PaystubPeriod);
+        var missingEmployees = await _dbContext.Employees
+            .AsNoTracking()
+            .Where(employee => employee.RpNumber == rpNumber)
+            .Where(employee => !_dbContext.PayrollRecords.Any(record =>
+                record.RpNumber == rpNumber &&
+                record.EmployeeNumber == employee.EmployeeNumber))
+            .OrderBy(employee => employee.EmployeeNumber)
+            .Select(employee => new
+            {
+                employee.RpNumber,
+                employee.EmployeeNumber,
+                employee.FirstName,
+                employee.LastName
+            })
+            .ToListAsync();
+
+        foreach (var employee in missingEmployees)
+        {
+            _dbContext.PayrollRecords.Add(new DataPayrollRecord
+            {
+                RpNumber = employee.RpNumber,
+                EmployeeNumber = employee.EmployeeNumber,
+                EmployeeName = BuildEmployeeName(employee.FirstName, employee.LastName),
+                Period = currentPeriod,
+                VacationSetting = VacationSettings.Accumulate
+            });
+        }
+
+        if (missingEmployees.Count > 0)
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+
+        return missingEmployees.Count;
+    }
+
     public async Task<List<PayrollRecordLookupDto>> SearchPayrollRecordsByRpNumberAsync(string rpNumber)
     {
         rpNumber = rpNumber.Trim();
@@ -528,5 +585,12 @@ public class PayrollRecordLookupService : IPayrollRecordLookupService
         var paidVacation = VacationSettings.IsPaidOut(vacationSetting) ? vacation : 0m;
 
         return gross + paidVacation - totalDeductions;
+    }
+
+    private static string BuildEmployeeName(string firstName, string lastName)
+    {
+        return string.Join(" ", new[] { firstName, lastName }
+            .Where(value => !string.IsNullOrWhiteSpace(value)))
+            .Trim();
     }
 }

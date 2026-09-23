@@ -92,13 +92,22 @@ public class EmployeeUpdateService : IEmployeeUpdateService
 
     public async Task<int> UpdateEmployeeAsync(EmployeeUpdateDto dto)
     {
+        var rpNumber = dto.RpNumber.Trim();
+        var employeeNumber = dto.EmployeeNumber.Trim();
         var employee = await _dbContext.Employees
             .FirstOrDefaultAsync(e =>
-                e.RpNumber == dto.RpNumber &&
-                e.EmployeeNumber == dto.EmployeeNumber);
+                e.RpNumber == rpNumber &&
+                e.EmployeeNumber == employeeNumber);
 
         if (employee == null)
             throw new Exception("Employee not found");
+
+        var employeeName = BuildEmployeeName(dto.FirstName, dto.LastName);
+        var payrollRecords = await _dbContext.PayrollRecords
+            .Where(record =>
+                record.RpNumber == rpNumber &&
+                record.EmployeeNumber == employeeNumber)
+            .ToListAsync();
 
         employee.FirstName = dto.FirstName;
         employee.LastName = dto.LastName;
@@ -112,8 +121,20 @@ public class EmployeeUpdateService : IEmployeeUpdateService
         employee.DateOfBirth = dto.DateOfBirth?.Date;
         employee.EiExempt = dto.EiExempt;
 
+        foreach (var payrollRecord in payrollRecords)
+        {
+            payrollRecord.EmployeeName = employeeName;
+        }
+
         await _dbContext.SaveChangesAsync();
 
         return employee.Id;
+    }
+
+    private static string BuildEmployeeName(string firstName, string lastName)
+    {
+        return string.Join(" ", new[] { firstName, lastName }
+            .Where(value => !string.IsNullOrWhiteSpace(value)))
+            .Trim();
     }
 }
